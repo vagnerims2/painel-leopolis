@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Painel de Empenhos — Leópolis</title>
+<meta name="description" content="Empenhos, liquidações e pagamentos da Prefeitura Municipal de Leópolis-PR, com dados do Portal da Transparência.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f85'/%3E%3Crect x='7' y='17' width='4' height='8' fill='white'/%3E%3Crect x='14' y='11' width='4' height='14' fill='white'/%3E%3Crect x='21' y='7' width='4' height='18' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --font-anthropic-sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--font-anthropic-serif:"Source Serif 4",Georgia,serif;
+  --color-bg:#f5f4ef;--color-panel:#ffffff;--color-fg:#1f1e1b;--color-fg-muted:#6b6862;--color-border-line:#e3e0d8;
+  --color-ok:#2f7d4f;--color-warn:#b7791f;--color-bad:#c0392b;
+  --cds-radius:8px;--cds-border:1px solid var(--color-border-line);--cds-dur-slow:.25s;--cds-ease-out:cubic-bezier(.2,.7,.2,1);
+  --cds-font-size-caption:.8125rem;--cds-font-size-heading:1.125rem;--cds-font-size-title:1.5rem;--cds-font-weight-medium:600;
+  --cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:12px;--cds-gap-lg:20px;--cds-pad-xs:4px;--cds-pad-sm:8px;--cds-pad-md:12px;--cds-pad-lg:18px;--cds-pad-xl:28px;
+  --cds-surface-popover:#ffffff;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.16);--cds-text-secondary:var(--color-fg-muted);
+  --serie0:#255f85;--serie1:#2a9d8f;--serie2:#e9a03b;color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --color-bg:#171614;--color-panel:#211f1c;--color-fg:#eeeae2;--color-fg-muted:#a29d93;--color-border-line:#36332e;
+  --color-ok:#5fbf85;--color-warn:#e2a64a;--color-bad:#e5675a;--cds-surface-popover:#2a2824;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.5);
+  --serie0:#6fa8d6;--serie1:#4cc2b3;--serie2:#f0b45a;color-scheme:dark}}
+:root[data-theme=dark]{--color-bg:#171614;--color-panel:#211f1c;--color-fg:#eeeae2;--color-fg-muted:#a29d93;--color-border-line:#36332e;
+  --color-ok:#5fbf85;--color-warn:#e2a64a;--color-bad:#e5675a;--cds-surface-popover:#2a2824;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.5);
+  --serie0:#6fa8d6;--serie1:#4cc2b3;--serie2:#f0b45a;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
+#dash-root{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+#dash-root a{color:var(--serie0)}
+.dash-skeleton{color:transparent!important;background:linear-gradient(90deg,color-mix(in srgb,var(--color-fg) 6%,transparent),color-mix(in srgb,var(--color-fg) 12%,transparent),color-mix(in srgb,var(--color-fg) 6%,transparent));background-size:200% 100%;animation:skel 1.2s infinite linear;border-radius:6px;min-height:1em}
+@keyframes skel{to{background-position:-200% 0}}
+
+#dash-root{--acc:var(--color-fg);--r:calc(var(--cds-radius) * 1.6)}
+#dash-root .pg{font-family:var(--font-anthropic-sans);display:flex;flex-direction:column;gap:var(--cds-gap-lg);position:relative}
+/* cabeçalho */
+#dash-root .hero{position:relative;overflow:hidden;border-radius:var(--r);padding:var(--cds-pad-xl) var(--cds-pad-lg);border:1px solid var(--color-border-line);
+  background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 16%,var(--color-panel)) 0%,var(--color-panel) 60%,color-mix(in srgb,var(--acc2) 12%,var(--color-panel)) 100%)}
+#dash-root .hero::after{content:"";position:absolute;right:-60px;top:-60px;width:220px;height:220px;border-radius:50%;background:color-mix(in srgb,var(--acc) 14%,transparent);pointer-events:none}
+#dash-root .eyebrow{font-size:var(--cds-font-size-caption);letter-spacing:.08em;text-transform:uppercase;color:var(--color-fg-muted);font-weight:var(--cds-font-weight-medium)}
+#dash-root .pg h1{font-family:var(--font-anthropic-serif);font-weight:400;font-size:calc(var(--cds-font-size-title) * 1.25);margin:var(--cds-gap-xs) 0 0;line-height:1.15}
+#dash-root .lead{color:var(--color-fg-muted);margin:var(--cds-gap-sm) 0 0;max-width:60ch}
+/* abas em pílula, fixas no topo */
+#dash-root .tabs{position:sticky;top:0;z-index:4;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:5px;border-radius:999px;
+  background:color-mix(in srgb,var(--color-panel) 88%,transparent);backdrop-filter:blur(10px);border:1px solid var(--color-border-line)}
+#dash-root .tabs::-webkit-scrollbar{display:none}
+#dash-root .tabs button{font:inherit;font-size:var(--cds-font-size-caption);white-space:nowrap;background:none;border:0;border-radius:999px;padding:8px 14px;color:var(--color-fg-muted);cursor:pointer;transition:background var(--cds-dur-slow),color var(--cds-dur-slow)}
+#dash-root .tabs button:hover{color:var(--color-fg);background:color-mix(in srgb,var(--color-fg) 6%,transparent)}
+#dash-root .tabs button[aria-selected=true]{color:var(--color-bg);background:var(--color-fg);font-weight:var(--cds-font-weight-medium)}
+/* cartões */
+#dash-root .card{background:var(--color-panel);border:1px solid var(--color-border-line);border-radius:var(--r);padding:var(--cds-pad-lg);min-width:0;
+  box-shadow:0 1px 2px color-mix(in srgb,var(--color-fg) 6%,transparent),0 8px 24px -12px color-mix(in srgb,var(--color-fg) 14%,transparent)}
+#dash-root .card h2{font-size:var(--cds-font-size-heading);font-weight:var(--cds-font-weight-medium);margin:0;display:flex;align-items:center;gap:8px}
+#dash-root .card h2::before{content:"";width:4px;height:1em;border-radius:4px;background:var(--acc)}
+#dash-root .note{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin:var(--cds-gap-xs) 0 var(--cds-gap-md);line-height:1.5}
+#dash-root .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,22rem),1fr));gap:var(--cds-gap-md)}
+/* indicadores */
+#dash-root .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:var(--cds-gap-md)}
+#dash-root .tile{position:relative;overflow:hidden}
+#dash-root .card.tile{padding-top:calc(var(--cds-pad-lg) + 4px)}
+#dash-root .card.tile::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--k,var(--acc))}
+#dash-root .tiles .card.tile:nth-child(1){--k:var(--c0)} #dash-root .tiles .card.tile:nth-child(2){--k:var(--c1)} #dash-root .tiles .card.tile:nth-child(3){--k:var(--c2)} #dash-root .tiles .card.tile:nth-child(4){--k:var(--color-warn)}
+#dash-root .tile .lbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:.05em}
+#dash-root .tile .num{font-family:var(--font-anthropic-serif);font-weight:400;font-size:calc(var(--cds-font-size-title) * 1.1);font-variant-numeric:tabular-nums;margin:var(--cds-gap-xs) 0;line-height:1.1}
+#dash-root .tile .sub{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-variant-numeric:tabular-nums}
+/* alertas */
+#dash-root .alert{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:var(--cds-gap-md)}
+#dash-root .alert button{all:unset;box-sizing:border-box;cursor:pointer;border-radius:var(--r);padding:var(--cds-pad-md) var(--cds-pad-lg);border:1px solid color-mix(in srgb,var(--t) 35%,var(--color-border-line));
+  background:color-mix(in srgb,var(--t) 10%,var(--color-panel));transition:transform var(--cds-dur-slow),box-shadow var(--cds-dur-slow)}
+#dash-root .alert button:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px var(--t)}
+#dash-root .alert button:nth-child(1){--t:var(--c0)} #dash-root .alert button:nth-child(2){--t:var(--color-warn)} #dash-root .alert button:nth-child(3){--t:var(--color-bad)} #dash-root .alert button:nth-child(4){--t:var(--color-bad)}
+#dash-root .alert .num{font-family:var(--font-anthropic-serif);font-size:calc(var(--cds-font-size-title) * 1.2);font-variant-numeric:tabular-nums;line-height:1.1;margin-top:4px}
+#dash-root .alert .lbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);display:flex;justify-content:space-between;gap:6px}
+#dash-root .alert .lbl::after{content:"→";opacity:.6}
+/* legendas e barras */
+#dash-root .legend{display:flex;gap:var(--cds-gap-md);font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);flex-wrap:wrap;margin-bottom:var(--cds-gap-sm)}
+#dash-root .sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+#dash-root .row{display:grid;grid-template-columns:minmax(6rem,14rem) 1fr auto;align-items:center;gap:var(--cds-gap-sm);padding:5px 6px;margin:2px -6px;border-radius:8px;font-size:var(--cds-font-size-caption);font-variant-numeric:tabular-nums;transition:background var(--cds-dur-slow)}
+#dash-root .row:hover{background:color-mix(in srgb,var(--color-fg) 5%,transparent)}
+#dash-root .row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dash-root .track{position:relative;height:10px;border-radius:999px;background:color-mix(in srgb,var(--color-fg) 7%,transparent)}
+#dash-root .bar{position:absolute;left:0;top:0;height:100%;border-radius:999px}
+#dash-root .cols{display:flex;align-items:flex-end;gap:6px;height:200px;padding-bottom:2px;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),color-mix(in srgb,var(--color-fg) 7%,transparent) calc(25% - 1px),color-mix(in srgb,var(--color-fg) 7%,transparent) 25%)}
+#dash-root .col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;min-width:0;border-radius:6px;transition:background var(--cds-dur-slow)}
+#dash-root .col:hover{background:color-mix(in srgb,var(--color-fg) 5%,transparent)}
+#dash-root .pair{display:flex;align-items:flex-end;gap:2px;width:100%;justify-content:center;height:calc(100% - 20px)}
+#dash-root .pair div{flex:1;max-width:12px;border-radius:4px 4px 1px 1px}
+#dash-root .clbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);margin-top:4px;white-space:nowrap}
+#dash-root .tip{position:absolute;pointer-events:none;background:var(--cds-surface-popover);border:1px solid var(--cds-border);border-radius:10px;box-shadow:var(--cds-shadow-popover);padding:var(--cds-pad-xs) var(--cds-pad-sm);font-size:var(--cds-font-size-caption);display:none;z-index:5;white-space:nowrap}
+#dash-root .tip .t{color:var(--cds-text-secondary)}
+/* tabelas */
+#dash-root .tblwrap{max-height:32rem;overflow:auto;border-radius:12px;border:1px solid var(--color-border-line)}
+#dash-root table{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--cds-font-size-caption);font-variant-numeric:tabular-nums}
+#dash-root th{position:sticky;top:0;background:color-mix(in srgb,var(--color-fg) 4%,var(--color-panel));text-align:left;font-weight:var(--cds-font-weight-medium);padding:9px 10px;border-bottom:1px solid var(--color-border-line);white-space:nowrap;z-index:1;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:.04em;font-size:.85em}
+#dash-root th button{all:unset;cursor:pointer}
+#dash-root th[aria-sort] button::after{content:" ↓"} #dash-root th[aria-sort=ascending] button::after{content:" ↑"}
+#dash-root td{padding:9px 10px;border-bottom:1px solid color-mix(in srgb,var(--color-border-line) 70%,transparent);vertical-align:top}
+#dash-root tbody tr{transition:background var(--cds-dur-slow)}
+#dash-root tbody tr:hover{background:color-mix(in srgb,var(--acc) 6%,transparent)}
+#dash-root tfoot td{position:sticky;bottom:0;background:color-mix(in srgb,var(--color-fg) 4%,var(--color-panel));border-top:1px solid var(--color-border-line);font-weight:600;padding:10px}
+#dash-root .r{text-align:right}
+#dash-root .late{color:var(--color-bad);font-weight:600}
+#dash-root .mid{color:var(--color-warn);font-weight:600}
+#dash-root .ok{color:var(--color-ok)}
+#dash-root .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.92em;font-weight:var(--cds-font-weight-medium);white-space:nowrap;border:1px solid color-mix(in srgb,var(--p) 30%,transparent);background:color-mix(in srgb,var(--p) 12%,transparent);color:var(--p)}
+#dash-root .pill.ok{--p:var(--color-ok)} #dash-root .pill.mid{--p:var(--color-warn)} #dash-root .pill.late{--p:var(--color-bad)} #dash-root .pill.neu{--p:var(--color-fg-muted)}
+#dash-root .sub2{color:var(--color-fg-muted);font-size:.92em;margin-top:2px}
+/* filtros */
+#dash-root .tools{display:flex;gap:var(--cds-gap-sm);flex-wrap:wrap;margin-bottom:var(--cds-gap-sm);align-items:center}
+#dash-root .tools input[type=search],#dash-root .tools select{font:inherit;font-size:var(--cds-font-size-caption);padding:8px 12px;border:1px solid var(--color-border-line);border-radius:999px;background:var(--color-bg);color:var(--color-fg);max-width:100%;transition:border-color var(--cds-dur-slow),box-shadow var(--cds-dur-slow)}
+#dash-root .tools input[type=search]{flex:1;min-width:10rem;padding-left:34px;background:var(--color-bg) no-repeat 12px center / 14px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2.4' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E")}
+#dash-root .tools input:focus,#dash-root .tools select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+#dash-root .tools label{display:flex;align-items:center;gap:6px;font-size:var(--cds-font-size-caption);padding:6px 10px;border-radius:999px;background:color-mix(in srgb,var(--color-fg) 5%,transparent);cursor:pointer}
+#dash-root .tools label input{accent-color:var(--acc)}
+#dash-root .tab{display:flex;flex-direction:column;gap:var(--cds-gap-lg)}
+#dash-root .tab[hidden]{display:none}
+@media (prefers-reduced-motion:no-preference){#dash-root .tab:not([hidden]){animation:dash-in var(--cds-dur-slow) var(--cds-ease-out)} @keyframes dash-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+#dash-root .foot{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);text-align:center;max-width:70ch;margin:0 auto}
+@media (max-width:640px){#dash-root .hide-sm{display:none} #dash-root .hero{padding:var(--cds-pad-lg)}}
+#dash-root [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
+#dash-root [data-dash-source-state=empty]{color:transparent}
+
+</style>
+</head>
+<body>
+<div id="dash-root">
+
+
+<div class="pg">
+  <header class="hero">
+    <div class="eyebrow">Prefeitura Municipal de Leópolis · Execução da despesa</div>
+    <h1 id="titulo">Empenhos e liquidações — 2026</h1>
+    <p class="lead" data-source="info" data-field="resumo" data-row="0">—</p>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button data-go="geral" aria-selected="true">Visão geral</button>
+    <button data-go="alertas" aria-selected="false">Alertas</button>
+    <button data-go="dotacoes" aria-selected="false">Dotações</button>
+    <button data-go="empenhos" aria-selected="false">Empenhos</button>
+    <button data-go="produtos" aria-selected="false">Produtos</button>
+    <button data-go="semana" aria-selected="false">Dia e semana</button>
+    <button data-go="compras" aria-selected="false">Licitações</button>
+  </nav>
+
+  <!-- ============ VISÃO GERAL ============ -->
+  <section class="tab" data-tab="geral">
+    <div class="alert" id="alertas-resumo">
+      <button data-goto="alertas"><div class="lbl">Sem liquidar há 10–19 dias</div><div class="num" data-source="alertas_resumo" data-field="d10" data-row="0">—</div></button>
+      <button data-goto="alertas"><div class="lbl">Sem liquidar há 20–29 dias</div><div class="num mid" data-source="alertas_resumo" data-field="d20" data-row="0">—</div></button>
+      <button data-goto="alertas"><div class="lbl">Sem liquidar há 30+ dias</div><div class="num late" data-source="alertas_resumo" data-field="d30" data-row="0">—</div></button>
+      <button data-goto="dotacoes"><div class="lbl">Dotações que não fecham o mês</div><div class="num late" data-source="alertas_resumo" data-field="dot_mes" data-row="0">—</div></button>
+    </div>
+    <section class="tiles">
+      <div class="card tile"><div class="lbl">Empenhado no ano (líquido)</div><div class="num" data-source="totais" data-field="empenhado" data-row="0">—</div><div class="sub">estornos: <span data-source="totais" data-field="estornado" data-row="0">—</span></div></div>
+      <div class="card tile"><div class="lbl">Liquidado no ano</div><div class="num" data-source="totais" data-field="liquidado" data-row="0">—</div><div class="sub">inclui restos a pagar</div></div>
+      <div class="card tile"><div class="lbl">Pago no ano</div><div class="num" data-source="totais" data-field="pago" data-row="0">—</div><div class="sub">inclui restos a pagar</div></div>
+      <div class="card tile"><div class="lbl">Saldo a pagar (oficial)</div><div class="num" data-source="totais" data-field="saldo" data-row="0">—</div><div class="sub">falta liquidar <span data-source="totais" data-field="falta" data-row="0">—</span> · liq. não pago <span data-source="totais" data-field="lnp" data-row="0">—</span></div></div>
+    </section>
+    <div class="card" id="mensal">
+      <h2>Empenhado, liquidado e pago por mês</h2>
+      <p class="note">Valores líquidos de estornos, por mês de 2026.</p>
+      <div class="legend"><span><i class="sw sw0"></i>Empenhado</span><span><i class="sw sw1"></i>Liquidado</span><span><i class="sw sw2"></i>Pago</span></div>
+      <div id="mes-chart" class="cols" data-source="por_mes"></div>
+    </div>
+    <section class="grid">
+      <div class="card" id="dias15">
+        <h2>Últimos 15 dias com movimento</h2>
+        <p class="note">Empenhado, liquidado e pago em cada dia.</p>
+        <div class="legend"><span><i class="sw sw0"></i>Empenhado</span><span><i class="sw sw1"></i>Liquidado</span><span><i class="sw sw2"></i>Pago</span></div>
+        <div id="dia-chart" class="cols" data-source="movimento"></div>
+      </div>
+      <div class="card" id="fontes">
+        <h2>Saldo a pagar por fonte de recurso</h2>
+        <p class="note">Saldo oficial do portal. Toque numa fonte para ver os empenhos dela.</p>
+        <div id="fonte-chart" data-source="saldo_fontes" style="min-height:300px"></div>
+      </div>
+    </section>
+  </section>
+
+  <!-- ============ ALERTAS ============ -->
+  <section class="tab" data-tab="alertas" hidden>
+    <div class="card" id="parados">
+      <h2>Empenhos sem nenhuma liquidação</h2>
+      <p class="note">Empenhos ordinários abertos há 10 dias ou mais sem liquidação, comparados com o tempo médio de liquidação do mesmo tipo de despesa. Globais e estimativos ficam de fora (são liquidados aos poucos).</p>
+      <div class="tools">
+        <input id="a-busca" type="search" placeholder="Buscar nº, fornecedor, produto…">
+        <select id="a-faixa"><option value="10">10 dias ou mais</option><option value="20">20 dias ou mais</option><option value="30">30 dias ou mais</option></select>
+        <select id="a-sec"><option value="">Todas as secretarias</option></select>
+        <label><input id="a-acima" type="checkbox"> só os acima do normal do tipo</label>
+      </div>
+      <p class="note" id="a-total"></p>
+      <div class="tblwrap"><table id="t-alertas" data-source="parados" data-row-key="empenho"><thead><tr>
+        <th data-field="empenho">Empenho</th><th data-field="data">Data</th><th data-field="fornecedor">Fornecedor / produto</th><th data-field="secretaria" class="hide-sm">Secretaria</th>
+        <th data-field="valor" class="r">Valor</th><th data-field="dias" class="r">Dias</th><th data-field="media_tipo" class="r hide-sm">Normal do tipo</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card" id="tempo">
+      <h2>Tempo médio até a primeira liquidação</h2>
+      <p class="note">Média de dias entre o empenho e a primeira liquidação, nos empenhos ordinários de 2026 já liquidados. Entre parênteses, quantos empenhos entraram na média.</p>
+      <div class="tools"><select id="tm-por"><option value="tipo_despesa">Por tipo de despesa</option><option value="secretaria">Por secretaria</option><option value="fornecedor">Por fornecedor</option></select>
+        <label><input id="tm-lentos" type="checkbox" checked> mais lentos primeiro</label></div>
+      <div class="tblwrap" style="max-height:24rem"><table id="t-tempo" data-source="tempo_medio" data-row-key="chave"><thead><tr>
+        <th data-field="grupo">Grupo</th><th data-field="media" class="r">Média até liquidar</th><th data-field="media_pagar" class="r hide-sm">Média até pagar</th><th data-field="qtd" class="r">Empenhos</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ DOTAÇÕES ============ -->
+  <section class="tab" data-tab="dotacoes" hidden>
+    <div class="card" id="suplementar">
+      <h2>Suplementação: fechar o mês e o mês que vem</h2>
+      <p class="note">Para cada dotação (secretaria + elemento + fonte), o saldo é o informado no último empenho dela (já com os decretos até aquele dia). A média mensal usa os 6 meses fechados anteriores. <b>Falta p/ fechar o mês</b> = o que ainda costuma ser empenhado neste mês além do saldo; <b>p/ o mês que vem</b> = a média menos o que sobrar.</p>
+      <div class="tools">
+        <input id="d-busca" type="search" placeholder="Buscar dotação, elemento, fonte, secretaria…">
+        <label><input id="d-rec" type="checkbox" checked> só recorrentes (empenho em 4 dos últimos 6 meses)</label>
+        <label><input id="d-sup" type="checkbox" checked> só as que precisam suplementar</label>
+      </div>
+      <div class="tblwrap"><table id="t-dot" data-source="dotacoes" data-row-key="dotacao"><thead><tr>
+        <th data-field="dotacao">Dotação</th><th data-field="tipo_despesa">Elemento / fonte</th><th data-field="saldo_atual" class="r">Saldo</th><th data-field="media_mensal" class="r">Média/mês</th>
+        <th data-field="empenhado_mes" class="r hide-sm">Neste mês</th><th data-field="falta_fechar_mes" class="r">Falta p/ fechar o mês</th><th data-field="precisa_proximo_mes" class="r">P/ o mês que vem</th><th data-field="total_suplementar" class="r">Total</th>
+      </tr></thead><tbody></tbody>
+      <tfoot><tr><td colspan="5" id="d-qtd">Total</td><td class="r" id="d-t1">—</td><td class="r" id="d-t2">—</td><td class="r" id="d-t3">—</td></tr></tfoot></table></div>
+      <p class="note">Se houve decreto ou anulação depois do último empenho da dotação, o saldo real pode ser maior: confira no sistema contábil. A lista pode ser baixada em CSV no rodapé.</p>
+    </div>
+  </section>
+
+  <!-- ============ EMPENHOS ============ -->
+  <section class="tab" data-tab="empenhos" hidden>
+    <div class="card" id="pendencias">
+      <h2>Empenhos</h2>
+      <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto. Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
+      <div class="tools">
+        <input id="busca" type="search" placeholder="Buscar nº do empenho, fornecedor, produto, contrato…">
+        <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
+        <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
+        <input id="f-fonte" list="l-fontes" type="search" placeholder="Fonte (ex.: 103, FUNDEB)" style="flex:0 1 13rem;min-width:9rem"><datalist id="l-fontes"></datalist>
+        <select id="f-nat"><option value="">Todas as naturezas</option></select>
+        <select id="f-tipo"><option value="">Todos os tipos de despesa</option></select>
+        <select id="f-sec"><option value="">Todas as secretarias</option></select>
+        <select id="f-lic"><option value="">Todas as modalidades</option></select>
+        <select id="faixa"><option value="">Todas as idades</option><option value="30">Até 30 dias</option><option value="90">31 a 90 dias</option><option value="91">Mais de 90 dias</option></select>
+      </div>
+      <p class="note" id="filtro-total"></p>
+      <div class="tblwrap"><table id="tbl" data-source="emp" data-row-key="empenho"><thead><tr>
+        <th data-field="empenho"><button data-k="empenho_ord">Empenho</button></th>
+        <th data-field="data"><button data-k="data">Data</button></th>
+        <th data-field="fornecedor"><button data-k="fornecedor">Fornecedor / produto</button></th>
+        <th data-field="valor" class="r"><button data-k="valor">Valor</button></th>
+        <th data-field="falta_liquidar" class="r hide-sm"><button data-k="falta_liquidar">Falta liquidar</button></th>
+        <th data-field="liquidado_nao_pago" class="r hide-sm"><button data-k="liquidado_nao_pago">Liq. não pago</button></th>
+        <th data-field="saldo_a_pagar" class="r"><button data-k="saldo_a_pagar">Saldo</button></th>
+        <th data-field="situacao"><button data-k="situacao">Situação</button></th>
+        <th data-field="dias" class="r" aria-sort="descending"><button data-k="dias">Dias</button></th>
+      </tr></thead><tbody></tbody>
+      <tfoot><tr><td colspan="3" id="t-qtd">Total da seleção</td><td class="r" id="t-valor">—</td><td class="r hide-sm" id="t-falta">—</td><td class="r hide-sm" id="t-lnp">—</td><td class="r" id="t-saldo">—</td><td colspan="2"></td></tr></tfoot></table></div>
+      <p class="note">Saldo por empenho calculado com empenhos, anulações, liquidações e pagamentos do portal e conferido com o saldo oficial por fornecedor e data.</p>
+    </div>
+  </section>
+
+  <!-- ============ PRODUTOS ============ -->
+  <section class="tab" data-tab="produtos" hidden>
+    <div class="card" id="produtos">
+      <h2>Buscar produto</h2>
+      <p class="note">Itens de todos os empenhos de 2026, com a situação do empenho.</p>
+      <div class="tools">
+        <input id="p-busca" type="search" placeholder="Ex.: bola, caneta, luva, nº do empenho…">
+        <label><input id="p-parte" type="checkbox"> qualquer parte do nome</label>
+        <select id="p-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
+      </div>
+      <p class="note" id="p-resumo">Digite um produto para buscar.</p>
+      <div class="tblwrap"><table id="t-prod" data-source="itens" data-row-key="chave"><thead><tr>
+        <th data-field="produto">Produto</th><th data-field="data">Data</th><th data-field="empenho">Empenho</th><th data-field="fornecedor" class="hide-sm">Fornecedor</th>
+        <th data-field="quantidade" class="r">Qtd</th><th data-field="valor_unitario" class="r">Unitário</th><th data-field="valor_total" class="r hide-sm">Total</th><th data-field="situacao">Situação</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card" id="precos">
+      <h2>Histórico de preço da busca</h2>
+      <p class="note">Para os produtos encontrados acima: preço unitário mínimo, médio e máximo, e quem vendeu mais barato.</p>
+      <div class="tblwrap" style="max-height:22rem"><table id="t-precos"><thead><tr><th>Produto</th><th class="r">Compras</th><th class="r">Mínimo</th><th class="r">Médio</th><th class="r">Máximo</th><th class="hide-sm">Mais barato</th></tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ DIA E SEMANA ============ -->
+  <section class="tab" data-tab="semana" hidden>
+    <section class="tiles">
+      <div class="card tile"><div class="lbl">Último dia com empenho · <span data-source="semana" data-field="dia" data-row="0">—</span></div><div class="num" data-source="semana" data-field="emp_dia" data-row="0">—</div><div class="sub"><span data-source="semana" data-field="emp_dia_qtd" data-row="0">—</span> empenhos</div></div>
+      <div class="card tile"><div class="lbl">Empenhado nos últimos 7 dias</div><div class="num" data-source="semana" data-field="emp_sem" data-row="0">—</div><div class="sub"><span data-source="semana" data-field="emp_sem_qtd" data-row="0">—</span> empenhos</div></div>
+      <div class="card tile"><div class="lbl">Liquidado nos últimos 7 dias</div><div class="num" data-source="semana" data-field="liq_sem" data-row="0">—</div><div class="sub"><span data-source="semana" data-field="liq_sem_qtd" data-row="0">—</span> liquidações</div></div>
+      <div class="card tile"><div class="lbl">Pago nos últimos 7 dias</div><div class="num" data-source="semana" data-field="pag_sem" data-row="0">—</div><div class="sub">segundo o portal</div></div>
+    </section>
+    <div class="card" id="liq-lista">
+      <h2>Liquidações recentes e documentos fiscais</h2>
+      <p class="note">Liquidações dos últimos 45 dias com o documento fiscal informado no portal e se já foram pagas.</p>
+      <div class="tools"><input id="l-busca" type="search" placeholder="Buscar nº da NF, empenho, fornecedor…"><label><input id="l-np" type="checkbox"> só não pagas</label></div>
+      <div class="tblwrap"><table id="t-liq" data-source="liquidacoes" data-row-key="liquidacao"><thead><tr>
+        <th data-field="liquidacao">Liquidação</th><th data-field="data">Data</th><th data-field="empenho">Empenho</th><th data-field="fornecedor">Fornecedor</th><th data-field="documento" class="hide-sm">Documento fiscal</th><th data-field="valor" class="r">Valor</th><th data-field="pago">Pago</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- ============ LICITAÇÕES ============ -->
+  <section class="tab" data-tab="compras" hidden>
+    <section class="grid">
+      <div class="card" id="modalidades">
+        <h2>Empenhado por modalidade em 2026</h2>
+        <p class="note">Valor líquido (já descontadas anulações) por modalidade. "Sem licitação" inclui folha, diárias, tarifas e encargos. Toque para ver os empenhos.</p>
+        <div id="mod-chart" data-source="por_modalidade" style="min-height:200px"></div>
+      </div>
+      <div class="card" id="semlic">
+        <h2>Sem licitação e dispensa, por tipo de objeto</h2>
+        <p class="note">Compras, serviços, obras e equipamentos (sem folha, diárias, tarifas e encargos), somados no ano por subelemento, para acompanhar o limite de dispensa. Toque para ver os empenhos.</p>
+        <div id="semlic-chart" data-source="sem_licitacao" style="min-height:200px"></div>
+      </div>
+    </section>
+  </section>
+
+  <p class="foot">Fonte: Portal da Transparência do Município de Leópolis — despesa empenhada, liquidada e paga, saldo a pagar por credor e por fonte. Painel informativo, atualizado automaticamente nos dias úteis; em caso de divergência, vale o portal oficial. <span id="atualizado"></span><br>Baixar dados (CSV): <a href="data/empenhos.csv">empenhos</a> · <a href="data/itens.csv">itens</a> · <a href="data/liquidacoes.csv">liquidações</a> · <a href="data/movimento.csv">movimento diário</a> · <a href="data/saldo_fontes.csv">saldo por fonte</a> · <a href="data/dotacoes.csv">dotações</a></p>
+  <div class="tip" id="tip"></div>
+</div>
+
+
+</div>
+<script>
+/* Substitui o ambiente do painel do Claude: carrega os CSVs desta pasta e calcula tudo no navegador. */
+(function () {
+  const FONTES = ['empenhos', 'itens', 'movimento', 'liquidacoes', 'saldo_fontes', 'dotacoes'];
+  const css = getComputedStyle(document.documentElement);
+  const cor = (n) => css.getPropertyValue(n).trim();
+  const brutos = {}, calcs = {}, cache = {}, ouvintes = [];
+  let estado = 'loading';
+  function parseCSV(t) { const rows = []; let f = '', r = [], q = false;
+    for (let i = 0; i < t.length; i++) { const c = t[i];
+      if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
+      else if (c === '"') q = true; else if (c === ',') { r.push(f); f = ''; } else if (c === '\n') { r.push(f); rows.push(r); r = []; f = ''; } else if (c !== '\r') f += c; }
+    if (f || r.length) { r.push(f); rows.push(r); }
+    const h = rows.shift() || []; return rows.filter(x => x.length > 1).map(x => Object.fromEntries(h.map((k, j) => [k, x[j] ?? '']))); }
+  window.dash = {
+    colors: [cor('--serie0'), cor('--serie1'), cor('--serie2')],
+    calc(id, o) { calcs[id] = o; },
+    data(id) {
+      if (estado !== 'ok') return { status: estado, data: [] };
+      if (id in brutos) return { status: 'ok', data: brutos[id] };
+      if (!(id in cache)) { const c = calcs[id]; if (!c) return { status: 'error', data: [] };
+        try { cache[id] = c.fn(...c.inputs.map(i => window.dash.data(i).data)); } catch (e) { console.error(id, e); return { status: 'error', data: [] }; } }
+      return { status: 'ok', data: cache[id] };
+    },
+    onData(f) { ouvintes.push(f); f(); },
+    setLink(aba) { try { history.replaceState(null, '', '#' + aba); } catch (e) {} }
+  };
+  const v = Date.now();
+  fetch('data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
+  Promise.all(FONTES.map(n => fetch('data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); })))
+    .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
+    .finally(() => ouvintes.forEach(f => f()));
+})();
+</script>
+<script>
+
+const N = (x) => Number(x) || 0;
+const dias = (d) => Math.floor((Date.now() - new Date(d + 'T12:00:00')) / 864e5);
+
+dash.calc('info', {
+  title: 'Data dos dados', description: 'Último dia com movimento no portal.', inputs: ['movimento', 'empenhos'],
+  fn: (movimento, empenhos) => { const d = movimento.map(r => r.data).sort().pop() || ''; const ab = empenhos.filter(r => Number(r.saldo_a_pagar) > 0).length;
+    return [{ resumo: `Dados do portal até ${d.split('-').reverse().join('/')} · ${empenhos.length.toLocaleString('pt-BR')} empenhos no ano, ${ab.toLocaleString('pt-BR')} com saldo a pagar.` }]; }
+});
+dash.calc('totais', {
+  title: 'Totais do ano', description: 'Somas do movimento diário, saldo oficial por fonte e divisão do saldo entre falta liquidar e liquidado não pago.', inputs: ['movimento', 'saldo_fontes', 'empenhos'],
+  fn: (movimento, saldo_fontes, empenhos) => { const s = (rs, k) => rs.reduce((a, r) => a + Number(r[k] || 0), 0);
+    return [{ empenhado: s(movimento, 'empenhado_liquido'), estornado: s(movimento, 'estornado'), liquidado: s(movimento, 'liquidado'), pago: s(movimento, 'pago'),
+      saldo: s(saldo_fontes, 'saldo_a_pagar'), falta: s(empenhos, 'falta_liquidar'), lnp: s(empenhos, 'liquidado_nao_pago') }]; }
+});
+dash.calc('por_mes', {
+  title: 'Movimento por mês', description: 'Empenhado líquido, liquidado e pago somados por mês.', inputs: ['movimento'],
+  fn: (movimento) => { const m = {}; movimento.forEach(r => { const k = String(r.data).slice(0, 7); m[k] = m[k] || { mes: k, empenhado: 0, liquidado: 0, pago: 0 };
+    m[k].empenhado += Number(r.empenhado_liquido || 0); m[k].liquidado += Number(r.liquidado || 0); m[k].pago += Number(r.pago || 0); }); return Object.values(m).sort((a, b) => a.mes < b.mes ? -1 : 1); }
+});
+dash.calc('emp', {
+  title: 'Empenhos com dias', description: 'Empenhos com campos numéricos convertidos e dias desde a emissão.', inputs: ['empenhos'],
+  fn: (empenhos) => empenhos.map(r => ({ ...r, empenho_ord: parseInt(r.empenho) || 0, valor: Number(r.valor || 0) - Number(r.anulado || 0), falta_liquidar: Number(r.falta_liquidar || 0),
+    liquidado_nao_pago: Number(r.liquidado_nao_pago || 0), saldo_a_pagar: Number(r.saldo_a_pagar || 0), dias: Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5) }))
+});
+dash.calc('tempo_medio', {
+  title: 'Tempo médio até liquidar', description: 'Média de dias do empenho à primeira liquidação e ao último pagamento, nos empenhos ordinários, por tipo de despesa, secretaria e fornecedor.', inputs: ['empenhos'],
+  fn: (empenhos) => { const out = [];
+    for (const k of ['tipo_despesa', 'secretaria', 'fornecedor']) { const m = {};
+      empenhos.filter(r => r.tipo === 'Ordinário' && r.dias_ate_liquidar !== '' && r.dias_ate_liquidar != null).forEach(r => { const g = r[k] || '—'; m[g] = m[g] || { s: 0, n: 0, sp: 0, np: 0 }; m[g].s += Number(r.dias_ate_liquidar); m[g].n++; if (r.dias_ate_pagar !== '' && r.dias_ate_pagar != null) { m[g].sp += Number(r.dias_ate_pagar); m[g].np++; } });
+      Object.entries(m).forEach(([g, v]) => out.push({ chave: k + ':' + g, por: k, grupo: g, media: v.s / v.n, media_pagar: v.np ? v.sp / v.np : null, qtd: v.n })); }
+    return out; }
+});
+dash.calc('parados', {
+  title: 'Empenhos parados', description: 'Empenhos ordinários sem nenhuma liquidação há 10 dias ou mais, com o tempo médio de liquidação do tipo de despesa.', inputs: ['empenhos', 'tempo_medio'],
+  fn: (empenhos, tempo_medio) => { const tm = {}; tempo_medio.filter(r => r.por === 'tipo_despesa').forEach(r => { tm[r.grupo] = r.media; });
+    return empenhos.filter(r => r.tipo === 'Ordinário' && Number(r.liquidado) === 0 && Number(r.saldo_a_pagar) > 0)
+      .map(r => ({ empenho: r.empenho, data: r.data, fornecedor: r.fornecedor, produtos: r.produtos, secretaria: r.secretaria, tipo_despesa: r.tipo_despesa, valor: Number(r.saldo_a_pagar),
+        dias: Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5), media_tipo: tm[r.tipo_despesa] ?? null }))
+      .filter(r => r.dias >= 10).sort((a, b) => b.dias - a.dias); }
+});
+dash.calc('alertas_resumo', {
+  title: 'Resumo dos alertas', description: 'Quantos empenhos parados por faixa de dias e quantas dotações recorrentes não fecham o mês.', inputs: ['parados', 'dotacoes'],
+  fn: (parados, dotacoes) => [{ d10: parados.filter(r => r.dias < 20).length, d20: parados.filter(r => r.dias >= 20 && r.dias < 30).length, d30: parados.filter(r => r.dias >= 30).length,
+    dot_mes: dotacoes.filter(r => r.recorrente === 'Sim' && Number(r.falta_fechar_mes) > 0).length }]
+});
+dash.calc('semana', {
+  title: 'Resumo da semana', description: 'Empenhos do último dia e dos últimos 7 dias, liquidações e pagamentos dos últimos 7 dias.', inputs: ['empenhos', 'liquidacoes', 'movimento'],
+  fn: (empenhos, liquidacoes, movimento) => { const ult = empenhos.map(r => r.data).sort().pop() || ''; const lim = new Date(new Date(ult + 'T12:00:00').getTime() - 6 * 864e5).toISOString().slice(0, 10);
+    const s = (rs, k) => rs.reduce((a, r) => a + Number(r[k] || 0), 0); const ed = empenhos.filter(r => r.data === ult), es = empenhos.filter(r => r.data >= lim);
+    const ls = liquidacoes.filter(r => r.data >= lim);
+    return [{ dia: ult.split('-').reverse().slice(0, 2).join('/'), emp_dia: s(ed, 'valor'), emp_dia_qtd: ed.length, emp_sem: s(es, 'valor'), emp_sem_qtd: es.length, liq_sem: s(ls, 'valor'), liq_sem_qtd: ls.length,
+      pag_sem: s(movimento.filter(r => r.data >= lim), 'pago') }]; }
+});
+dash.calc('por_modalidade', {
+  title: 'Empenhado por modalidade', description: 'Valor líquido e quantidade de empenhos por modalidade de licitação.', inputs: ['empenhos'],
+  fn: (empenhos) => { const m = {}; empenhos.forEach(r => { const k = r.modalidade || 'Não informado'; m[k] = m[k] || { modalidade: k, qtd: 0, valor: 0 }; m[k].qtd++; m[k].valor += Number(r.valor) - Number(r.anulado); });
+    return Object.values(m).filter(x => x.valor > 0).sort((a, b) => b.valor - a.valor); }
+});
+dash.calc('sem_licitacao', {
+  title: 'Sem licitação e dispensa por objeto', description: 'Empenhos sem licitação ou por dispensa de compras, serviços, obras e equipamentos (naturezas 3.3.90.30/32/36/39/40 e 4.4.90.51/52) somados por subelemento no ano.', inputs: ['empenhos'],
+  fn: (empenhos) => { const m = {}; empenhos.filter(r => /^(Sem licitação|Dispensa)/.test(r.modalidade) && /^(3\.3\.90\.(30|32|36|39|40)|4\.4\.90\.(51|52))/.test(r.natureza)).forEach(r => { const k = r.tipo_despesa || '—'; m[k] = m[k] || { tipo_despesa: k, qtd: 0, valor: 0 }; m[k].qtd++; m[k].valor += Number(r.valor) - Number(r.anulado); });
+    return Object.values(m).filter(x => x.valor > 0).sort((a, b) => b.valor - a.valor).slice(0, 15); }
+});
+
+// ---------- formatação e utilidades ----------
+const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const brl2 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
+const brlC = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 });
+const intF = new Intl.NumberFormat('pt-BR'); const qtdF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 }); const d1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const br = (d) => String(d || '').split('-').reverse().join('/');
+const nz = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const root = document.querySelector('#dash-root .pg'); const tip = document.getElementById('tip');
+const C0 = dash.colors[0], C1 = dash.colors[1], C2 = dash.colors[2];
+{ const rs = document.getElementById('dash-root').style; rs.setProperty('--acc', C0); rs.setProperty('--acc2', C1); rs.setProperty('--c0', C0); rs.setProperty('--c1', C1); rs.setProperty('--c2', C2); }
+document.querySelectorAll('#dash-root .sw0').forEach(e => e.style.background = C0);
+document.querySelectorAll('#dash-root .sw1').forEach(e => e.style.background = C1);
+document.querySelectorAll('#dash-root .sw2').forEach(e => e.style.background = C2);
+function showTip(ev, title, lines) { tip.replaceChildren(); const t = document.createElement('div'); t.className = 't'; t.textContent = title; tip.appendChild(t);
+  lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; tip.appendChild(d); }); tip.style.display = 'block';
+  const b = root.getBoundingClientRect(); let x = ev.clientX - b.left + 12; const y = ev.clientY - b.top + 12; if (x + tip.offsetWidth > b.width) x = Math.max(0, b.width - tip.offsetWidth - 4); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+const hideTip = () => { tip.style.display = 'none'; };
+function hoverable(el, fn) { el.addEventListener('mousemove', fn); el.addEventListener('mouseleave', hideTip); }
+function failed(el) { el.replaceChildren(); const w = document.createElement('div'); w.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;min-height:inherit;height:100%;width:100%;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)';
+  const dot = document.createElement('span'); dot.style.cssText = 'width:.375rem;height:.375rem;border-radius:50%;background:var(--color-bad)'; w.append(dot, document.createTextNode('Falha ao carregar')); el.appendChild(w); }
+function prep(id, el) { const d = dash.data(id); el.replaceChildren(); el.classList.toggle('dash-skeleton', d.status === 'loading'); if (d.status === 'error') failed(el); return d; }
+function barRow(parent, name, valueText, w, color, onTip, onClick) { const row = document.createElement('div'); row.className = 'row';
+  const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = name; const tr = document.createElement('div'); tr.className = 'track';
+  const b = document.createElement('div'); b.className = 'bar'; b.style.width = Math.max(w * 100, w > 0 ? 1 : 0) + '%'; b.style.background = color; tr.appendChild(b);
+  const v = document.createElement('span'); v.textContent = valueText; row.append(nm, tr, v); hoverable(row, onTip); if (onClick) { row.style.cursor = 'pointer'; row.addEventListener('click', onClick); } parent.appendChild(row); }
+function triCols(el, rows, label, title) { const max = Math.max(1, ...rows.map(r => Math.max(r.e, r.l, r.p)));
+  rows.forEach(r => { const col = document.createElement('div'); col.className = 'col'; const p = document.createElement('div'); p.className = 'pair';
+    [[r.e, C0], [r.l, C1], [r.p, C2]].forEach(([v, c]) => { const d = document.createElement('div'); d.style.background = c; d.style.height = (Math.max(0, v) / max * 100) + '%'; p.appendChild(d); });
+    const l = document.createElement('div'); l.className = 'clbl'; l.textContent = label(r); col.append(p, l);
+    hoverable(col, ev => showTip(ev, title(r), [`Empenhado: ${brl.format(r.e)}`, `Liquidado: ${brl.format(r.l)}`, `Pago: ${brl.format(r.p)}`])); el.appendChild(col); }); }
+function td(tr, txt, cls) { const c = document.createElement('td'); c.textContent = txt; if (cls) c.className = cls; tr.appendChild(c); return c; }
+function fornCell(tr, forn, sub) { const c = td(tr, forn); if (sub) { const s = document.createElement('div'); s.className = 'sub2'; s.textContent = sub; c.appendChild(s); } return c; }
+function emptyRow(tb, n, msg) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = n; c.textContent = msg; c.style.color = 'var(--color-fg-muted)'; tr.appendChild(c); tb.appendChild(tr); }
+function fillSelect(sel, values, label) { const cur = sel.value, first = sel.options[0]; sel.replaceChildren(first);
+  values.forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = label ? label(v) : v; sel.appendChild(o); }); if (values.includes(cur)) sel.value = cur; }
+const uniq = (rows, k) => [...new Set(rows.map(r => r[k]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'));
+const sitCls = (s) => s === 'Pago' ? 'ok' : s === 'Falta liquidar' ? 'late' : (s === 'Liquidado em parte' || s === 'Liquidado, a pagar') ? 'mid' : '';
+function pillCell(tr, txt, cls) { const c = document.createElement('td'); const sp = document.createElement('span'); sp.className = 'pill ' + (cls || 'neu'); sp.textContent = txt; c.appendChild(sp); tr.appendChild(c); return c; }
+
+// ---------- abas ----------
+function irPara(aba) { document.querySelectorAll('#dash-root .tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.go === aba)));
+  document.querySelectorAll('#dash-root .tab').forEach(s => { s.hidden = s.dataset.tab !== aba; }); dash.setLink(aba); }
+document.querySelectorAll('#dash-root .tabs button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.go)));
+document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListener('click', () => irPara(b.dataset.goto)));
+{ const h = location.hash.slice(1); if (document.querySelector(`#dash-root .tabs button[data-go="${h}"]`)) irPara(h); }
+
+// ---------- Empenhos ----------
+const NATUREZAS = { '3.1.90.04': 'Contratação por tempo determinado', '3.1.90.11': 'Vencimentos e vantagens fixas', '3.1.90.13': 'Obrigações patronais', '3.1.90.16': 'Outras despesas variáveis – pessoal', '3.1.90.94': 'Indenizações trabalhistas',
+  '3.3.50.43': 'Subvenções sociais', '3.3.71.70': 'Rateio – consórcio público', '3.3.90.08': 'Outros benefícios assistenciais', '3.3.90.14': 'Diárias – civil', '3.3.90.30': 'Material de consumo', '3.3.90.31': 'Premiações',
+  '3.3.90.32': 'Material, bem ou serviço p/ distribuição gratuita', '3.3.90.33': 'Passagens e locomoção', '3.3.90.35': 'Serviços de consultoria', '3.3.90.36': 'Outros serviços de terceiros – PF', '3.3.90.39': 'Outros serviços de terceiros – PJ',
+  '3.3.90.40': 'Serviços de TI e comunicação – PJ', '3.3.90.46': 'Auxílio-alimentação', '3.3.90.47': 'Obrigações tributárias e contributivas', '3.3.90.48': 'Outros auxílios a pessoas físicas', '3.3.90.91': 'Sentenças judiciais',
+  '3.3.90.92': 'Despesas de exercícios anteriores', '3.3.90.93': 'Indenizações e restituições', '4.4.90.51': 'Obras e instalações', '4.4.90.52': 'Equipamentos e material permanente', '4.4.90.61': 'Aquisição de imóveis', '4.6.90.91': 'Sentenças judiciais (dívida)' };
+const natLabel = (c) => `${c} – ${NATUREZAS[c] || 'Natureza ' + c}`;
+const busca = document.getElementById('busca'), soSaldo = document.getElementById('so-saldo'), fSit = document.getElementById('f-sit'), fFonte = document.getElementById('f-fonte'),
+  fNat = document.getElementById('f-nat'), fTipo = document.getElementById('f-tipo'), fSec = document.getElementById('f-sec'), fLic = document.getElementById('f-lic'), faixa = document.getElementById('faixa');
+let sortK = 'dias', sortDir = -1;
+function drawTable() {
+  const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
+  fillSelect(fSec, uniq(d.data, 'secretaria')); fillSelect(fLic, uniq(d.data, 'modalidade')); fillSelect(fNat, uniq(d.data, 'natureza'), natLabel);
+  fillSelect(fTipo, uniq(d.data.filter(r => !fNat.value || r.natureza === fNat.value), 'tipo_despesa'));
+  const dl = document.getElementById('l-fontes'); if (!dl.children.length) uniq(d.data, 'fonte').forEach(v => { const o = document.createElement('option'); o.value = v; dl.appendChild(o); });
+  const fq = nz(fFonte.value.trim()), fcode = /^\d+$/.test(fq) ? fq : null;
+  const okF = (r) => !fq || (fcode ? String(r.fonte).split(' - ')[0] === fcode : nz(r.fonte).includes(fq));
+  const q = nz(busca.value.trim()), f = faixa.value;
+  const okI = (dd) => !f || (f === '30' ? dd <= 30 : f === '90' ? dd > 30 && dd <= 90 : dd > 90);
+  const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
+    && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
+    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao].join(' ')).includes(q)))
+    .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); });
+  const s = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
+  document.getElementById('t-valor').textContent = brl.format(s('valor')); document.getElementById('t-falta').textContent = brl.format(s('falta_liquidar'));
+  document.getElementById('t-lnp').textContent = brl.format(s('liquidado_nao_pago')); document.getElementById('t-saldo').textContent = brl.format(s('saldo_a_pagar'));
+  document.getElementById('t-qtd').textContent = `Total da seleção · ${intF.format(rows.length)} empenhos`;
+  let extra = ''; const sf = dash.data('saldo_fontes');
+  if (fq && sf.status === 'ok') { const m = sf.data.filter(r => fcode ? String(r.codigo) === fcode : nz(r.fonte).includes(fq)); if (m.length) extra = ` · saldo oficial da fonte no portal: ${brl.format(m.reduce((a, r) => a + Number(r.saldo_a_pagar), 0))}`; }
+  document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
+  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
+    td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, r.tipo_despesa, r.fonte].filter(Boolean).join(' · '));
+    td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
+    td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); pillCell(tr, r.situacao, sitCls(r.situacao));
+    const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
+  if (rows.length > 500) emptyRow(tb, 9, `Mostrando 500 de ${intF.format(rows.length)} empenhos (o total acima considera todos). Refine a busca.`);
+  if (!rows.length) emptyRow(tb, 9, 'Nenhum empenho com esse filtro.');
+  document.querySelectorAll('#tbl th').forEach(th => th.removeAttribute('aria-sort'));
+  const th = [...document.querySelectorAll('#tbl th')].find(t => t.querySelector('button').dataset.k === sortK); if (th) th.setAttribute('aria-sort', sortDir > 0 ? 'ascending' : 'descending');
+}
+busca.addEventListener('input', drawTable); fFonte.addEventListener('input', drawTable);
+[soSaldo, fSit, fSec, fLic, faixa].forEach(e => e.addEventListener('change', drawTable));
+fNat.addEventListener('change', () => { const d = dash.data('emp'); if (d.status === 'ok' && fTipo.value) { const r = d.data.find(x => x.tipo_despesa === fTipo.value); if (r && r.natureza !== fNat.value) fTipo.value = ''; } drawTable(); });
+fTipo.addEventListener('change', () => { const d = dash.data('emp'); if (d.status === 'ok' && fTipo.value) { const r = d.data.find(x => x.tipo_despesa === fTipo.value && x.natureza); if (r) fNat.value = r.natureza; } drawTable(); });
+document.querySelectorAll('#tbl th button').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; if (sortK === k) sortDir *= -1; else { sortK = k; sortDir = ['dias', 'saldo_a_pagar', 'valor', 'data', 'empenho_ord', 'falta_liquidar', 'liquidado_nao_pago'].includes(k) ? -1 : 1; } drawTable(); }));
+function filtrarEmpenhos(o) { irPara('empenhos'); busca.value = o.busca || ''; fFonte.value = o.fonte || ''; fSit.value = ''; fNat.value = ''; fTipo.value = o.tipo || ''; fSec.value = ''; fLic.value = o.lic || ''; faixa.value = ''; soSaldo.checked = !!o.saldo; drawTable(); }
+
+// ---------- Alertas ----------
+const aBusca = document.getElementById('a-busca'), aFaixa = document.getElementById('a-faixa'), aSec = document.getElementById('a-sec'), aAcima = document.getElementById('a-acima');
+function drawAlertas() { const d = dash.data('parados'), tb = document.querySelector('#t-alertas tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
+  fillSelect(aSec, uniq(d.data, 'secretaria')); const q = nz(aBusca.value.trim()), min = Number(aFaixa.value);
+  const rows = d.data.filter(r => r.dias >= min && (!aSec.value || r.secretaria === aSec.value) && (!aAcima.checked || (r.media_tipo !== null && r.dias > r.media_tipo * 1.5 + 5)) && (!q || nz([r.empenho, r.fornecedor, r.produtos].join(' ')).includes(q)));
+  document.getElementById('a-total').textContent = `${intF.format(rows.length)} empenhos parados · ${brl.format(rows.reduce((a, r) => a + r.valor, 0))}`;
+  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho; td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data));
+    fornCell(tr, r.fornecedor, [r.produtos, r.tipo_despesa].filter(Boolean).join(' · ')); td(tr, r.secretaria, 'hide-sm'); td(tr, brl.format(r.valor), 'r');
+    td(tr, String(r.dias), 'r ' + (r.dias >= 30 ? 'late' : r.dias >= 20 ? 'mid' : '')); td(tr, r.media_tipo === null ? '—' : `${d1.format(r.media_tipo)} dias`, 'r hide-sm'); tb.appendChild(tr); });
+  if (!rows.length) emptyRow(tb, 7, 'Nenhum empenho parado com esse filtro.'); }
+aBusca.addEventListener('input', drawAlertas); [aFaixa, aSec, aAcima].forEach(e => e.addEventListener('change', drawAlertas));
+const tmPor = document.getElementById('tm-por'), tmLentos = document.getElementById('tm-lentos');
+function drawTempo() { const d = dash.data('tempo_medio'), tb = document.querySelector('#t-tempo tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
+  const rows = d.data.filter(r => r.por === tmPor.value && r.qtd >= 3).sort((a, b) => tmLentos.checked ? b.media - a.media : a.media - b.media);
+  rows.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; td(tr, r.grupo); td(tr, `${d1.format(r.media)} dias`, 'r'); td(tr, r.media_pagar === null ? '—' : `${d1.format(r.media_pagar)} dias`, 'r hide-sm'); td(tr, intF.format(r.qtd), 'r'); tb.appendChild(tr); });
+  if (!rows.length) emptyRow(tb, 4, 'Sem dados suficientes.'); }
+[tmPor, tmLentos].forEach(e => e.addEventListener('change', drawTempo));
+
+// ---------- Dotações ----------
+const dBusca = document.getElementById('d-busca'), dRec = document.getElementById('d-rec'), dSup = document.getElementById('d-sup');
+function drawDot() { const d = dash.data('dotacoes'), tb = document.querySelector('#t-dot tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(dBusca.value.trim());
+  const rows = d.data.filter(r => (!dRec.checked || r.recorrente === 'Sim') && (!dSup.checked || Number(r.total_suplementar) > 0) && (!q || nz([r.dotacao, r.tipo_despesa, r.subelemento, r.fonte, r.secretaria].join(' ')).includes(q)));
+  const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
+  document.getElementById('d-qtd').textContent = `Total · ${intF.format(rows.length)} dotações`; document.getElementById('d-t1').textContent = brl.format(s('falta_fechar_mes'));
+  document.getElementById('d-t2').textContent = brl.format(s('precisa_proximo_mes')); document.getElementById('d-t3').textContent = brl.format(s('total_suplementar'));
+  rows.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.dotacao; const c = td(tr, r.dotacao); c.style.fontWeight = '600'; const sc = document.createElement('div'); sc.className = 'sub2'; sc.textContent = r.secretaria; c.appendChild(sc);
+    fornCell(tr, `${r.subelemento} ${r.tipo_despesa}`, `${r.fonte} · último empenho ${r.ultimo_empenho} em ${br(r.data_ultimo)} · ${r.meses}`);
+    td(tr, brl.format(N(r.saldo_atual)), 'r'); td(tr, brl.format(N(r.media_mensal)), 'r'); td(tr, brl.format(N(r.empenhado_mes)), 'r hide-sm');
+    td(tr, N(r.falta_fechar_mes) ? brl.format(N(r.falta_fechar_mes)) : '—', 'r' + (N(r.falta_fechar_mes) ? ' late' : '')); td(tr, N(r.precisa_proximo_mes) ? brl.format(N(r.precisa_proximo_mes)) : '—', 'r' + (N(r.precisa_proximo_mes) ? ' mid' : ''));
+    td(tr, N(r.total_suplementar) ? brl.format(N(r.total_suplementar)) : '—', 'r').style.fontWeight = '600'; tb.appendChild(tr); });
+  if (!rows.length) emptyRow(tb, 8, 'Nenhuma dotação precisa de suplementação com esse filtro.'); }
+dBusca.addEventListener('input', drawDot); [dRec, dSup].forEach(e => e.addEventListener('change', drawDot));
+
+// ---------- Produtos ----------
+const pBusca = document.getElementById('p-busca'), pParte = document.getElementById('p-parte'), pSit = document.getElementById('p-sit');
+function drawProd() { const d = dash.data('itens'), tb = document.querySelector('#t-prod tbody'), tp = document.querySelector('#t-precos tbody'), res = document.getElementById('p-resumo'); tb.replaceChildren(); tp.replaceChildren(); if (d.status !== 'ok') return;
+  const q = nz(pBusca.value.trim()), f = pSit.value;
+  if (!q && !f) { res.textContent = `${intF.format(d.data.length)} itens disponíveis. Digite um produto para buscar.`; emptyRow(tp, 6, 'Faça uma busca para ver os preços.'); return; }
+  const palavra = (t) => nz(t).split(/[^a-z0-9]+/).some(w => w === q || w === q + 's' || w === q + 'es');
+  const casa = (r) => !q || (pParte.checked ? nz([r.produto, r.marca, r.fornecedor, r.empenho].join(' ')).includes(q) : (q.includes(' ') ? nz(r.produto).includes(q) : palavra(r.produto)) || String(r.empenho) === q);
+  const rows = d.data.filter(r => (!f || r.situacao === f) && casa(r));
+  const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
+  res.textContent = `${intF.format(rows.length)} itens · quantidade ${qtdF.format(s('quantidade'))} · valor ${brl2.format(s('valor_total'))} · pagos: ${intF.format(rows.filter(r => r.situacao === 'Pago').length)} · em aberto: ${intF.format(rows.filter(r => !['Pago', 'Anulado'].includes(r.situacao)).length)}`;
+  rows.slice(0, 400).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; const p = td(tr, r.produto); p.style.fontWeight = '600'; if (r.marca) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = r.marca; p.appendChild(m); }
+    td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl2.format(N(r.valor_unitario)), 'r'); td(tr, brl2.format(N(r.valor_total)), 'r hide-sm');
+    pillCell(tr, r.situacao, sitCls(r.situacao)); tb.appendChild(tr); });
+  if (rows.length > 400) emptyRow(tb, 9, `Mostrando 400 de ${intF.format(rows.length)} itens. Refine a busca.`); if (!rows.length) emptyRow(tb, 9, 'Nenhum item encontrado.');
+  const m = {}; rows.forEach(r => { const k = r.produto; const v = N(r.valor_unitario); if (!v) return; m[k] = m[k] || { n: 0, s: 0, min: v, max: v, quem: r.fornecedor }; m[k].n++; m[k].s += v; m[k].max = Math.max(m[k].max, v); if (v < m[k].min) { m[k].min = v; m[k].quem = r.fornecedor; } else if (v === m[k].min && m[k].n === 1) m[k].quem = r.fornecedor; });
+  Object.entries(m).sort((a, b) => b[1].n - a[1].n).slice(0, 60).forEach(([k, v]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, intF.format(v.n), 'r'); td(tr, brl2.format(v.min), 'r'); td(tr, brl2.format(v.s / v.n), 'r'); td(tr, brl2.format(v.max), 'r'); td(tr, v.quem, 'hide-sm'); tp.appendChild(tr); });
+  if (!Object.keys(m).length) emptyRow(tp, 6, 'Sem preços para a busca.'); }
+pBusca.addEventListener('input', drawProd); [pParte, pSit].forEach(e => e.addEventListener('change', drawProd));
+
+// ---------- Liquidações ----------
+const lBusca = document.getElementById('l-busca'), lNp = document.getElementById('l-np');
+function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySelector('#t-liq tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(lBusca.value.trim());
+  const rows = d.data.filter(r => (!lNp.checked || r.pago === 'Não') && (!q || nz([r.liquidacao, r.empenho, r.fornecedor, r.documento].join(' ')).includes(q)));
+  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.liquidacao; td(tr, r.liquidacao).style.fontWeight = '600'; td(tr, br(r.data)); td(tr, r.empenho);
+    fornCell(tr, r.fornecedor, r.tipo_despesa); td(tr, r.documento, 'hide-sm'); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : 'A pagar', r.pago === 'Sim' ? 'ok' : 'mid'); tb.appendChild(tr); });
+  if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
+lBusca.addEventListener('input', drawLiq); lNp.addEventListener('change', drawLiq);
+
+// ---------- desenho geral ----------
+function fillMarks(src, fmt) { const t = dash.data(src); document.querySelectorAll(`#dash-root [data-source="${src}"][data-field]`).forEach(el => {
+  if (t.status !== 'ok' || !t.data[0]) { el.textContent = '—'; el.classList.toggle('dash-skeleton', t.status === 'loading'); return; }
+  el.classList.remove('dash-skeleton'); const k = el.dataset.field, v = t.data[0][k]; el.textContent = fmt[k] ? fmt[k](v) : (typeof v === 'number' ? intF.format(v) : String(v)); }); }
+dash.onData(() => {
+  fillMarks('info', {}); fillMarks('alertas_resumo', {}); 
+  const c = (v) => brlC.format(v); fillMarks('totais', { empenhado: c, estornado: c, liquidado: c, pago: c, saldo: c, falta: c, lnp: c });
+  fillMarks('semana', { emp_dia: c, emp_sem: c, liq_sem: c, pag_sem: c });
+  const mc = document.getElementById('mes-chart'), m = prep('por_mes', mc);
+  if (m.status === 'ok') triCols(mc, m.data.map(r => ({ e: r.empenhado, l: r.liquidado, p: r.pago, k: r.mes })), r => meses[Number(r.k.slice(5, 7)) - 1], r => `${meses[Number(r.k.slice(5, 7)) - 1]}/${r.k.slice(0, 4)}`);
+  const dc = document.getElementById('dia-chart'), d = prep('movimento', dc);
+  if (d.status === 'ok') triCols(dc, d.data.slice().sort((a, b) => a.data < b.data ? -1 : 1).slice(-15).map(r => ({ e: N(r.empenhado_liquido), l: N(r.liquidado), p: N(r.pago), k: r.data })), r => r.k.slice(8, 10), r => br(r.k));
+  const fc = document.getElementById('fonte-chart'), fd = prep('saldo_fontes', fc);
+  if (fd.status === 'ok') { const rs = fd.data.map(r => ({ ...r, v: N(r.saldo_a_pagar) })).sort((a, b) => b.v - a.v); const max = Math.max(1, ...rs.map(r => r.v));
+    rs.forEach(r => barRow(fc, r.fonte, brlC.format(r.v), r.v / max, C0, ev => showTip(ev, r.fonte, [brl.format(r.v)]), () => filtrarEmpenhos({ fonte: String(r.codigo), saldo: true }))); }
+  const mo = document.getElementById('mod-chart'), md = prep('por_modalidade', mo);
+  if (md.status === 'ok') { const max = Math.max(1, ...md.data.map(r => r.valor)); md.data.forEach(r => barRow(mo, r.modalidade, brlC.format(r.valor), r.valor / max, C0, ev => showTip(ev, r.modalidade, [`${intF.format(r.qtd)} empenhos`, brl.format(r.valor)]), () => filtrarEmpenhos({ lic: r.modalidade }))); }
+  const sl = document.getElementById('semlic-chart'), sd = prep('sem_licitacao', sl);
+  if (sd.status === 'ok') { const max = Math.max(1, ...sd.data.map(r => r.valor)); sd.data.forEach(r => barRow(sl, r.tipo_despesa, brlC.format(r.valor), r.valor / max, 'var(--color-warn)', ev => showTip(ev, r.tipo_despesa, [`${intF.format(r.qtd)} empenhos`, brl.format(r.valor)]), () => filtrarEmpenhos({ tipo: r.tipo_despesa }))); }
+  drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq();
+});
+
+</script>
+</body>
+</html>
