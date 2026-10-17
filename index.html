@@ -26,8 +26,9 @@
   --color-ok:#5fbf85;--color-warn:#e2a64a;--color-bad:#e5675a;--cds-surface-popover:#2a2824;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.5);
   --serie0:#6fa8d6;--serie1:#4cc2b3;--serie2:#f0b45a;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
-#dash-root{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
+#dash-root{max-width:1320px;margin:0 auto;padding:0;overflow:hidden}
+@media (min-width:1360px){#dash-root{margin:16px auto}}
 #dash-root a{color:var(--serie0)}
 .dash-skeleton{color:transparent!important;background:linear-gradient(90deg,color-mix(in srgb,var(--color-fg) 6%,transparent),color-mix(in srgb,var(--color-fg) 12%,transparent),color-mix(in srgb,var(--color-fg) 6%,transparent));background-size:200% 100%;animation:skel 1.2s infinite linear;border-radius:6px;min-height:1em}
 @keyframes skel{to{background-position:-200% 0}}
@@ -120,6 +121,135 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 @media (max-width:640px){#dash-root .hide-sm{display:none} #dash-root .hero{padding:var(--cds-pad-lg)}}
 #dash-root [data-dash-source-state=refreshing]{opacity:.5;transition:opacity var(--cds-dur-slow)}
 #dash-root [data-dash-source-state=empty]{color:transparent}
+/* ===== Tema "Power BI" ===== */
+#dash-root{--pbi-bg:#eef0f3;--pbi-card:#fff;--pbi-ink:#252423;--pbi-mut:#605e5c;--pbi-line:#e1dfdd;--pbi-nav:#1b2a47;--pbi-nav2:#24365a;--pbi-yel:#f2c811;
+  --pbi-blue:#2b6cc4;--pbi-navy:#1f4e8c;--pbi-orange:#5c9de0;--pbi-purple:#d9822b;--pbi-pink:#e044a7;
+  --color-fg:var(--pbi-ink);--color-fg-muted:var(--pbi-mut);--color-panel:var(--pbi-card);--color-bg:#fff;--color-border-line:var(--pbi-line);
+  --color-ok:#1aab40;--color-warn:#d9822b;--color-bad:#d64554;--cds-surface-popover:#fff;--cds-border:var(--pbi-line);--cds-text-secondary:var(--pbi-mut);
+  --cds-shadow-popover:0 6px 18px rgba(0,0,0,.18);--acc:var(--pbi-blue);--acc2:var(--pbi-navy);--r:4px;
+  --font-anthropic-sans:"Segoe UI","Segoe UI Web (West European)",-apple-system,BlinkMacSystemFont,Roboto,"Helvetica Neue",Inter,sans-serif;--font-anthropic-serif:var(--font-anthropic-sans);
+  background:var(--pbi-bg);color:var(--pbi-ink);color-scheme:light;border-radius:6px}
+#dash-root .pg{gap:14px;padding:0 0 14px;font-size:14px}
+/* faixa de título */
+#dash-root .hero{background:linear-gradient(90deg,var(--pbi-nav) 0%,var(--pbi-nav2) 100%);border:0;border-radius:0;padding:18px 22px;color:#fff;box-shadow:inset 0 -3px 0 var(--pbi-yel)}
+#dash-root .hero::after{display:none}
+#dash-root .hero .eyebrow{color:#aebbd6;letter-spacing:.12em}
+#dash-root .hero h1{color:#fff;font-weight:600;font-size:1.55rem;letter-spacing:-.01em}
+#dash-root .hero .lead{color:#d5ddec;max-width:none}
+/* navegação de páginas */
+#dash-root .tabs{position:sticky;top:0;border-radius:0;background:var(--pbi-nav);border:0;padding:4px 10px;gap:2px;backdrop-filter:none;margin:-14px 0 0}
+#dash-root .tabs button{border-radius:0;color:#c9d3e6;padding:11px 14px 9px;border-bottom:3px solid transparent;font-size:13px;display:flex;align-items:center;gap:8px}
+#dash-root .tabs button:hover{background:rgba(255,255,255,.07);color:#fff}
+#dash-root .tabs button[aria-selected=true]{background:rgba(255,255,255,.1);color:#fff;border-bottom-color:var(--pbi-yel);font-weight:600}
+#dash-root .tabs button::before{content:"";width:16px;height:16px;flex:none;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+#dash-root .tabs button[data-go=geral]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=alertas]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2zm1 15h-2v2h2v-2zm0-7h-2v5h2v-5z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=dotacoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10h-10V2zm2 0v8h8a10 10 0 0 0-8-8z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=empenhos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 4h18v3H3zM3 10h18v3H3zM3 16h18v3H3z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=produtos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=semana]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 2h2v2h6V2h2v2h4v18H3V4h4V2zm12 8H5v10h14V10z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=compras]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20V10h3v10H4zm6 0V4h3v16h-3zm6 0v-7h3v7h-3z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=conferencia]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m9 16.2-4.2-4.2-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E")}
+#dash-root .tab,#dash-root .foot{padding:0 14px}
+/* visuais */
+#dash-root .card{border:1px solid var(--pbi-line);border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:14px 16px}
+#dash-root .card h2{font-size:15px;font-weight:600;color:var(--pbi-ink)}
+#dash-root .card h2::before{display:none}
+#dash-root .note{color:var(--pbi-mut);font-size:12px}
+/* cartões de KPI */
+#dash-root .tiles{gap:12px}
+#dash-root .card.tile{padding:14px 16px 14px 20px}
+#dash-root .card.tile::before{left:0;top:0;bottom:0;right:auto;width:5px;height:auto}
+#dash-root .tiles .card.tile:nth-child(1){--k:var(--pbi-blue)} #dash-root .tiles .card.tile:nth-child(2){--k:var(--pbi-navy)} #dash-root .tiles .card.tile:nth-child(3){--k:var(--pbi-orange)} #dash-root .tiles .card.tile:nth-child(4){--k:var(--pbi-purple)}
+#dash-root .tile .lbl{font-size:11.5px;font-weight:600;letter-spacing:.04em;color:var(--pbi-mut)}
+#dash-root .tile .num{font-weight:600;font-size:2rem;letter-spacing:-.02em;color:var(--pbi-ink);margin:6px 0 4px}
+#dash-root .tile .sub{font-size:12px}
+/* cartões de alerta */
+#dash-root .alert{gap:12px}
+#dash-root .alert button{background:#fff;border:1px solid var(--pbi-line);border-left:5px solid var(--t);border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.08);padding:12px 16px}
+#dash-root .alert button:nth-child(1){--t:var(--pbi-blue)} #dash-root .alert button:nth-child(2){--t:var(--color-warn)}
+#dash-root .alert button:hover{transform:none;box-shadow:0 4px 14px rgba(0,0,0,.14)}
+#dash-root .alert .num{font-weight:600;font-size:1.9rem}
+#dash-root .alert .num:not(.mid):not(.late){color:var(--pbi-blue)}
+/* gráficos */
+#dash-root .cols{height:230px;gap:4px;background:repeating-linear-gradient(to top,transparent 0,transparent calc(25% - 1px),#edebe9 calc(25% - 1px),#edebe9 25%);border-bottom:1px solid #c8c6c4}
+#dash-root .pair div{border-radius:0;max-width:16px}
+#dash-root .col:hover{background:rgba(17,141,255,.07);border-radius:0}
+#dash-root .track{height:14px;border-radius:0;background:#f3f2f1}
+#dash-root .bar{border-radius:0}
+#dash-root .row{border-radius:0;font-size:12.5px}
+#dash-root .sw{border-radius:2px}
+#dash-root .tip{border-radius:3px;border-left:3px solid var(--pbi-blue)}
+#dash-root .donut{display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;min-height:220px}
+#dash-root .donut svg{width:190px;height:190px;flex:none}
+#dash-root .donut .lg{display:flex;flex-direction:column;gap:10px;font-size:13px;min-width:12rem}
+#dash-root .donut .lg b{display:block;font-size:1.25rem;font-weight:600;color:var(--pbi-ink)}
+#dash-root .donut .lg span{color:var(--pbi-mut);font-size:12px}
+/* tabelas tipo matriz */
+#dash-root .tblwrap{border-radius:2px;border:1px solid var(--pbi-line)}
+#dash-root table{font-size:12.5px}
+#dash-root th{background:#fff;color:var(--pbi-ink);text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:600;border-bottom:2px solid #8a8886}
+#dash-root tbody tr:nth-child(even){background:#faf9f8}
+#dash-root tbody tr:hover{background:#deecf9}
+#dash-root td{padding:7px 10px;border-bottom:1px solid #f3f2f1}
+#dash-root tfoot td{background:#fff;border-top:2px solid #8a8886;font-weight:700}
+#dash-root .pill{border-radius:2px}
+/* segmentações (filtros) */
+#dash-root .tools{background:#faf9f8;border:1px solid var(--pbi-line);padding:8px;border-radius:2px}
+#dash-root .tools input[type=search],#dash-root .tools select{border-radius:2px;border:1px solid #c8c6c4;background-color:#fff;padding:7px 10px}
+#dash-root .tools input[type=search]{padding-left:32px}
+#dash-root .tools input:focus,#dash-root .tools select:focus{border-color:var(--pbi-blue);box-shadow:0 0 0 1px var(--pbi-blue)}
+#dash-root .tools label{border-radius:2px;background:#fff;border:1px solid #c8c6c4}
+#dash-root .foot{color:var(--pbi-mut)}
+/* tela grande: menu lateral como no Power BI */
+@media (min-width:1100px){
+  #dash-root .pg{display:grid;grid-template-columns:200px minmax(0,1fr);column-gap:0;row-gap:14px;padding-bottom:16px}
+  #dash-root .hero{grid-column:1/-1}
+  #dash-root .tabs{grid-column:1;grid-row:2/span 2;align-self:stretch;flex-direction:column;margin:-14px 0 -16px;padding:10px 0;top:0;overflow:visible}
+  #dash-root .tabs button{border-bottom:0;border-left:4px solid transparent;padding:12px 16px;font-size:13.5px}
+  #dash-root .tabs button[aria-selected=true]{border-left-color:var(--pbi-yel)}
+  #dash-root .pg>.tab,#dash-root .pg>.foot{grid-column:2;padding:0 16px}
+}
+
+/* azul + cantos arredondados (modelo enviado) */
+#dash-root .card,#dash-root .alert button{border-radius:12px}
+#dash-root .card{box-shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06)}
+#dash-root .tools{border-radius:10px}
+#dash-root .tools input[type=search],#dash-root .tools select,#dash-root .tools label{border-radius:8px}
+#dash-root .tblwrap{border-radius:10px}
+#dash-root .pair div{border-radius:3px 3px 0 0;max-width:22px}
+#dash-root .cols{position:relative;padding-left:46px;height:250px}
+#dash-root .yax{position:absolute;left:0;width:40px;text-align:right;font-size:10.5px;color:var(--pbi-mut);transform:translateY(50%);font-variant-numeric:tabular-nums}
+#dash-root .tip{background:#1f2937;color:#fff;border:0;border-radius:6px}
+#dash-root .tip .t{color:#fff;font-weight:600}
+#dash-root .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+#dash-root .acoes button,#dash-root .btn2{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;padding:8px 14px}
+#dash-root .acoes button{background:#fff;color:var(--pbi-nav);border:0;display:inline-flex;align-items:center;gap:8px}
+#dash-root .acoes button::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h12v5H6zM4 9h16a2 2 0 0 1 2 2v6h-4v5H6v-5H2v-6a2 2 0 0 1 2-2zm4 8v3h8v-3H8z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h12v5H6zM4 9h16a2 2 0 0 1 2 2v6h-4v5H6v-5H2v-6a2 2 0 0 1 2-2zm4 8v3h8v-3H8z'/%3E%3C/svg%3E") center/contain no-repeat}
+#dash-root .acoes button:hover{background:var(--pbi-yel)}
+#dash-root .btn2{background:#fff;color:var(--pbi-navy);border:1px solid #b9cbe6}
+#dash-root .btn2:hover{background:#eaf2fc}
+#dash-root .linha-total{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+#print-head{display:none}
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  html,body{background:#fff!important}
+  #dash-root{background:#fff!important;max-width:none!important;padding:0!important}
+  #dash-root .pg{display:block!important;padding:0}
+  #dash-root .tabs,#dash-root .acoes,#dash-root .tools,#dash-root .btn2,#dash-root .tip,#dash-root .hero,#dash-root .foot a{display:none!important}
+  #print-head{display:block;border-bottom:2px solid #1f4e8c;padding:0 0 6px;margin:0 0 10px;font-size:11px;color:#333}
+  #print-head .ph-t{font-size:16px;font-weight:700;color:#1b2a47}
+  #dash-root .tab{padding:0!important;gap:10px}
+  #dash-root .card,#dash-root .alert button{box-shadow:none!important;border:1px solid #ccc;break-inside:avoid}
+  #dash-root .tblwrap{max-height:none!important;overflow:visible!important;border:0}
+  #dash-root th{position:static}
+  #dash-root tfoot td{position:static}
+  #dash-root table{font-size:10px}
+  #dash-root td,#dash-root th{padding:4px 6px}
+  #dash-root tbody tr:nth-child(even){background:#f5f5f5!important}
+  #dash-root .hide-sm{display:table-cell!important}
+  #dash-root *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 
 </style>
 </head>
@@ -130,7 +260,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
 <div class="pg">
   <header class="hero">
     <div class="eyebrow">Prefeitura Municipal de Leópolis · Execução da despesa</div>
-    <h1 id="titulo">Empenhos e liquidações — 2026</h1>
+    <div class="hero-top"><h1 id="titulo">Empenhos e liquidações — 2026</h1><div class="acoes"><button type="button" id="btn-print">Imprimir esta página</button></div></div>
     <p class="lead" data-source="info" data-field="resumo" data-row="0">—</p>
   </header>
 
@@ -174,7 +304,19 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
       <div class="card" id="fontes">
         <h2>Saldo a pagar por fonte de recurso</h2>
         <p class="note">Saldo oficial do portal. Toque numa fonte para ver os empenhos dela.</p>
-        <div id="fonte-chart" data-source="saldo_fontes" style="min-height:300px"></div>
+        <div id="fonte-chart" data-source="saldo_fontes" style="min-height:300px;max-height:330px;overflow:auto;padding-right:6px"></div>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="card" id="composicao">
+        <h2>Composição do saldo a pagar</h2>
+        <p class="note">Quanto do saldo ainda falta liquidar e quanto já foi liquidado e espera pagamento.</p>
+        <div id="donut" class="donut" data-source="totais"></div>
+      </div>
+      <div class="card" id="topforn">
+        <h2>10 fornecedores com maior saldo a pagar</h2>
+        <p class="note">Soma do saldo a pagar dos empenhos de cada fornecedor. Toque para ver os empenhos.</p>
+        <div id="forn-chart" data-source="top_forn" style="min-height:220px"></div>
       </div>
     </section>
   </section>
@@ -242,7 +384,7 @@ html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:
         <select id="f-lic"><option value="">Todas as modalidades</option></select>
         <select id="faixa"><option value="">Todas as idades</option><option value="30">Até 30 dias</option><option value="90">31 a 90 dias</option><option value="91">Mais de 90 dias</option></select>
       </div>
-      <p class="note" id="filtro-total"></p>
+      <div class="linha-total"><p class="note" id="filtro-total"></p><button type="button" class="btn2" id="btn-csv">Exportar seleção (CSV)</button></div>
       <div class="tblwrap"><table id="tbl" data-source="emp" data-row-key="empenho"><thead><tr>
         <th data-field="empenho"><button data-k="empenho_ord">Empenho</button></th>
         <th data-field="data"><button data-k="data">Data</button></th>
@@ -411,6 +553,11 @@ dash.calc('semana', {
     return [{ dia: ult.split('-').reverse().slice(0, 2).join('/'), emp_dia: s(ed, 'valor'), emp_dia_qtd: ed.length, emp_sem: s(es, 'valor'), emp_sem_qtd: es.length, liq_sem: s(ls, 'valor'), liq_sem_qtd: ls.length,
       pag_sem: s(movimento.filter(r => r.data >= lim), 'pago') }]; }
 });
+dash.calc('top_forn', {
+  title: 'Maiores saldos a pagar por fornecedor', description: 'Os 10 fornecedores com maior soma de saldo a pagar nos empenhos.', inputs: ['empenhos'],
+  fn: (empenhos) => { const m = {}; empenhos.forEach(r => { const v = Number(r.saldo_a_pagar || 0); if (v > 0) { const k = r.fornecedor || '—'; m[k] = m[k] || { fornecedor: k, saldo: 0, qtd: 0 }; m[k].saldo += v; m[k].qtd++; } });
+    return Object.values(m).sort((a, b) => b.saldo - a.saldo).slice(0, 10); }
+});
 dash.calc('por_modalidade', {
   title: 'Empenhado por modalidade', description: 'Valor líquido e quantidade de empenhos por modalidade de licitação.', inputs: ['empenhos'],
   fn: (empenhos) => { const m = {}; empenhos.forEach(r => { const k = r.modalidade || 'Não informado'; m[k] = m[k] || { modalidade: k, qtd: 0, valor: 0 }; m[k].qtd++; m[k].valor += Number(r.valor) - Number(r.anulado); });
@@ -431,7 +578,7 @@ const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'o
 const br = (d) => String(d || '').split('-').reverse().join('/');
 const nz = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const root = document.querySelector('#dash-root .pg'); const tip = document.getElementById('tip');
-const C0 = dash.colors[0], C1 = dash.colors[1], C2 = dash.colors[2];
+const C0 = '#1F4E8C', C1 = '#3D85D8', C2 = '#93C0EE';
 { const rs = document.getElementById('dash-root').style; rs.setProperty('--acc', C0); rs.setProperty('--acc2', C1); rs.setProperty('--c0', C0); rs.setProperty('--c1', C1); rs.setProperty('--c2', C2); }
 document.querySelectorAll('#dash-root .sw0').forEach(e => e.style.background = C0);
 document.querySelectorAll('#dash-root .sw1').forEach(e => e.style.background = C1);
@@ -449,6 +596,7 @@ function barRow(parent, name, valueText, w, color, onTip, onClick) { const row =
   const b = document.createElement('div'); b.className = 'bar'; b.style.width = Math.max(w * 100, w > 0 ? 1 : 0) + '%'; b.style.background = color; tr.appendChild(b);
   const v = document.createElement('span'); v.textContent = valueText; row.append(nm, tr, v); hoverable(row, onTip); if (onClick) { row.style.cursor = 'pointer'; row.addEventListener('click', onClick); } parent.appendChild(row); }
 function triCols(el, rows, label, title) { const max = Math.max(1, ...rows.map(r => Math.max(r.e, r.l, r.p)));
+  [1, .75, .5, .25, 0].forEach(f => { const a = document.createElement('span'); a.className = 'yax'; a.style.bottom = `calc(${f} * (100% - 22px) + 22px)`; a.textContent = brlC.format(max * f).replace('R$', '').trim(); el.appendChild(a); });
   rows.forEach(r => { const col = document.createElement('div'); col.className = 'col'; const p = document.createElement('div'); p.className = 'pair';
     [[r.e, C0], [r.l, C1], [r.p, C2]].forEach(([v, c]) => { const d = document.createElement('div'); d.style.background = c; d.style.height = (Math.max(0, v) / max * 100) + '%'; p.appendChild(d); });
     const l = document.createElement('div'); l.className = 'clbl'; l.textContent = label(r); col.append(p, l);
@@ -499,6 +647,7 @@ function drawTable() {
   let extra = ''; const sf = dash.data('saldo_fontes');
   if (fq && sf.status === 'ok') { const m = sf.data.filter(r => fcode ? String(r.codigo) === fcode : nz(r.fonte).includes(fq)); if (m.length) extra = ` · saldo oficial da fonte no portal: ${brl.format(m.reduce((a, r) => a + Number(r.saldo_a_pagar), 0))}`; }
   document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
+  window.__empRows = rows;
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
     td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, r.tipo_despesa, r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
@@ -577,6 +726,21 @@ function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySele
   if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
 lBusca.addEventListener('input', drawLiq); lNp.addEventListener('change', drawLiq);
 
+// ---------- imprimir e exportar ----------
+function cabecalhoImpressao() { let h = document.getElementById('print-head'); if (!h) { h = document.createElement('div'); h.id = 'print-head'; root.insertBefore(h, root.firstChild); }
+  const aba = document.querySelector('#dash-root .tabs button[aria-selected=true]'), sec = document.querySelector('#dash-root .tab:not([hidden])'); const filtros = [];
+  if (sec) sec.querySelectorAll('.tools input[type=search], .tools select').forEach(el => { if (el.value && !(el.tagName === 'SELECT' && el.selectedIndex === 0 && el.id !== 'a-faixa' && el.id !== 'tm-por')) filtros.push(el.tagName === 'SELECT' ? el.options[el.selectedIndex].text : '“' + el.value + '”'); });
+  if (sec) sec.querySelectorAll('.tools label input[type=checkbox]:checked').forEach(el => filtros.push(el.parentElement.textContent.trim()));
+  const info = document.querySelector('#dash-root .lead'); h.replaceChildren();
+  const t = document.createElement('div'); t.className = 'ph-t'; t.textContent = 'Prefeitura Municipal de Leópolis — ' + (aba ? aba.textContent.trim() : 'Painel'); const s1 = document.createElement('div'); s1.textContent = (info ? info.textContent : '') + ' · Impresso em ' + new Date().toLocaleString('pt-BR');
+  const s2 = document.createElement('div'); s2.textContent = 'Filtros: ' + (filtros.length ? filtros.join(' · ') : 'nenhum'); h.append(t, s1, s2); }
+window.addEventListener('beforeprint', cabecalhoImpressao);
+document.getElementById('btn-print').addEventListener('click', () => { cabecalhoImpressao(); try { window.print(); } catch (e) { alert('A impressão não está disponível aqui. Abra o painel no navegador.'); } });
+document.getElementById('btn-csv').addEventListener('click', () => { const rows = window.__empRows || []; const cols = ['empenho', 'data', 'fornecedor', 'secretaria', 'modalidade', 'natureza', 'tipo_despesa', 'fonte', 'valor', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'produtos'];
+  const esc = (v) => { const t = typeof v === 'number' ? String(v).replace('.', ',') : String(v ?? ''); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  const csv = '\ufeff' + cols.join(';') + '\n' + rows.map(r => cols.map(c => esc(r[c])).join(';')).join('\n');
+  try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'empenhos_selecao.csv'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { alert('Não foi possível baixar aqui.'); } });
+
 // ---------- desenho geral ----------
 function fillMarks(src, fmt) { const t = dash.data(src); document.querySelectorAll(`#dash-root [data-source="${src}"][data-field]`).forEach(el => {
   if (t.status !== 'ok' || !t.data[0]) { el.textContent = '—'; el.classList.toggle('dash-skeleton', t.status === 'loading'); return; }
@@ -596,6 +760,21 @@ dash.onData(() => {
   if (md.status === 'ok') { const max = Math.max(1, ...md.data.map(r => r.valor)); md.data.forEach(r => barRow(mo, r.modalidade, brlC.format(r.valor), r.valor / max, C0, ev => showTip(ev, r.modalidade, [`${intF.format(r.qtd)} empenhos`, brl.format(r.valor)]), () => filtrarEmpenhos({ lic: r.modalidade }))); }
   const sl = document.getElementById('semlic-chart'), sd = prep('sem_licitacao', sl);
   if (sd.status === 'ok') { const max = Math.max(1, ...sd.data.map(r => r.valor)); sd.data.forEach(r => barRow(sl, r.tipo_despesa, brlC.format(r.valor), r.valor / max, 'var(--color-warn)', ev => showTip(ev, r.tipo_despesa, [`${intF.format(r.qtd)} empenhos`, brl.format(r.valor)]), () => filtrarEmpenhos({ tipo: r.tipo_despesa }))); }
+  const dn = document.getElementById('donut'), tt = prep('totais', dn);
+  if (tt.status === 'ok' && tt.data[0]) { const t = tt.data[0], parts = [['Falta liquidar', t.falta, C0], ['Liquidado, a pagar', t.lnp, C2]], tot = parts.reduce((a, p) => a + Math.max(0, p[1]), 0) || 1;
+    const NS = 'http://www.w3.org/2000/svg', sv = document.createElementNS(NS, 'svg'); sv.setAttribute('viewBox', '0 0 42 42'); let off = 25;
+    const bg = document.createElementNS(NS, 'circle'); [['cx', 21], ['cy', 21], ['r', 15.915], ['fill', 'none'], ['stroke', '#f3f2f1'], ['stroke-width', 7]].forEach(([k, v]) => bg.setAttribute(k, v)); sv.appendChild(bg);
+    parts.forEach(([nome, v, cor]) => { const pc = Math.max(0, v) / tot * 100, c = document.createElementNS(NS, 'circle');
+      [['cx', 21], ['cy', 21], ['r', 15.915], ['fill', 'none'], ['stroke', cor], ['stroke-width', 7], ['stroke-dasharray', pc + ' ' + (100 - pc)], ['stroke-dashoffset', off]].forEach(([k, val]) => c.setAttribute(k, val));
+      off = (off - pc + 100) % 100; c.style.cursor = 'pointer'; hoverable(c, ev => showTip(ev, nome, [brl.format(v), d1.format(pc) + '% do saldo'])); sv.appendChild(c); });
+    const tx = document.createElementNS(NS, 'text'); [['x', 21], ['y', 20.5], ['text-anchor', 'middle'], ['font-size', 3.9], ['font-weight', 600], ['fill', '#252423']].forEach(([k, v]) => tx.setAttribute(k, v)); tx.textContent = brlC.format(t.falta + t.lnp); sv.appendChild(tx);
+    const t2 = document.createElementNS(NS, 'text'); [['x', 21], ['y', 25.5], ['text-anchor', 'middle'], ['font-size', 2.8], ['fill', '#605e5c']].forEach(([k, v]) => t2.setAttribute(k, v)); t2.textContent = 'saldo a pagar'; sv.appendChild(t2);
+    const lg = document.createElement('div'); lg.className = 'lg';
+    parts.forEach(([nome, v, cor]) => { const it = document.createElement('div'); const sw = document.createElement('i'); sw.className = 'sw'; sw.style.background = cor; const sp = document.createElement('span'); sp.append(sw, document.createTextNode(nome));
+      const b = document.createElement('b'); b.textContent = brl.format(v); const pc = document.createElement('span'); pc.textContent = d1.format(Math.max(0, v) / tot * 100) + '%'; it.append(sp, b, pc); lg.appendChild(it); });
+    dn.append(sv, lg); }
+  const tf = document.getElementById('forn-chart'), td2 = prep('top_forn', tf);
+  if (td2.status === 'ok') { const max = Math.max(1, ...td2.data.map(r => r.saldo)); td2.data.forEach(r => barRow(tf, r.fornecedor, brlC.format(r.saldo), r.saldo / max, C1, ev => showTip(ev, r.fornecedor, [brl.format(r.saldo), `${intF.format(r.qtd)} empenhos com saldo`]), () => filtrarEmpenhos({ busca: r.fornecedor, saldo: true }))); }
   drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq();
 });
 

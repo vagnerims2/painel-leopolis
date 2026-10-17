@@ -26,8 +26,9 @@
   --color-ok:#5fbf85;--color-warn:#e2a64a;--color-bad:#e5675a;--cds-surface-popover:#2a2824;--cds-shadow-popover:0 8px 28px rgba(0,0,0,.5);
   --serie0:#6fa8d6;--serie1:#4cc2b3;--serie2:#f0b45a;color-scheme:dark}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--color-bg);color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
-#dash-root{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
+#dash-root{max-width:1320px;margin:0 auto;padding:0;overflow:hidden}
+@media (min-width:1360px){#dash-root{margin:16px auto}}
 #dash-root a{color:var(--serie0)}
 .dash-skeleton{color:transparent!important;background:linear-gradient(90deg,color-mix(in srgb,var(--color-fg) 6%,transparent),color-mix(in srgb,var(--color-fg) 12%,transparent),color-mix(in srgb,var(--color-fg) 6%,transparent));background-size:200% 100%;animation:skel 1.2s infinite linear;border-radius:6px;min-height:1em}
 @keyframes skel{to{background-position:-200% 0}}
