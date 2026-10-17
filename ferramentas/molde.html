@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--CAB-->
 <title>Painel de Empenhos — Leópolis</title>
 <meta name="description" content="Empenhos, liquidações e pagamentos da Prefeitura Municipal de Leópolis-PR, com dados do Portal da Transparência.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f85'/%3E%3Crect x='7' y='17' width='4' height='8' fill='white'/%3E%3Crect x='14' y='11' width='4' height='14' fill='white'/%3E%3Crect x='21' y='7' width='4' height='18' fill='white'/%3E%3C/svg%3E">
@@ -67,8 +68,8 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
     setLink(aba) { try { history.replaceState(null, '', '#' + aba); } catch (e) {} }
   };
   const v = Date.now();
-  fetch('data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  Promise.all(FONTES.map(n => fetch('data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); })))
+  fetch('__DADOS__atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
+  Promise.all(FONTES.map(n => fetch('__DADOS__' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); })))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
     .finally(() => ouvintes.forEach(f => f()));
 })();

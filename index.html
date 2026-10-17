@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Painel de Empenhos — Leópolis</title>
+
+<title>Despesas do Município — Leópolis</title>
 <meta name="description" content="Empenhos, liquidações e pagamentos da Prefeitura Municipal de Leópolis-PR, com dados do Portal da Transparência.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23255f85'/%3E%3Crect x='7' y='17' width='4' height='8' fill='white'/%3E%3Crect x='14' y='11' width='4' height='14' fill='white'/%3E%3Crect x='21' y='7' width='4' height='18' fill='white'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -251,6 +252,13 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
   #dash-root *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
+/* versão para o cidadão: só informação geral */
+#dash-root .tabs button[data-go=alertas],#dash-root .tabs button[data-go=dotacoes],#dash-root .tabs button[data-go=semana],
+#dash-root #alertas-resumo,#dash-root #composicao,#dash-root .tab[data-tab=alertas],#dash-root .tab[data-tab=dotacoes],#dash-root .tab[data-tab=semana],
+#dash-root #faixa,#dash-root .tiles .card.tile:nth-child(4) .sub{display:none!important}
+#tbl th:nth-child(5),#tbl tbody td:nth-child(5),#tbl th:nth-child(6),#tbl tbody td:nth-child(6),#tbl th:nth-child(9),#tbl tbody td:nth-child(9),
+#tbl tfoot td:nth-child(3),#tbl tfoot td:nth-child(4){display:none!important}
+
 </style>
 </head>
 <body>
@@ -259,8 +267,8 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 
 <div class="pg">
   <header class="hero">
-    <div class="eyebrow">Prefeitura Municipal de Leópolis · Execução da despesa</div>
-    <div class="hero-top"><h1 id="titulo">Empenhos e liquidações — 2026</h1><div class="acoes"><button type="button" id="btn-print">Imprimir esta página</button></div></div>
+    <div class="eyebrow">Prefeitura Municipal de Leópolis · Transparência</div>
+    <div class="hero-top"><h1 id="titulo">Despesas do Município — 2026</h1><div class="acoes"><button type="button" id="btn-print">Imprimir esta página</button></div></div>
     <p class="lead" data-source="info" data-field="resumo" data-row="0">—</p>
   </header>
 
@@ -318,6 +326,11 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
         <p class="note">Soma do saldo a pagar dos empenhos de cada fornecedor. Toque para ver os empenhos.</p>
         <div id="forn-chart" data-source="top_forn" style="min-height:220px"></div>
       </div>
+      <div class="card" id="porsec">
+        <h2>Empenhado por secretaria em 2026</h2>
+        <p class="note">Valor empenhado no ano (já descontadas anulações) por secretaria ou fundo. Toque para ver os empenhos.</p>
+        <div id="sec-chart" data-source="por_secretaria" style="min-height:220px;max-height:360px;overflow:auto;padding-right:6px"></div>
+      </div>
     </section>
   </section>
 
@@ -372,7 +385,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
   <section class="tab" data-tab="empenhos" hidden>
     <div class="card" id="pendencias">
       <h2>Empenhos</h2>
-      <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto. Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
+      <p class="note">Todos os empenhos de 2026. Pesquise por número, fornecedor ou produto e use os filtros para refinar.</p>
       <div class="tools">
         <input id="busca" type="search" placeholder="Buscar nº do empenho, fornecedor, produto, contrato…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
@@ -458,7 +471,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
     </section>
   </section>
 
-  <p class="foot">Fonte: Portal da Transparência do Município de Leópolis — despesa empenhada, liquidada e paga, saldo a pagar por credor e por fonte. Painel informativo, atualizado automaticamente nos dias úteis; em caso de divergência, vale o portal oficial. <span id="atualizado"></span><br>Baixar dados (CSV): <a href="data/empenhos.csv">empenhos</a> · <a href="data/itens.csv">itens</a> · <a href="data/liquidacoes.csv">liquidações</a> · <a href="data/movimento.csv">movimento diário</a> · <a href="data/saldo_fontes.csv">saldo por fonte</a> · <a href="data/dotacoes.csv">dotações</a></p>
+  <p class="foot">Fonte: Portal da Transparência do Município de Leópolis — despesa empenhada, liquidada e paga, saldo a pagar por credor e por fonte. Painel informativo, atualizado automaticamente nos dias úteis; em caso de divergência, vale o portal oficial. <span id="atualizado"></span><br>Baixar dados (CSV): <a href="data/empenhos.csv">empenhos</a> · <a href="data/itens.csv">itens</a> · <a href="data/liquidacoes.csv">liquidações</a> · <a href="data/movimento.csv">movimento diário</a> · <a href="data/saldo_fontes.csv">saldo por fonte</a></p>
   <div class="tip" id="tip"></div>
 </div>
 
@@ -553,6 +566,11 @@ dash.calc('semana', {
     return [{ dia: ult.split('-').reverse().slice(0, 2).join('/'), emp_dia: s(ed, 'valor'), emp_dia_qtd: ed.length, emp_sem: s(es, 'valor'), emp_sem_qtd: es.length, liq_sem: s(ls, 'valor'), liq_sem_qtd: ls.length,
       pag_sem: s(movimento.filter(r => r.data >= lim), 'pago') }]; }
 });
+dash.calc('por_secretaria', {
+  title: 'Empenhado por secretaria', description: 'Valor líquido empenhado no ano por secretaria.', inputs: ['empenhos'],
+  fn: (empenhos) => { const m = {}; empenhos.forEach(r => { const k = r.secretaria || '—'; m[k] = m[k] || { secretaria: k, valor: 0, qtd: 0 }; m[k].valor += Number(r.valor || 0) - Number(r.anulado || 0); m[k].qtd++; });
+    return Object.values(m).filter(x => x.valor > 0).sort((a, b) => b.valor - a.valor); }
+});
 dash.calc('top_forn', {
   title: 'Maiores saldos a pagar por fornecedor', description: 'Os 10 fornecedores com maior soma de saldo a pagar nos empenhos.', inputs: ['empenhos'],
   fn: (empenhos) => { const m = {}; empenhos.forEach(r => { const v = Number(r.saldo_a_pagar || 0); if (v > 0) { const k = r.fornecedor || '—'; m[k] = m[k] || { fornecedor: k, saldo: 0, qtd: 0 }; m[k].saldo += v; m[k].qtd++; } });
@@ -615,7 +633,7 @@ function irPara(aba) { document.querySelectorAll('#dash-root .tabs button').forE
   document.querySelectorAll('#dash-root .tab').forEach(s => { s.hidden = s.dataset.tab !== aba; }); dash.setLink(aba); }
 document.querySelectorAll('#dash-root .tabs button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.go)));
 document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListener('click', () => irPara(b.dataset.goto)));
-{ const h = location.hash.slice(1); if (document.querySelector(`#dash-root .tabs button[data-go="${h}"]`)) irPara(h); }
+{ const h = ['alertas', 'dotacoes', 'semana'].includes(location.hash.slice(1)) ? '' : location.hash.slice(1); if (document.querySelector(`#dash-root .tabs button[data-go="${h}"]`)) irPara(h); }
 
 // ---------- Empenhos ----------
 const NATUREZAS = { '3.1.90.04': 'Contratação por tempo determinado', '3.1.90.11': 'Vencimentos e vantagens fixas', '3.1.90.13': 'Obrigações patronais', '3.1.90.16': 'Outras despesas variáveis – pessoal', '3.1.90.94': 'Indenizações trabalhistas',
@@ -773,6 +791,8 @@ dash.onData(() => {
     parts.forEach(([nome, v, cor]) => { const it = document.createElement('div'); const sw = document.createElement('i'); sw.className = 'sw'; sw.style.background = cor; const sp = document.createElement('span'); sp.append(sw, document.createTextNode(nome));
       const b = document.createElement('b'); b.textContent = brl.format(v); const pc = document.createElement('span'); pc.textContent = d1.format(Math.max(0, v) / tot * 100) + '%'; it.append(sp, b, pc); lg.appendChild(it); });
     dn.append(sv, lg); }
+  const sc = document.getElementById('sec-chart'), sd2 = prep('por_secretaria', sc);
+  if (sd2.status === 'ok') { const max = Math.max(1, ...sd2.data.map(r => r.valor)); sd2.data.forEach(r => barRow(sc, r.secretaria, brlC.format(r.valor), r.valor / max, C0, ev => showTip(ev, r.secretaria, [brl.format(r.valor), `${intF.format(r.qtd)} empenhos`]), () => { filtrarEmpenhos({}); fSec.value = r.secretaria; drawTable(); })); }
   const tf = document.getElementById('forn-chart'), td2 = prep('top_forn', tf);
   if (td2.status === 'ok') { const max = Math.max(1, ...td2.data.map(r => r.saldo)); td2.data.forEach(r => barRow(tf, r.fornecedor, brlC.format(r.saldo), r.saldo / max, C1, ev => showTip(ev, r.fornecedor, [brl.format(r.saldo), `${intF.format(r.qtd)} empenhos com saldo`]), () => filtrarEmpenhos({ busca: r.fornecedor, saldo: true }))); }
   drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq();

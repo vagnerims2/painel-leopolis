@@ -1,6 +1,9 @@
 """Gera index.html público a partir da página do painel do Claude (pipe/index.html).
-Uso: python3 montar_site.py <index_painel.html> <saida/index.html>"""
+Uso: python3 montar_site.py <index_painel.html> <saida/index.html> [interno|externo]
+  externo: versão simples para o cidadão (raiz do site)
+  interno: versão completa para os servidores (pasta interno/), lê os dados de ../data/"""
 import re, sys
+modo = sys.argv[3] if len(sys.argv) > 3 else 'interno'
 src = open(sys.argv[1], encoding='utf-8').read()
 style = src[src.index('<style>') + 7: src.index('</style>')]
 body = src[src.index('</style>') + 8: src.index('<script>')]
@@ -22,7 +25,28 @@ body = body.replace('confira no Equiplano antes de pedir. Para mandar ao contado
 body = body.replace(' A coluna "Liq. (Equiplano)" vem do último relatório de requisições enviado.', '')
 assert 'equiplano' not in (body + js).lower(), [m.start() for m in re.finditer('equiplano', (body+js).lower())]
 
+EXTERNO_CSS = """
+/* versão para o cidadão: só informação geral */
+#dash-root .tabs button[data-go=alertas],#dash-root .tabs button[data-go=dotacoes],#dash-root .tabs button[data-go=semana],
+#dash-root #alertas-resumo,#dash-root #composicao,#dash-root .tab[data-tab=alertas],#dash-root .tab[data-tab=dotacoes],#dash-root .tab[data-tab=semana],
+#dash-root #faixa,#dash-root .tiles .card.tile:nth-child(4) .sub{display:none!important}
+#tbl th:nth-child(5),#tbl tbody td:nth-child(5),#tbl th:nth-child(6),#tbl tbody td:nth-child(6),#tbl th:nth-child(9),#tbl tbody td:nth-child(9),
+#tbl tfoot td:nth-child(3),#tbl tfoot td:nth-child(4){display:none!important}
+"""
+if modo == 'externo':
+    style += EXTERNO_CSS
+    body = body.replace('Prefeitura Municipal de Leópolis · Execução da despesa', 'Prefeitura Municipal de Leópolis · Transparência')
+    body = body.replace('<h1 id="titulo">Empenhos e liquidações — 2026</h1>', '<h1 id="titulo">Despesas do Município — 2026</h1>')
+    body = body.replace('Marque "Só com saldo a pagar" para ver apenas o que está em aberto. Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).', 'Pesquise por número, fornecedor ou produto e use os filtros para refinar.')
+    js = js.replace("{ const h = location.hash.slice(1); if (", "{ const h = ['alertas', 'dotacoes', 'semana'].includes(location.hash.slice(1)) ? '' : location.hash.slice(1); if (")
+    body = body.replace(' · <a href="data/dotacoes.csv">dotações</a>', '')
+else:
+    body = body.replace('href="data/', 'href="../data/')
+
 shell = open(__file__.replace('montar_site.py', 'molde.html'), encoding='utf-8').read()
-out = shell.replace('/*ESTILO*/', style).replace('<!--CORPO-->', body).replace('/*PAGINA*/', js)
+dados = 'data/' if modo == 'externo' else '../data/'
+cab = '' if modo == 'externo' else '<meta name="robots" content="noindex,nofollow">'
+titulo = 'Despesas do Município — Leópolis' if modo == 'externo' else 'Painel interno de Empenhos — Leópolis'
+out = shell.replace('<!--CAB-->', cab).replace('__DADOS__', dados).replace('<title>Painel de Empenhos — Leópolis</title>', '<title>' + titulo + '</title>').replace('/*ESTILO*/', style).replace('<!--CORPO-->', body).replace('/*PAGINA*/', js)
 open(sys.argv[2], 'w', encoding='utf-8').write(out)
 print('ok', len(out))
