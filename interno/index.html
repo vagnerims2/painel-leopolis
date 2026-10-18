@@ -233,6 +233,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 #dash-root .linha-total{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 #print-head{display:none}
 @media print{
+  body.so-relatorio #dash-root #produtos,body.so-relatorio #dash-root #precos{display:none!important}
   @page{size:A4 landscape;margin:10mm}
   html,body{background:#fff!important}
   #dash-root{background:#fff!important;max-width:none!important;padding:0!important}
@@ -415,6 +416,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
       <div class="tools">
         <input id="p-busca" type="search" placeholder="Ex.: bola, caneta, luva, nº do empenho…">
         <label><input id="p-parte" type="checkbox"> qualquer parte do nome</label>
+        <select id="p-sec"><option value="">Todas as secretarias</option></select>
         <select id="p-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
       </div>
       <p class="note" id="p-resumo">Digite um produto para buscar.</p>
@@ -422,6 +424,17 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
         <th data-field="produto">Produto</th><th data-field="data">Data</th><th data-field="empenho">Empenho</th><th data-field="fornecedor" class="hide-sm">Fornecedor</th>
         <th data-field="quantidade" class="r">Qtd</th><th data-field="valor_unitario" class="r">Unitário</th><th data-field="valor_total" class="r hide-sm">Total</th><th data-field="situacao">Situação</th>
       </tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card" id="prod-mes">
+      <div class="linha-total"><h2>Relatório do produto mês a mês</h2><button type="button" class="btn2" id="btn-print-prod">Imprimir este relatório</button></div>
+      <p class="note">Quantidade e valor empenhados por mês para a busca e os filtros acima (secretaria e situação). Empenhos anulados não entram. Confira se a busca pegou só o produto certo: unidades diferentes (rolo, fardo, caixa) não devem ser somadas.</p>
+      <p class="note" id="pm-aviso"></p>
+      <div class="tblwrap" style="max-height:none"><table id="t-pmes"><thead><tr><th>Mês</th><th class="r">Quantidade</th><th class="r">Valor empenhado</th><th class="r">Empenhos</th><th class="r hide-sm">Preço médio</th></tr></thead><tbody></tbody>
+        <tfoot><tr><td>Total do ano</td><td class="r" id="pm-q">—</td><td class="r" id="pm-v">—</td><td class="r" id="pm-n">—</td><td class="r hide-sm" id="pm-p">—</td></tr></tfoot></table></div>
+      <h2 style="margin-top:16px">Por secretaria</h2>
+      <div class="tblwrap" style="max-height:none"><table id="t-psec"><thead><tr><th>Secretaria</th><th class="r">Quantidade</th><th class="r">Valor empenhado</th><th class="r">Empenhos</th></tr></thead><tbody></tbody></table></div>
+      <h2 style="margin-top:16px">Produtos encontrados</h2>
+      <div class="tblwrap" style="max-height:none"><table id="t-pprod"><thead><tr><th>Produto</th><th class="r">Quantidade</th><th class="r">Valor empenhado</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="card" id="precos">
       <h2>Histórico de preço da busca</h2>
@@ -710,13 +723,14 @@ function drawDot() { const d = dash.data('dotacoes'), tb = document.querySelecto
 dBusca.addEventListener('input', drawDot); [dRec, dSup].forEach(e => e.addEventListener('change', drawDot));
 
 // ---------- Produtos ----------
-const pBusca = document.getElementById('p-busca'), pParte = document.getElementById('p-parte'), pSit = document.getElementById('p-sit');
+const pBusca = document.getElementById('p-busca'), pParte = document.getElementById('p-parte'), pSit = document.getElementById('p-sit'), pSec = document.getElementById('p-sec');
 function drawProd() { const d = dash.data('itens'), tb = document.querySelector('#t-prod tbody'), tp = document.querySelector('#t-precos tbody'), res = document.getElementById('p-resumo'); tb.replaceChildren(); tp.replaceChildren(); if (d.status !== 'ok') return;
-  const q = nz(pBusca.value.trim()), f = pSit.value;
-  if (!q && !f) { res.textContent = `${intF.format(d.data.length)} itens disponíveis. Digite um produto para buscar.`; emptyRow(tp, 6, 'Faça uma busca para ver os preços.'); return; }
+  fillSelect(pSec, uniq(d.data, 'secretaria')); const q = nz(pBusca.value.trim()), f = pSit.value;
+  if (!q && !f && !pSec.value) { relatorioProduto([]); res.textContent = `${intF.format(d.data.length)} itens disponíveis. Digite um produto para buscar.`; emptyRow(tp, 6, 'Faça uma busca para ver os preços.'); return; }
   const palavra = (t) => nz(t).split(/[^a-z0-9]+/).some(w => w === q || w === q + 's' || w === q + 'es');
   const casa = (r) => !q || (pParte.checked ? nz([r.produto, r.marca, r.fornecedor, r.empenho].join(' ')).includes(q) : (q.includes(' ') ? nz(r.produto).includes(q) : palavra(r.produto)) || String(r.empenho) === q);
-  const rows = d.data.filter(r => (!f || r.situacao === f) && casa(r));
+  const rows = d.data.filter(r => (!f || r.situacao === f) && (!pSec.value || r.secretaria === pSec.value) && casa(r));
+  relatorioProduto(rows);
   const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
   res.textContent = `${intF.format(rows.length)} itens · quantidade ${qtdF.format(s('quantidade'))} · valor ${brl2.format(s('valor_total'))} · pagos: ${intF.format(rows.filter(r => r.situacao === 'Pago').length)} · em aberto: ${intF.format(rows.filter(r => !['Pago', 'Anulado'].includes(r.situacao)).length)}`;
   rows.slice(0, 400).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; const p = td(tr, r.produto); p.style.fontWeight = '600'; if (r.marca) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = r.marca; p.appendChild(m); }
@@ -726,7 +740,23 @@ function drawProd() { const d = dash.data('itens'), tb = document.querySelector(
   const m = {}; rows.forEach(r => { const k = r.produto; const v = N(r.valor_unitario); if (!v) return; m[k] = m[k] || { n: 0, s: 0, min: v, max: v, quem: r.fornecedor }; m[k].n++; m[k].s += v; m[k].max = Math.max(m[k].max, v); if (v < m[k].min) { m[k].min = v; m[k].quem = r.fornecedor; } else if (v === m[k].min && m[k].n === 1) m[k].quem = r.fornecedor; });
   Object.entries(m).sort((a, b) => b[1].n - a[1].n).slice(0, 60).forEach(([k, v]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, intF.format(v.n), 'r'); td(tr, brl2.format(v.min), 'r'); td(tr, brl2.format(v.s / v.n), 'r'); td(tr, brl2.format(v.max), 'r'); td(tr, v.quem, 'hide-sm'); tp.appendChild(tr); });
   if (!Object.keys(m).length) emptyRow(tp, 6, 'Sem preços para a busca.'); }
-pBusca.addEventListener('input', drawProd); [pParte, pSit].forEach(e => e.addEventListener('change', drawProd));
+pBusca.addEventListener('input', drawProd); [pParte, pSit, pSec].forEach(e => e.addEventListener('change', drawProd));
+function relatorioProduto(rows) {
+  const tm = document.querySelector('#t-pmes tbody'), ts = document.querySelector('#t-psec tbody'), tpp = document.querySelector('#t-pprod tbody'); tm.replaceChildren(); ts.replaceChildren(); tpp.replaceChildren();
+  const set = (id, t) => { document.getElementById(id).textContent = t; }; ['pm-q', 'pm-v', 'pm-n', 'pm-p'].forEach(id => set(id, '—')); set('pm-aviso', '');
+  const rs = rows.filter(r => r.situacao !== 'Anulado'); if (!rs.length) { emptyRow(tm, 5, 'Faça uma busca acima para montar o relatório.'); return; }
+  const g = (k) => { const m = {}; rs.forEach(r => { const c = k(r); m[c] = m[c] || { q: 0, v: 0, e: new Set() }; m[c].q += N(r.quantidade); m[c].v += N(r.valor_total); m[c].e.add(r.empenho); }); return m; };
+  const mm = g(r => String(r.data).slice(0, 7)); const ano = Object.keys(mm).sort()[0].slice(0, 4);
+  const fim = new Date().getFullYear() === +ano ? new Date().getMonth() + 1 : 12;
+  for (let i = 1; i <= fim; i++) { const k = `${ano}-${String(i).padStart(2, '0')}`; const x = mm[k] || { q: 0, v: 0, e: new Set() };
+    const tr = document.createElement('tr'); td(tr, meses[i - 1].replace(/^./, c => c.toUpperCase()) + '/' + ano); td(tr, x.q ? qtdF.format(x.q) : '—', 'r'); td(tr, x.v ? brl2.format(x.v) : '—', 'r'); td(tr, x.e.size ? intF.format(x.e.size) : '—', 'r'); td(tr, x.q ? brl2.format(x.v / x.q) : '—', 'r hide-sm'); tm.appendChild(tr); }
+  const tq = rs.reduce((a, r) => a + N(r.quantidade), 0), tv = rs.reduce((a, r) => a + N(r.valor_total), 0), te = new Set(rs.map(r => r.empenho)).size;
+  set('pm-q', qtdF.format(tq)); set('pm-v', brl2.format(tv)); set('pm-n', intF.format(te)); set('pm-p', tq ? brl2.format(tv / tq) : '—');
+  Object.entries(g(r => r.secretaria || '—')).sort((a, b) => b[1].q - a[1].q).forEach(([k, x]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, qtdF.format(x.q), 'r'); td(tr, brl2.format(x.v), 'r'); td(tr, intF.format(x.e.size), 'r'); ts.appendChild(tr); });
+  const pp = Object.entries(g(r => r.produto)).sort((a, b) => b[1].q - a[1].q); pp.forEach(([k, x]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, qtdF.format(x.q), 'r'); td(tr, brl2.format(x.v), 'r'); tpp.appendChild(tr); });
+  if (pp.length > 1) set('pm-aviso', `Atenção: a busca juntou ${pp.length} produtos diferentes (lista no fim). Se forem coisas diferentes, refine a busca (ex.: "papel higienico folha dupla").`);
+}
+document.getElementById('btn-print-prod').addEventListener('click', () => { document.body.classList.add('so-relatorio'); cabecalhoImpressao(); try { window.print(); } catch (e) {} setTimeout(() => document.body.classList.remove('so-relatorio'), 500); });
 
 // ---------- Liquidações ----------
 const lBusca = document.getElementById('l-busca'), lNp = document.getElementById('l-np');
