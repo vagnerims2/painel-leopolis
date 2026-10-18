@@ -352,6 +352,14 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
         <th data-field="valor" class="r">Valor</th><th data-field="dias" class="r">Dias</th><th data-field="media_tipo" class="r hide-sm">Normal do tipo</th>
       </tr></thead><tbody></tbody></table></div>
     </div>
+    <div class="card" id="precos-alto">
+      <h2>Preços acima do padrão</h2>
+      <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
+      <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
+        <select id="pa-per"><option value="30">últimos 30 dias</option><option value="90">últimos 90 dias</option><option value="">ano todo</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
+      <p class="note" id="pa-total"></p>
+      <div class="tblwrap"><table id="t-pa"><thead><tr><th>Produto</th><th>Data</th><th>Empenho</th><th class="hide-sm">Fornecedor</th><th class="r">Preço pago</th><th class="r">Mediana do ano</th><th class="r">Acima</th></tr></thead><tbody></tbody></table></div>
+    </div>
     <div class="card" id="tempo">
       <h2>Tempo médio até a primeira liquidação</h2>
       <p class="note">Média de dias entre o empenho e a primeira liquidação, nos empenhos ordinários de 2026 já liquidados. Entre parênteses, quantos empenhos entraram na média.</p>
@@ -482,6 +490,19 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
         <div id="semlic-chart" data-source="sem_licitacao" style="min-height:200px"></div>
       </div>
     </section>
+    <div class="card" id="limite">
+      <h2>Limite de dispensa por objeto</h2>
+      <p class="note">Soma no ano dos empenhos sem licitação ou por dispensa, por tipo de objeto (subelemento), comparada com os limites do art. 75 da Lei 14.133 atualizados pelo Decreto 12.807/2025: <b>R$ 130.984,20</b> para obras, serviços de engenharia e manutenção de veículos (inciso I) e <b>R$ 65.492,11</b> para outras compras e serviços (inciso II). Ficam de fora energia, água, tarifas bancárias, custas judiciais, correios, anuidades, pagamentos a consórcios e outros órgãos públicos, e processos de dispensa acima do limite (emergência e outros incisos do art. 75). É um sinal de atenção, não um parecer: adesões a ata, convênios e contratações emergenciais também aparecem como "sem licitação" ou "dispensa" no portal.</p>
+      <div class="tools"><input id="lim-busca" type="search" placeholder="Buscar objeto, secretaria, fornecedor…"><label><input id="lim-80" type="checkbox" checked> só 80% do limite ou mais</label></div>
+      <div class="tblwrap"><table id="t-lim"><thead><tr><th>Objeto</th><th class="r">Limite</th><th class="r">Empenhado no ano</th><th style="min-width:9rem">% do limite</th><th class="r hide-sm">Empenhos</th><th class="hide-sm">Principais fornecedores</th></tr></thead><tbody></tbody></table></div>
+    </div>
+    <div class="card" id="consumo-lic">
+      <h2>Consumo por licitação</h2>
+      <p class="note">Quanto já foi empenhado em 2026 de cada pregão, concorrência, dispensa ou inexigibilidade, por quantas secretarias e com quais fornecedores. O portal não informa o valor total registrado em cada ata, então aqui aparece o consumo, não o saldo. Toque numa linha para ver os empenhos.</p>
+      <div class="tools"><input id="cl-busca" type="search" placeholder="Buscar nº da licitação, fornecedor, secretaria…"><select id="cl-mod"><option value="">Todas as modalidades</option></select></div>
+      <div class="tblwrap"><table id="t-cl"><thead><tr><th>Licitação</th><th class="r">Empenhado no ano</th><th class="r">Empenhos</th><th class="hide-sm">Secretarias</th><th class="hide-sm">Fornecedores</th><th class="r hide-sm">Último</th></tr></thead><tbody></tbody>
+        <tfoot><tr><td id="cl-qtd">Total</td><td class="r" id="cl-tot">—</td><td class="r" id="cl-n">—</td><td class="hide-sm"></td><td class="hide-sm"></td><td class="hide-sm"></td></tr></tfoot></table></div>
+    </div>
   </section>
 
   <p class="foot">Fonte: Portal da Transparência do Município de Leópolis — despesa empenhada, liquidada e paga, saldo a pagar por credor e por fonte. Painel informativo, atualizado automaticamente nos dias úteis; em caso de divergência, vale o portal oficial. <span id="atualizado"></span><br>Baixar dados (CSV): <a href="data/empenhos.csv">empenhos</a> · <a href="data/itens.csv">itens</a> · <a href="data/liquidacoes.csv">liquidações</a> · <a href="data/movimento.csv">movimento diário</a> · <a href="data/saldo_fontes.csv">saldo por fonte</a></p>
@@ -578,6 +599,34 @@ dash.calc('semana', {
     const ls = liquidacoes.filter(r => r.data >= lim);
     return [{ dia: ult.split('-').reverse().slice(0, 2).join('/'), emp_dia: s(ed, 'valor'), emp_dia_qtd: ed.length, emp_sem: s(es, 'valor'), emp_sem_qtd: es.length, liq_sem: s(ls, 'valor'), liq_sem_qtd: ls.length,
       pag_sem: s(movimento.filter(r => r.data >= lim), 'pago') }]; }
+});
+dash.calc('limite_dispensa', {
+  title: 'Limite de dispensa por objeto', description: 'Empenhado no ano sem licitação ou por dispensa, por subelemento, comparado com os limites do art. 75 da Lei 14.133 (Decreto 12.807/2025).', inputs: ['empenhos'],
+  fn: (empenhos) => { const LIM_I = 130984.20, LIM_II = 65492.11; const fora = /ENERGIA|ÁGUA E ESGOTO|BANCÁRIO|JUDICI|POSTAIS|ANUIDADE|TELEFON|MÉDIA E ALTA COMPLEXIDADE|PEDÁGIO|SEGURO/i;
+    const publico = /CONS[OÓ]RCIO|MUNIC[IÍ]PIO|INSTITUTO NACIONAL|CAIXA ECON|BANCO DO BRASIL|COPEL|SANEPAR|ESTADO D|FUNDO |TRIBUNAL|CORREIOS/i;
+    const base = empenhos.filter(r => /^(Sem licitação|Dispensa)/.test(r.modalidade) && /^(3\.3\.90\.(30|32|36|39|40)|4\.4\.90\.(51|52))/.test(r.natureza) && !fora.test(r.tipo_despesa) && !publico.test(r.fornecedor));
+    // dispensas acima do limite (emergência, art. 75 outros incisos) não são dispensa por valor: saem do cálculo
+    const proc = {}; base.forEach(r => { if (/^Dispensa/.test(r.modalidade)) proc[r.licitacao] = (proc[r.licitacao] || 0) + Number(r.valor || 0) - Number(r.anulado || 0); });
+    const m = {}; base.filter(r => (/^Dispensa/.test(r.modalidade) ? proc[r.licitacao] : Number(r.valor || 0) - Number(r.anulado || 0)) <= LIM_I).forEach(r => {
+      const k = r.natureza.slice(0, 9) + ' ' + r.tipo_despesa; const inc1 = /^4\.4\.90\.51/.test(r.natureza) || /ENGENHARIA|OBRAS/i.test(r.tipo_despesa) || (/^3\.3\.90\.39/.test(r.natureza) && /VEÍCULO/i.test(r.tipo_despesa) && /MANUTEN/i.test(r.tipo_despesa));
+      m[k] = m[k] || { objeto: r.tipo_despesa, natureza: r.natureza.slice(0, 9), limite: inc1 ? LIM_I : LIM_II, inciso: inc1 ? 'I' : 'II', valor: 0, qtd: 0, forn: {}, sec: {} };
+      const v = Number(r.valor || 0) - Number(r.anulado || 0); m[k].valor += v; m[k].qtd++; m[k].forn[r.fornecedor] = (m[k].forn[r.fornecedor] || 0) + v; m[k].sec[r.secretaria] = 1; });
+    return Object.values(m).filter(x => x.valor > 0).map(x => ({ ...x, pct: x.valor / x.limite, fornecedores: Object.entries(x.forn).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([f]) => f).join('; '), secretarias: Object.keys(x.sec).join('; '), forn: undefined, sec: undefined })).sort((a, b) => b.pct - a.pct); }
+});
+dash.calc('consumo_lic', {
+  title: 'Consumo por licitação', description: 'Empenhado no ano por processo de licitação, com secretarias e fornecedores.', inputs: ['empenhos'],
+  fn: (empenhos) => { const m = {}; empenhos.filter(r => r.licitacao && !/^Sem licitação/.test(r.modalidade)).forEach(r => { const k = r.licitacao; m[k] = m[k] || { licitacao: k, modalidade: r.modalidade, valor: 0, qtd: 0, sec: {}, forn: {}, ultimo: '' };
+      const v = Number(r.valor || 0) - Number(r.anulado || 0); m[k].valor += v; m[k].qtd++; m[k].sec[r.secretaria] = (m[k].sec[r.secretaria] || 0) + v; m[k].forn[r.fornecedor] = (m[k].forn[r.fornecedor] || 0) + v; if (r.data > m[k].ultimo) m[k].ultimo = r.data; });
+    const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1]).map(([k]) => k);
+    return Object.values(m).map(x => ({ licitacao: x.licitacao, modalidade: x.modalidade, valor: x.valor, qtd: x.qtd, n_sec: Object.keys(x.sec).length, secretarias: top(x.sec).join('; '), n_forn: Object.keys(x.forn).length, fornecedores: top(x.forn).join('; '), ultimo: x.ultimo })).sort((a, b) => b.valor - a.valor); }
+});
+dash.calc('precos_alto', {
+  title: 'Preços acima do padrão', description: 'Itens com preço unitário acima da mediana do ano para o mesmo produto (produtos com 3 compras ou mais).', inputs: ['itens'],
+  fn: (itens) => { const chave = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); const g = {};
+    itens.filter(r => r.situacao !== 'Anulado' && Number(r.valor_unitario) > 0).forEach(r => { const k = chave(r.produto); (g[k] = g[k] || []).push(r); });
+    const out = []; Object.values(g).forEach(rs => { if (rs.length < 3) return; const v = rs.map(r => Number(r.valor_unitario)).sort((a, b) => a - b); const med = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+      rs.forEach(r => { const pu = Number(r.valor_unitario); if (med > 0 && pu > med * 1.2) out.push({ chave: r.chave, produto: r.produto, data: r.data, empenho: r.empenho, fornecedor: r.fornecedor, secretaria: r.secretaria, preco: pu, mediana: med, acima: pu / med - 1, compras: rs.length }); }); });
+    return out.sort((a, b) => b.data < a.data ? -1 : b.data > a.data ? 1 : b.acima - a.acima); }
 });
 dash.calc('por_secretaria', {
   title: 'Empenhado por secretaria', description: 'Valor líquido empenhado no ano por secretaria.', inputs: ['empenhos'],
@@ -774,6 +823,35 @@ function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySele
   if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
 lBusca.addEventListener('input', drawLiq); lNp.addEventListener('change', drawLiq);
 
+// ---------- limite de dispensa, consumo por licitação, preços ----------
+const limBusca = document.getElementById('lim-busca'), lim80 = document.getElementById('lim-80');
+function drawLimite() { const d = dash.data('limite_dispensa'), tb = document.querySelector('#t-lim tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(limBusca.value.trim());
+  const rows = d.data.filter(r => (!lim80.checked || r.pct >= 0.8) && (!q || nz([r.objeto, r.natureza, r.fornecedores, r.secretarias].join(' ')).includes(q)));
+  rows.forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.objeto, r.natureza + ' · inciso ' + r.inciso + ' · ' + r.secretarias.split('; ').length + ' secretaria(s)'); td(tr, brl.format(r.limite), 'r'); td(tr, brl2.format(r.valor), 'r');
+    const c = document.createElement('td'); const w = document.createElement('div'); w.className = 'track'; const b = document.createElement('div'); b.className = 'bar'; b.style.width = Math.min(100, r.pct * 100) + '%'; b.style.background = r.pct >= 1 ? 'var(--color-bad)' : r.pct >= 0.8 ? 'var(--color-warn)' : C1; w.appendChild(b);
+    const t = document.createElement('div'); t.className = 'sub2'; t.textContent = d1.format(r.pct * 100) + '%' + (r.pct >= 1 ? ' · acima do limite' : r.pct >= 0.8 ? ' · atenção' : ''); t.style.color = r.pct >= 1 ? 'var(--color-bad)' : r.pct >= 0.8 ? 'var(--color-warn)' : ''; c.append(w, t); tr.appendChild(c);
+    td(tr, intF.format(r.qtd), 'r hide-sm'); td(tr, r.fornecedores, 'hide-sm'); tr.style.cursor = 'pointer'; tr.addEventListener('click', () => filtrarEmpenhos({ tipo: r.objeto })); tb.appendChild(tr); });
+  if (!rows.length) emptyRow(tb, 6, 'Nenhum objeto com esse filtro.'); }
+limBusca.addEventListener('input', drawLimite); lim80.addEventListener('change', drawLimite);
+const clBusca = document.getElementById('cl-busca'), clMod = document.getElementById('cl-mod');
+function drawConsumo() { const d = dash.data('consumo_lic'), tb = document.querySelector('#t-cl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; fillSelect(clMod, uniq(d.data, 'modalidade')); const q = nz(clBusca.value.trim());
+  const rows = d.data.filter(r => (!clMod.value || r.modalidade === clMod.value) && (!q || nz([r.licitacao, r.fornecedores, r.secretarias].join(' ')).includes(q)));
+  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); const c = td(tr, r.licitacao); c.style.fontWeight = '600'; td(tr, brl2.format(r.valor), 'r'); td(tr, intF.format(r.qtd), 'r');
+    fornCell(tr, intF.format(r.n_sec), r.secretarias.split('; ').slice(0, 3).join('; ') + (r.n_sec > 3 ? '…' : '')).classList.add('hide-sm'); fornCell(tr, intF.format(r.n_forn), r.fornecedores.split('; ').slice(0, 3).join('; ') + (r.n_forn > 3 ? '…' : '')).classList.add('hide-sm'); td(tr, br(r.ultimo), 'r hide-sm');
+    tr.style.cursor = 'pointer'; tr.addEventListener('click', () => filtrarEmpenhos({ busca: r.licitacao })); tb.appendChild(tr); });
+  document.getElementById('cl-qtd').textContent = `Total · ${intF.format(rows.length)} licitações`; document.getElementById('cl-tot').textContent = brl2.format(rows.reduce((a, r) => a + r.valor, 0)); document.getElementById('cl-n').textContent = intF.format(rows.reduce((a, r) => a + r.qtd, 0));
+  if (!rows.length) emptyRow(tb, 6, 'Nenhuma licitação com esse filtro.'); }
+clBusca.addEventListener('input', drawConsumo); clMod.addEventListener('change', drawConsumo);
+const paLim = document.getElementById('pa-lim'), paPer = document.getElementById('pa-per'), paBusca = document.getElementById('pa-busca');
+function drawPrecos() { const d = dash.data('precos_alto'), tb = document.querySelector('#t-pa tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const lim = Number(paLim.value) / 100, q = nz(paBusca.value.trim());
+  const desde = paPer.value ? new Date(Date.now() - Number(paPer.value) * 864e5).toISOString().slice(0, 10) : '';
+  const rows = d.data.filter(r => r.acima >= lim && (!desde || r.data >= desde) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
+  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.secretaria + ' · ' + r.compras + ' compras no ano'); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
+    const c = td(tr, '+' + d1.format(r.acima * 100) + '%', 'r ' + (r.acima >= 1 ? 'late' : 'mid')); tb.appendChild(tr); });
+  document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens` + (rows.length > 300 ? ' (mostrando 300)' : '');
+  if (!rows.length) emptyRow(tb, 7, 'Nenhum item acima do padrão nesse filtro.'); }
+[paLim, paPer].forEach(e => e.addEventListener('change', drawPrecos)); paBusca.addEventListener('input', drawPrecos);
+
 // ---------- imprimir e exportar ----------
 function cabecalhoImpressao() { let h = document.getElementById('print-head'); if (!h) { h = document.createElement('div'); h.id = 'print-head'; root.insertBefore(h, root.firstChild); }
   const aba = document.querySelector('#dash-root .tabs button[aria-selected=true]'), sec = document.querySelector('#dash-root .tab:not([hidden])'); const filtros = [];
@@ -825,7 +903,7 @@ dash.onData(() => {
   if (sd2.status === 'ok') { const max = Math.max(1, ...sd2.data.map(r => r.valor)); sd2.data.forEach(r => barRow(sc, r.secretaria, brlC.format(r.valor), r.valor / max, C0, ev => showTip(ev, r.secretaria, [brl.format(r.valor), `${intF.format(r.qtd)} empenhos`]), () => { filtrarEmpenhos({}); fSec.value = r.secretaria; drawTable(); })); }
   const tf = document.getElementById('forn-chart'), td2 = prep('top_forn', tf);
   if (td2.status === 'ok') { const max = Math.max(1, ...td2.data.map(r => r.saldo)); td2.data.forEach(r => barRow(tf, r.fornecedor, brlC.format(r.saldo), r.saldo / max, C1, ev => showTip(ev, r.fornecedor, [brl.format(r.saldo), `${intF.format(r.qtd)} empenhos com saldo`]), () => filtrarEmpenhos({ busca: r.fornecedor, saldo: true }))); }
-  drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq();
+  drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq(); drawLimite(); drawConsumo(); drawPrecos();
 });
 
 </script>
