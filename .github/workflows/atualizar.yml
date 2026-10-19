@@ -1,0 +1,74 @@
+name: Atualizar painel
+# Principal: a cada 30 min, das 7h às 18h30 (Brasília), de segunda a sexta. O notebook fica de reserva.
+on:
+  schedule:
+    - cron: '*/30 10-21 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      forcar:
+        description: 'Atualizar mesmo sem novidade no portal'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths: ['motor/**', '.github/workflows/atualizar.yml']
+concurrency:
+  group: atualizar-painel
+  cancel-in-progress: false
+permissions:
+  contents: write
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      TZ: America/Sao_Paulo
+      PAINEL_PASTA: ${{ github.workspace }}/motor/estado
+      PAINEL_SITE: ${{ github.workspace }}
+      PAINEL_SEM_GIT: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: motor/requisitos.txt
+      - run: pip install -r motor/requisitos.txt
+      - name: Recupera o estado da última atualização
+        uses: actions/cache/restore@v4
+        with:
+          path: motor/estado
+          key: estado-${{ github.run_id }}
+          restore-keys: estado-
+      - name: Prepara a pasta de trabalho
+        run: |
+          mkdir -p motor/estado
+          if [ ! -f motor/estado/master.json ]; then
+            echo "Primeira vez: começando pela semente"
+            gunzip -c motor/semente/master.json.gz > motor/estado/master.json
+            cp motor/semente/alertas.json motor/semente/reler.txt motor/semente/ultima_coleta.txt motor/estado/
+          fi
+          cp motor/painel.py motor/coleta.py motor/build.py motor/estado/
+      - name: Coleta no portal e recalcula
+        run: python motor/estado/painel.py ${{ github.event.inputs.forcar == 'true' && '--forcar' || '' }}
+      - name: Guarda o estado para a próxima vez
+        if: success()
+        uses: actions/cache/save@v4
+        with:
+          path: motor/estado
+          key: estado-${{ github.run_id }}
+      - name: Publica no site
+        run: |
+          git config user.name "Painel Leopolis (GitHub)"
+          git config user.email "vagnerims2@users.noreply.github.com"
+          git add data interno/planilha interno/resumos
+          if git diff --cached --quiet; then echo "Nada mudou nos dados publicados."; exit 0; fi
+          git commit -q -m "Dados de $(date '+%d/%m/%Y %H:%M') (GitHub)"
+          for i in 1 2 3; do
+            git push -q origin main && exit 0
+            git pull -q --rebase -X theirs origin main
+          done
+          exit 1
+      - name: Registro
+        if: always()
+        run: tail -n 30 motor/estado/painel.log || true
