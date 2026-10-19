@@ -286,7 +286,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <button data-go="dotacoes" aria-selected="false">Dotações</button>
     <button data-go="empenhos" aria-selected="false">Empenhos</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
-    <button data-go="requisicoes" aria-selected="false">Requisições</button>
     <button data-go="semana" aria-selected="false">Dia e semana</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
   </nav>
@@ -466,38 +465,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     </div>
   </section>
 
-<!--REQ-INI-->
-  <!-- ============ REQUISIÇÕES ============ -->
-  <section class="tab" data-tab="requisicoes" hidden>
-    <div class="card" id="req">
-      <h2>Buscar requisição de compra</h2>
-      <p class="note">Digite o número da requisição (ex.: 38927 ou 38927/2026) para ver os itens, o fornecedor, o empenho e a liquidação de cada item, e se o empenho já foi pago. Também dá para buscar por fornecedor ou produto. <span id="req-periodo"></span></p>
-      <div class="tools">
-        <input id="r-busca" type="search" placeholder="Nº da requisição, fornecedor ou produto…">
-        <select id="r-sit"><option value="">Todas as etapas</option><option value="Só requisição">Só requisição (sem empenho)</option><option value="Empenhada">Empenhada, falta liquidar</option><option value="Liquidada em parte">Liquidada em parte</option><option value="Liquidada">Liquidada, falta pagar</option><option value="Paga">Paga</option><option value="Empenho anulado">Empenho anulado</option><option value="Requisição cancelada">Requisição cancelada</option></select>
-      </div>
-      <p class="note" id="r-resumo">—</p>
-      <div class="tblwrap" style="max-height:22rem"><table id="t-req"><thead><tr>
-        <th>Requisição</th><th>Data</th><th>Fornecedor</th><th class="r">Itens</th><th class="r">Valor</th><th class="r hide-sm">Falta liquidar</th><th class="hide-sm">Empenhos</th><th>Situação</th>
-      </tr></thead><tbody></tbody></table></div>
-    </div>
-    <div class="card" id="req-det" hidden>
-      <div class="linha-total"><h2 id="rd-tit">Requisição</h2><button type="button" class="btn2" id="btn-print-req">Imprimir esta requisição</button></div>
-      <p class="note" id="rd-info"></p>
-      <div class="trilha" id="rd-trilha"></div>
-      <h2 style="margin-top:12px">Itens</h2>
-      <div class="tblwrap" style="max-height:none"><table id="t-rit"><thead><tr>
-        <th>Produto</th><th class="r">Qtd requisitada</th><th class="r hide-sm">Unitário</th><th class="r">Valor</th><th class="r">Qtd liquidada</th><th class="r">Falta</th><th>Empenho</th><th class="hide-sm">Liquidação</th><th>Situação do item</th>
-      </tr></thead><tbody></tbody>
-      <tfoot><tr><td>Total</td><td class="r"></td><td class="r hide-sm"></td><td class="r" id="rd-tot">—</td><td class="r"></td><td class="r" id="rd-falta">—</td><td></td><td class="hide-sm"></td><td></td></tr></tfoot></table></div>
-      <h2 style="margin-top:16px">Empenhos desta requisição (situação de hoje no portal)</h2>
-      <div class="tblwrap" style="max-height:none"><table id="t-remp"><thead><tr>
-        <th>Empenho</th><th>Data</th><th class="hide-sm">Secretaria</th><th class="r">Empenhado</th><th class="r">Liquidado</th><th class="r">Pago</th><th class="r">Saldo a pagar</th><th>Situação</th>
-      </tr></thead><tbody></tbody></table></div>
-      <p class="note">Toque num empenho para abrir na aba Empenhos. As etapas de empenho, liquidação e pagamento usam a situação de hoje no portal; a coluna "Qtd liquidada" dos itens é a do último relatório de requisições. Saldo de item não liquidado que foi anulado no empenho não conta como "falta".</p>
-    </div>
-  </section>
-<!--REQ-FIM-->
+
 
   <!-- ============ DIA E SEMANA ============ -->
   <section class="tab" data-tab="semana" hidden>
@@ -581,7 +549,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   };
   const v = Date.now();
   fetch('../data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  const OPCIONAIS = ['requisicoes'];
+  const OPCIONAIS = [];
   Promise.all(FONTES.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
     .concat(OPCIONAIS.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
@@ -922,77 +890,7 @@ document.getElementById('btn-csv').addEventListener('click', () => { const rows 
 function fillMarks(src, fmt) { const t = dash.data(src); document.querySelectorAll(`#dash-root [data-source="${src}"][data-field]`).forEach(el => {
   if (t.status !== 'ok' || !t.data[0]) { el.textContent = '—'; el.classList.toggle('dash-skeleton', t.status === 'loading'); return; }
   el.classList.remove('dash-skeleton'); const k = el.dataset.field, v = t.data[0][k]; el.textContent = fmt[k] ? fmt[k](v) : (typeof v === 'number' ? intF.format(v) : String(v)); }); }
-// REQ-INI ---------- Requisições de compra ----------
-const rBusca = document.getElementById('r-busca'), rSit = document.getElementById('r-sit');
-let reqSel = '';
-const lista = (t) => String(t || '').split(/[,;]/).map(x => x.trim()).filter(Boolean);
-function reqAgrupa() { const d = dash.data('requisicoes'), e = dash.data('empenhos'); if (d.status !== 'ok' || e.status !== 'ok') return null;
-  if (window.__reqG && window.__reqG.src === d.data) return window.__reqG;
-  const emp = {}; e.data.forEach(r => { emp[String(r.empenho)] = r; });
-  const g = {}; d.data.forEach(r => { const k = r.requisicao; const x = g[k] = g[k] || { req: k, data: r.data, forn: r.fornecedor, itens: [], valor: 0, falta: 0, emps: new Set(), canc: 0, liq: 0, txt: '' };
-    x.itens.push(r); if (r.situacao === 'Cancelado') x.canc++; else { x.valor += N(r.valor_total); x.falta += N(r.qtd_pendente) * N(r.valor_unitario); if (N(r.qtd_liquidada) > 0) x.liq++; }
-    lista(r.empenhos).forEach(n => x.emps.add(n)); x.txt += ' ' + r.produto; });
-  Object.values(g).forEach(x => { x.txt = nz(x.req + ' ' + x.forn + ' ' + x.txt); const ativos = x.itens.length - x.canc; const es = [...x.emps].map(n => emp[n]).filter(Boolean);
-    // etapa: requisição → empenho → liquidação → pagamento (situação do empenho vem do portal, atualizada)
-    const vivos = es.filter(r => r.situacao !== 'Anulado'), sm = (k) => vivos.reduce((a, r) => a + N(r[k]), 0), val = vivos.reduce((a, r) => a + N(r.valor) - N(r.anulado), 0);
-    x.vEmp = val; x.vLiq = sm('liquidado'); x.vPag = sm('pago'); x.nEmp = es.length; x.nAnul = es.length - vivos.length;
-    if (!ativos && !vivos.length) x.sit = 'Requisição cancelada', x.etapa = 0;
-    else if (!x.emps.size) x.sit = 'Só requisição', x.etapa = 1;
-    else if (!es.length) x.sit = x.falta > 0.005 ? 'Empenhada' : 'Liquidada', x.etapa = x.falta > 0.005 ? 2 : 3;
-    else if (!vivos.length) x.sit = 'Empenho anulado', x.etapa = 1;
-    else if (x.vLiq < 0.005) x.sit = 'Empenhada', x.etapa = 2;
-    else if (x.vLiq < val - 0.005) x.sit = x.vPag >= x.vLiq - 0.005 ? 'Liquidada em parte, paga' : 'Liquidada em parte', x.etapa = 2;
-    else if (x.vPag < x.vLiq - 0.005) x.sit = 'Liquidada', x.etapa = 3;
-    else x.sit = 'Paga', x.etapa = 4;
-    if (vivos.length) x.falta = Math.max(0, val - x.vLiq); else if (es.length) x.falta = 0; });
-  const ds = d.data.map(r => r.data).filter(Boolean).sort();
-  return window.__reqG = { src: d.data, g, emp, ini: ds[0], fim: ds[ds.length - 1] }; }
-const reqCls = (s) => s === 'Paga' ? 'ok' : /anulad|cancelad/i.test(s) ? 'neu' : s === 'Empenhada' || s === 'Só requisição' ? 'late' : 'mid';
-function drawReq() { const tb = document.querySelector('#t-req tbody'), res = document.getElementById('r-resumo'); tb.replaceChildren(); const G = reqAgrupa();
-  if (!G) { res.textContent = dash.data('requisicoes').status === 'loading' ? 'Carregando…' : 'Relatório de requisições indisponível.'; return; }
-  document.getElementById('req-periodo').textContent = `Relatório de requisições de ${br(G.ini)} a ${br(G.fim)}; requisições mais novas aparecem quando um relatório novo for carregado.`;
-  const q = nz(rBusca.value.trim()), qn = q.replace(/\/.*$/, ''), f = rSit.value; let rows = Object.values(G.g);
-  const exata = /^\d+$/.test(qn) ? rows.find(x => x.req.split('/')[0] === qn) : null;
-  rows = rows.filter(x => (!f || x.sit === f || (f === 'Liquidada em parte' && x.sit.startsWith(f))) && (!q || (/^\d+(\/\d*)?$/.test(q) ? x.req.startsWith(qn) || [...x.emps].includes(qn) : x.txt.includes(q))));
-  rows.sort((a, b) => a.data < b.data ? 1 : a.data > b.data ? -1 : 0);
-  const sv = (k) => rows.reduce((a, x) => a + x[k], 0);
-  res.textContent = `${intF.format(rows.length)} requisições · valor ${brl2.format(sv('valor'))} · falta liquidar ${brl2.format(sv('falta'))}` + (q || f ? '' : ' · digite um número para ver o detalhe');
-  rows.slice(0, 300).forEach(x => { const tr = document.createElement('tr'); tr.style.cursor = 'pointer'; if (x.req === reqSel) tr.className = 'sel';
-    const c = td(tr, x.req); c.style.fontWeight = '600'; td(tr, br(x.data)); td(tr, x.forn); td(tr, intF.format(x.itens.length), 'r'); td(tr, brl2.format(x.valor), 'r'); td(tr, x.falta > 0.005 ? brl2.format(x.falta) : '—', 'r hide-sm');
-    td(tr, [...x.emps].join(', ') || '—', 'hide-sm'); pillCell(tr, x.sit, reqCls(x.sit)); tr.addEventListener('click', () => { reqSel = x.req; drawReq(); document.getElementById('req-det').scrollIntoView({ behavior: 'smooth', block: 'start' }); }); tb.appendChild(tr); });
-  if (rows.length > 300) emptyRow(tb, 8, `Mostrando 300 de ${intF.format(rows.length)}. Refine a busca.`); if (!rows.length) emptyRow(tb, 8, 'Nenhuma requisição encontrada.');
-  if (exata && q) reqSel = exata.req; else if (rows.length === 1) reqSel = rows[0].req; else if (!rows.some(x => x.req === reqSel)) reqSel = '';
-  drawReqDet(G); }
-function drawReqDet(G) { const box = document.getElementById('req-det'), x = G.g[reqSel]; box.hidden = !x; if (!x) return;
-  document.getElementById('rd-tit').textContent = `Requisição de compra ${x.req}`;
-  document.getElementById('rd-info').textContent = `${br(x.data)} · ${x.forn} · ${intF.format(x.itens.length)} itens${x.canc ? ` (${x.canc} cancelados)` : ''} · valor ${brl2.format(x.valor)} · situação: ${x.sit}`;
-  const tr0 = document.getElementById('rd-trilha'); tr0.replaceChildren();
-  [['Requisição', `${br(x.data)} · ${brl2.format(x.valor)}`], ['Empenho', x.nEmp ? `${x.nEmp} empenho(s) · ${brl2.format(x.vEmp)}` + (x.nAnul ? ` · ${x.nAnul} anulado(s)` : '') : (x.emps.size ? 'nº ' + [...x.emps].join(', ') : 'ainda não empenhada')],
-   ['Liquidação', x.vLiq ? brl2.format(x.vLiq) : 'ainda não liquidada'], ['Pagamento', x.vPag ? brl2.format(x.vPag) : 'ainda não paga']].forEach(([nome, det], i) => {
-    const st = document.createElement('div');
-    let cls = x.etapa > i ? 'feito' : x.etapa === i ? 'parado' : 'falta';
-    if (x.etapa === 0) cls = i === 0 ? 'anulado' : 'falta';
-    if (x.sit === 'Empenho anulado') cls = i === 0 ? 'feito' : i === 1 ? 'anulado' : 'falta';
-    if (/em parte/.test(x.sit) && i === 2) cls = 'parcial';
-    st.className = 'etapa ' + cls; const b = document.createElement('b'); b.textContent = nome; const sp = document.createElement('span');
-    sp.textContent = cls === 'anulado' ? (i === 0 ? 'cancelada' : 'anulado') : cls === 'parado' ? 'parada aqui · ' + det : cls === 'parcial' ? 'em parte · ' + det : det; st.append(b, sp); tr0.appendChild(st); });
-  const ti = document.querySelector('#t-rit tbody'); ti.replaceChildren();
-  x.itens.forEach(r => { const tr = document.createElement('tr'); const p = td(tr, r.produto); if (r.cod_produto) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = 'cód. ' + r.cod_produto; p.appendChild(m); }
-    td(tr, qtdF.format(N(r.qtd_requisitada)), 'r'); td(tr, brl2.format(N(r.valor_unitario)), 'r hide-sm'); td(tr, brl2.format(N(r.valor_total)), 'r'); td(tr, qtdF.format(N(r.qtd_liquidada)), 'r');
-    td(tr, N(r.qtd_pendente) ? qtdF.format(N(r.qtd_pendente)) : '—', 'r' + (N(r.qtd_pendente) ? ' late' : '')); td(tr, r.empenhos || '—'); td(tr, r.liquidacoes || '—', 'hide-sm');
-    pillCell(tr, r.situacao, r.situacao === 'Liquidado' ? 'ok' : r.situacao === 'Falta liquidar' ? 'late' : r.situacao === 'Liquidado em parte' ? 'mid' : 'neu'); ti.appendChild(tr); });
-  document.getElementById('rd-tot').textContent = brl2.format(x.valor); document.getElementById('rd-falta').textContent = x.falta > 0.005 ? brl2.format(x.falta) : '—';
-  const te = document.querySelector('#t-remp tbody'); te.replaceChildren();
-  [...x.emps].sort((a, b) => a - b).forEach(n => { const r = G.emp[n], tr = document.createElement('tr');
-    if (!r) { td(tr, n); const c = td(tr, 'Empenho ainda não encontrado no portal (ou de outro ano).'); c.colSpan = 7; c.style.color = 'var(--color-fg-muted)'; te.appendChild(tr); return; }
-    tr.style.cursor = 'pointer'; tr.addEventListener('click', () => filtrarEmpenhos({ busca: String(n) }));
-    const c = td(tr, n); c.style.fontWeight = '600'; td(tr, br(r.data)); td(tr, r.secretaria, 'hide-sm'); td(tr, brl2.format(N(r.valor) - N(r.anulado)), 'r'); td(tr, brl2.format(N(r.liquidado)), 'r'); td(tr, brl2.format(N(r.pago)), 'r');
-    td(tr, N(r.saldo_a_pagar) ? brl2.format(N(r.saldo_a_pagar)) : '—', 'r'); pillCell(tr, r.situacao, sitCls(r.situacao)); te.appendChild(tr); });
-  if (!x.emps.size) emptyRow(te, 8, 'Sem empenho.'); }
-rBusca.addEventListener('input', drawReq); rSit.addEventListener('change', drawReq);
-document.getElementById('btn-print-req').addEventListener('click', () => { document.body.classList.add('so-req'); window.print(); setTimeout(() => document.body.classList.remove('so-req'), 500); });
-dash.onData(drawReq);
-// REQ-FIM
+
 
 dash.onData(() => {
   fillMarks('info', {}); fillMarks('alertas_resumo', {}); 
