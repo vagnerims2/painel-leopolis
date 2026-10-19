@@ -703,7 +703,9 @@ let sortK = 'dias', sortDir = -1;
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
   fillSelect(fSec, uniq(d.data, 'secretaria')); fillSelect(fLic, uniq(d.data, 'modalidade')); fillSelect(fNat, uniq(d.data, 'natureza'), natLabel);
-  fillSelect(fTipo, uniq(d.data.filter(r => !fNat.value || r.natureza === fNat.value), 'tipo_despesa'));
+  const subDe = {}; d.data.forEach(r => { if (r.tipo_despesa && r.subelemento) subDe[r.tipo_despesa] = r.subelemento; });
+  const tipos = uniq(d.data.filter(r => !fNat.value || r.natureza === fNat.value), 'tipo_despesa').sort((a, b) => String(subDe[a] || a).localeCompare(String(subDe[b] || b), 'pt-BR', { numeric: true }));
+  fillSelect(fTipo, tipos, v => subDe[v] ? `${subDe[v]} – ${v}` : v);
   const dl = document.getElementById('l-fontes'); if (!dl.children.length) uniq(d.data, 'fonte').forEach(v => { const o = document.createElement('option'); o.value = v; dl.appendChild(o); });
   const fq = nz(fFonte.value.trim()), fcode = /^\d+$/.test(fq) ? fq : null;
   const okF = (r) => !fq || (fcode ? String(r.fonte).split(' - ')[0] === fcode : nz(r.fonte).includes(fq));
@@ -711,7 +713,7 @@ function drawTable() {
   const okI = (dd) => !f || (f === '30' ? dd <= 30 : f === '90' ? dd > 30 && dd <= 90 : dd > 90);
   const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
-    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao].join(' ')).includes(q)))
+    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q)))
     .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); });
   const s = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
   document.getElementById('t-valor').textContent = brl.format(s('valor')); document.getElementById('t-falta').textContent = brl.format(s('falta_liquidar'));
@@ -722,7 +724,7 @@ function drawTable() {
   document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
   window.__empRows = rows;
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
-    td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, r.tipo_despesa, r.fonte].filter(Boolean).join(' · '));
+    td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); pillCell(tr, r.situacao, sitCls(r.situacao));
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
@@ -855,7 +857,7 @@ function cabecalhoImpressao() { let h = document.getElementById('print-head'); i
   const s2 = document.createElement('div'); s2.textContent = 'Filtros: ' + (filtros.length ? filtros.join(' · ') : 'nenhum'); h.append(t, s1, s2); }
 window.addEventListener('beforeprint', cabecalhoImpressao);
 document.getElementById('btn-print').addEventListener('click', () => { cabecalhoImpressao(); try { window.print(); } catch (e) { alert('A impressão não está disponível aqui. Abra o painel no navegador.'); } });
-document.getElementById('btn-csv').addEventListener('click', () => { const rows = window.__empRows || []; const cols = ['empenho', 'data', 'fornecedor', 'secretaria', 'modalidade', 'natureza', 'tipo_despesa', 'fonte', 'valor', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'produtos'];
+document.getElementById('btn-csv').addEventListener('click', () => { const rows = window.__empRows || []; const cols = ['empenho', 'data', 'fornecedor', 'secretaria', 'modalidade', 'natureza', 'subelemento', 'tipo_despesa', 'fonte', 'valor', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'produtos'];
   const esc = (v) => { const t = typeof v === 'number' ? String(v).replace('.', ',') : String(v ?? ''); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
   const csv = '\ufeff' + cols.join(';') + '\n' + rows.map(r => cols.map(c => esc(r[c])).join(';')).join('\n');
   try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'empenhos_selecao.csv'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) { alert('Não foi possível baixar aqui.'); } });
