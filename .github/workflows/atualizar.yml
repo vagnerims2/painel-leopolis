@@ -50,7 +50,7 @@ jobs:
           fi
           cp motor/painel.py motor/coleta.py motor/build.py motor/estado/
       - name: Coleta no portal e recalcula
-        run: python motor/estado/painel.py ${{ github.event.inputs.forcar == 'true' && '--forcar' || '' }}
+        run: python motor/estado/painel.py ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
       - name: Guarda o estado para a próxima vez
         if: success()
         uses: actions/cache/save@v4

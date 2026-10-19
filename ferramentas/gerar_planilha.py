@@ -85,11 +85,11 @@ aba(wb, 'Empenhos', E,
     [('empenho', 'Empenho'), ('data', 'Data'), ('tipo', 'Tipo'), ('fornecedor', 'Fornecedor'), ('secretaria', 'Secretaria'), ('modalidade', 'Modalidade'), ('licitacao', 'Licitação'),
      ('contrato', 'Contrato'), ('natureza', 'Natureza'), ('subelemento', 'Código da despesa'), ('tipo_despesa', 'Tipo de despesa'), ('dotacao', 'Dotação'), ('fonte', 'Fonte'),
      ('valor', 'Valor empenhado'), ('anulado', 'Anulado'), ('liquidado', 'Liquidado'), ('pago', 'Pago'), ('falta_liquidar', 'Falta liquidar'), ('liquidado_nao_pago', 'Liquidado não pago'),
-     ('saldo_a_pagar', 'Saldo a pagar'), ('situacao', 'Situação'), ('dias', 'Dias'), ('primeira_liquidacao', '1ª liquidação'), ('dias_ate_liquidar', 'Dias até liquidar'),
+     ('saldo_a_pagar', 'Saldo a pagar'), ('situacao', 'Situação'), ('estornos', 'Estornos / anulações'), ('dias', 'Dias'), ('primeira_liquidacao', '1ª liquidação'), ('dias_ate_liquidar', 'Dias até liquidar'),
      ('ultimo_pagamento', 'Último pagamento'), ('dias_ate_pagar', 'Dias até pagar'), ('produtos', 'Produtos / histórico')],
     {'empenho': 'int', 'data': 'data', 'valor': 'moeda', 'anulado': 'moeda', 'liquidado': 'moeda', 'pago': 'moeda', 'falta_liquidar': 'moeda', 'liquidado_nao_pago': 'moeda',
      'saldo_a_pagar': 'moeda', 'dias': 'int', 'primeira_liquidacao': 'data', 'dias_ate_liquidar': 'int', 'ultimo_pagamento': 'data', 'dias_ate_pagar': 'int'},
-    {'fornecedor': 38, 'secretaria': 30, 'tipo_despesa': 34, 'fonte': 30, 'produtos': 60, 'subelemento': 17, 'licitacao': 18})
+    {'fornecedor': 38, 'secretaria': 30, 'tipo_despesa': 34, 'fonte': 30, 'produtos': 60, 'estornos': 50, 'subelemento': 17, 'licitacao': 18})
 aba(wb, 'Itens', IT,
     [('empenho', 'Empenho'), ('data', 'Data'), ('fornecedor', 'Fornecedor'), ('secretaria', 'Secretaria'), ('licitacao', 'Licitação'), ('produto', 'Produto'), ('marca', 'Marca'),
      ('quantidade', 'Quantidade'), ('valor_unitario', 'Valor unitário'), ('valor_total', 'Valor total'), ('situacao', 'Situação do empenho')],

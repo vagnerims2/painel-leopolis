@@ -123,6 +123,20 @@ for n, e in E.items():
             a = norm(x['produto'])
             if abs(vu - float(i['vu'] or 0)) < 0.006 and b and a != b and b in a:
                 i['p'] = x['produto']; nomes_corrigidos += 1; break
+TIPOS_EST = (('Estorno de Empenho', 'Empenho anulado'), ('Anula', 'Empenho anulado'), ('Estorno de Liquida', 'Liquidação estornada'), ('Estorno de Pagamento', 'Pagamento estornado'))
+def _estornos(e, pags):
+    """[(descrição, valor, data)] dos estornos e anulações deste empenho"""
+    out = []
+    for m in e['movs']:
+        for chave, nome in TIPOS_EST:
+            if m['k'].lower().startswith(chave.lower()):
+                out.append((nome, abs(m['v']), m['d'])); break
+    if not any(x[0] == 'Pagamento estornado' for x in out):
+        out += [('Pagamento estornado', p['v'], p['d']) for p in pags if p.get('est')]
+    return out
+def _fmt_est(lst):
+    br = lambda v: f"R$ {v:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
+    return '; '.join(f"{nome} {br(v)}" + (f" em {'/'.join(reversed(d.split('-')))}" if d else '') for nome, v, d in sorted(lst, key=lambda x: x[2] or '9'))
 rows = {}
 for n, e in E.items():
     anul = sum(abs(m['v']) for m in e['movs'] if re.match(r'Estorno de Empenho|Anula', m['k'], re.I))
@@ -140,7 +154,8 @@ for n, e in E.items():
     rows[n] = dict(empenho=n, data=e['d'], tipo=e['tipo'], fornecedor=re.sub(r'^[\d.]+\s+', '', e['forn']), secretaria=sec(e['sec']),
         licitacao=licit(e['lic']), modalidade=modal(e['lic']), contrato=e.get('contrato', ''), natureza='.'.join(e['el'].split('.')[:4]), subelemento=codigo_de(e),
         tipo_despesa=e['eld'], dotacao=e.get('dot', ''), fonte=fonte_de(e), valor=round(e['v'], 2), anulado=round(anul, 2), liquidado=round(liquidado, 2), pago=round(pago, 2),
-        primeira_liquidacao=d1, ultimo_pagamento=dp, produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])))
+        primeira_liquidacao=d1, ultimo_pagamento=dp, produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])),
+        _anul_movs=round(anul, 2), _est=_estornos(e, pag_e[n]))
 
 # reconcilia com o saldo a pagar oficial (fornecedor + data): anulações posteriores
 saldo_g = defaultdict(float)
@@ -163,6 +178,10 @@ for g, rs in grp.items():
     for r in rs: r['grupo_saldo'] = f"{g[0]} {g[1]}" if S > 0 else ''; r['saldo_grupo_portal'] = round(S, 2)
 
 for r in rows.values():
+    est = list(r.pop('_est')); a0 = r.pop('_anul_movs')
+    if r['anulado'] - a0 > 0.5:   # anulação vista pelo saldo do portal, sem a nota no relatório do empenho
+        est.append(('Empenho anulado', round(r['anulado'] - a0, 2), ''))
+    r['estornos'] = _fmt_est(est); r['valor_estornado'] = round(sum(v for _, v, _ in est), 2)
     liquido = r['valor'] - r['anulado']
     r['falta_liquidar'] = round(max(0, liquido - r['liquidado']), 2)
     r['liquidado_nao_pago'] = round(max(0, min(r['liquidado'], liquido) - r['pago']), 2)
@@ -175,7 +194,7 @@ for r in rows.values():
 
 cols = ['empenho', 'data', 'tipo', 'fornecedor', 'secretaria', 'licitacao', 'modalidade', 'contrato', 'natureza', 'subelemento', 'tipo_despesa', 'dotacao', 'fonte',
         'valor', 'anulado', 'liquidado', 'pago', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'primeira_liquidacao', 'dias_ate_liquidar',
-        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos']
+        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos', 'estornos', 'valor_estornado']
 R = sorted(rows.values(), key=lambda r: (r['data'], int(r['empenho'])), reverse=True)
 def wcsv(name, rs, cs):
     with open(os.path.join(out, name), 'w', newline='', encoding='utf-8') as f:
