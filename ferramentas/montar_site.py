@@ -42,7 +42,7 @@ if modo == 'externo':
     body = body.replace(' · <a href="data/dotacoes.csv">dotações</a>', '')
 else:
     body = body.replace('href="data/', 'href="../data/')
-    body = body.replace('Baixar dados (CSV):', '<a href="resumos/ultimo.pdf">Último resumo semanal (PDF)</a> · Baixar dados (CSV):')
+    body = body.replace('Baixar dados (CSV):', '<a href="planilha/painel_empenhos.xlsx"><b>Baixar planilha (Excel)</b></a> · <a href="resumos/ultimo.pdf">Último resumo semanal (PDF)</a> · Baixar dados (CSV):')
 
 shell = open(__file__.replace('montar_site.py', 'molde.html'), encoding='utf-8').read()
 dados = 'data/' if modo == 'externo' else '../data/'
