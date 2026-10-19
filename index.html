@@ -148,6 +148,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 #dash-root .tabs button[data-go=dotacoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10h-10V2zm2 0v8h8a10 10 0 0 0-8-8z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=empenhos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 4h18v3H3zM3 10h18v3H3zM3 16h18v3H3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=produtos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=requisicoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM9 12h8v2H9zm0 4h8v2H9z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=semana]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 2h2v2h6V2h2v2h4v18H3V4h4V2zm12 8H5v10h14V10z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=compras]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20V10h3v10H4zm6 0V4h3v16h-3zm6 0v-7h3v7h-3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=conferencia]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m9 16.2-4.2-4.2-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E")}
@@ -252,6 +253,19 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
   #dash-root .hide-sm{display:table-cell!important}
   #dash-root *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
+
+@media print{body.so-req #dash-root .pg > *:not(main),body.so-req #dash-root .tabs,body.so-req #dash-root .tab:not([data-tab=requisicoes]),body.so-req #req,body.so-req #dash-root .hero,body.so-req #dash-root .foot{display:none!important}
+body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:block!important}}
+#dash-root #t-req tr.sel td{background:color-mix(in srgb,var(--c1,#3D85D8) 12%,transparent)}
+#dash-root .trilha{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:10px 0 4px}
+#dash-root .trilha .etapa{border:1px solid var(--color-border-line);border-top:5px solid var(--color-border-line);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:2px;font-size:13px}
+#dash-root .trilha .etapa span{color:var(--color-fg-muted);font-size:12px}
+#dash-root .trilha .feito{border-top-color:var(--color-ok)} #dash-root .trilha .feito b::before{content:"✓ ";color:var(--color-ok)}
+#dash-root .trilha .parcial{border-top-color:var(--color-warn)} #dash-root .trilha .parcial b::before{content:"◐ ";color:var(--color-warn)}
+#dash-root .trilha .parado{border-top-color:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 6%,transparent)} #dash-root .trilha .parado b::before{content:"● ";color:var(--color-bad)}
+#dash-root .trilha .anulado{border-top-color:var(--color-fg-muted)} #dash-root .trilha .anulado b{text-decoration:line-through}
+#dash-root .trilha .falta{opacity:.55}
+@media (max-width:640px){#dash-root .trilha{grid-template-columns:1fr 1fr}}
 
 /* versão para o cidadão: só informação geral */
 #dash-root .tabs button[data-go=alertas],#dash-root .tabs button[data-go=dotacoes],#dash-root .tabs button[data-go=semana],
@@ -458,6 +472,8 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
     </div>
   </section>
 
+
+
   <!-- ============ DIA E SEMANA ============ -->
   <section class="tab" data-tab="semana" hidden>
     <section class="tiles">
@@ -540,7 +556,9 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
   };
   const v = Date.now();
   fetch('data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  Promise.all(FONTES.map(n => fetch('data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); })))
+  const OPCIONAIS = [];
+  Promise.all(FONTES.map(n => fetch('data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
+    .concat(OPCIONAIS.map(n => fetch('data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
     .finally(() => ouvintes.forEach(f => f()));
 })();
@@ -879,6 +897,8 @@ document.getElementById('btn-csv').addEventListener('click', () => { const rows 
 function fillMarks(src, fmt) { const t = dash.data(src); document.querySelectorAll(`#dash-root [data-source="${src}"][data-field]`).forEach(el => {
   if (t.status !== 'ok' || !t.data[0]) { el.textContent = '—'; el.classList.toggle('dash-skeleton', t.status === 'loading'); return; }
   el.classList.remove('dash-skeleton'); const k = el.dataset.field, v = t.data[0][k]; el.textContent = fmt[k] ? fmt[k](v) : (typeof v === 'number' ? intF.format(v) : String(v)); }); }
+
+
 dash.onData(() => {
   fillMarks('info', {}); fillMarks('alertas_resumo', {}); 
   const c = (v) => brlC.format(v); fillMarks('totais', { empenhado: c, estornado: c, liquidado: c, pago: c, saldo: c, falta: c, lnp: c });

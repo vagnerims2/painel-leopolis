@@ -69,7 +69,9 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
   };
   const v = Date.now();
   fetch('__DADOS__atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  Promise.all(FONTES.map(n => fetch('__DADOS__' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); })))
+  const OPCIONAIS = ['requisicoes'];
+  Promise.all(FONTES.map(n => fetch('__DADOS__' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
+    .concat(OPCIONAIS.map(n => fetch('__DADOS__' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
     .finally(() => ouvintes.forEach(f => f()));
 })();

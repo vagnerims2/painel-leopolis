@@ -35,6 +35,10 @@ EXTERNO_CSS = """
 """
 if modo == 'externo':
     style += EXTERNO_CSS
+    # busca por requisição de compra: só na versão interna
+    body = re.sub(r'\s*<button data-go="requisicoes"[^<]*</button>', '', body)
+    body = cut(body, '<!--REQ-INI-->', '<!--REQ-FIM-->')
+    js = cut(js, '// REQ-INI', '// REQ-FIM')
     body = body.replace('Prefeitura Municipal de Leópolis · Execução da despesa', 'Prefeitura Municipal de Leópolis · Transparência')
     body = body.replace('<h1 id="titulo">Empenhos e liquidações — 2026</h1>', '<h1 id="titulo">Despesas do Município — 2026</h1>')
     body = body.replace('Marque "Só com saldo a pagar" para ver apenas o que está em aberto. Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).', 'Pesquise por número, fornecedor ou produto e use os filtros para refinar.')
@@ -49,5 +53,7 @@ dados = 'data/' if modo == 'externo' else '../data/'
 cab = '' if modo == 'externo' else '<meta name="robots" content="noindex,nofollow">'
 titulo = 'Despesas do Município — Leópolis' if modo == 'externo' else 'Painel interno de Empenhos — Leópolis'
 out = shell.replace('<!--CAB-->', cab).replace('__DADOS__', dados).replace('<title>Painel de Empenhos — Leópolis</title>', '<title>' + titulo + '</title>').replace('/*ESTILO*/', style).replace('<!--CORPO-->', body).replace('/*PAGINA*/', js)
+if modo == 'externo':
+    out = out.replace("const OPCIONAIS = ['requisicoes'];", 'const OPCIONAIS = [];')
 open(sys.argv[2], 'w', encoding='utf-8').write(out)
 print('ok', len(out))
