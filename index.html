@@ -730,12 +730,18 @@ function drawTable() {
   if (fq && sf.status === 'ok') { const m = sf.data.filter(r => fcode ? String(r.codigo) === fcode : nz(r.fonte).includes(fq)); if (m.length) extra = ` · saldo oficial da fonte no portal: ${brl.format(m.reduce((a, r) => a + Number(r.saldo_a_pagar), 0))}`; }
   document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
   window.__empRows = rows;
-  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
+  const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 500; }
+  const lim = window.__empLim || 500;
+  rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
     td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); pillCell(tr, r.situacao, sitCls(r.situacao));
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
-  if (rows.length > 500) emptyRow(tb, 9, `Mostrando 500 de ${intF.format(rows.length)} empenhos (o total acima considera todos). Refine a busca.`);
+  if (rows.length > lim) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = 9; c.style.color = 'var(--color-fg-muted)';
+    c.append(document.createTextNode(`Mostrando ${intF.format(lim)} de ${intF.format(rows.length)} empenhos (os totais consideram todos). `));
+    const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'btn2'; mais.textContent = 'Mostrar mais 500'; mais.style.marginRight = '8px'; mais.addEventListener('click', () => { window.__empLim = lim + 500; drawTable(); });
+    const todos = document.createElement('button'); todos.type = 'button'; todos.className = 'btn2'; todos.textContent = `Mostrar todos (${intF.format(rows.length)})`; todos.addEventListener('click', () => { window.__empLim = rows.length; drawTable(); });
+    c.append(mais, todos); tr.appendChild(c); tb.appendChild(tr); }
   if (!rows.length) emptyRow(tb, 9, 'Nenhum empenho com esse filtro.');
   document.querySelectorAll('#tbl th').forEach(th => th.removeAttribute('aria-sort'));
   const th = [...document.querySelectorAll('#tbl th')].find(t => t.querySelector('button').dataset.k === sortK); if (th) th.setAttribute('aria-sort', sortDir > 0 ? 'ascending' : 'descending');
