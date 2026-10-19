@@ -364,7 +364,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Preços acima do padrão</h2>
       <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
       <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
-        <select id="pa-per"><option value="30">últimos 30 dias</option><option value="90">últimos 90 dias</option><option value="">ano todo</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
+        <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="mais30">Mais de 30 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
       <p class="note" id="pa-total"></p>
       <div class="tblwrap"><table id="t-pa"><thead><tr><th>Produto</th><th>Data</th><th>Empenho</th><th class="hide-sm">Fornecedor</th><th class="r">Preço pago</th><th class="r">Mediana do ano</th><th class="r">Acima</th></tr></thead><tbody></tbody></table></div>
     </div>
@@ -413,7 +413,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <select id="f-tipo"><option value="">Todos os tipos de despesa</option></select>
         <select id="f-sec"><option value="">Todas as secretarias</option></select>
         <select id="f-lic"><option value="">Todas as modalidades</option></select>
-        <select id="faixa"><option value="">Todas as idades</option><option value="30">Até 30 dias</option><option value="90">31 a 90 dias</option><option value="91">Mais de 90 dias</option></select>
+        <select id="faixa"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="mais30">Mais de 30 dias</option></select>
       </div>
       <div class="linha-total"><p class="note" id="filtro-total"></p><button type="button" class="btn2" id="btn-csv">Exportar seleção (CSV)</button></div>
       <div class="tblwrap"><table id="tbl" data-source="emp" data-row-key="empenho"><thead><tr>
@@ -731,7 +731,7 @@ function drawTable() {
   const fq = nz(fFonte.value.trim()), fcode = /^\d+$/.test(fq) ? fq : null;
   const okF = (r) => !fq || (fcode ? String(r.fonte).split(' - ')[0] === fcode : nz(r.fonte).includes(fq));
   const q = nz(busca.value.trim()), f = faixa.value;
-  const okI = (dd) => !f || (f === '30' ? dd <= 30 : f === '90' ? dd > 30 && dd <= 90 : dd > 90);
+  const okI = (dd) => !f || (f === 'ate30' ? dd <= 30 : dd > 30);
   const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
     && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q)))
@@ -866,8 +866,8 @@ function drawConsumo() { const d = dash.data('consumo_lic'), tb = document.query
 clBusca.addEventListener('input', drawConsumo); clMod.addEventListener('change', drawConsumo);
 const paLim = document.getElementById('pa-lim'), paPer = document.getElementById('pa-per'), paBusca = document.getElementById('pa-busca');
 function drawPrecos() { const d = dash.data('precos_alto'), tb = document.querySelector('#t-pa tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const lim = Number(paLim.value) / 100, q = nz(paBusca.value.trim());
-  const desde = paPer.value ? new Date(Date.now() - Number(paPer.value) * 864e5).toISOString().slice(0, 10) : '';
-  const rows = d.data.filter(r => r.acima >= lim && (!desde || r.data >= desde) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
+  const corte = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), pp = paPer.value;
+  const rows = d.data.filter(r => r.acima >= lim && (!pp || (pp === 'ate30' ? r.data >= corte : r.data < corte)) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
   rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.secretaria + ' · ' + r.compras + ' compras no ano'); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
     const c = td(tr, '+' + d1.format(r.acima * 100) + '%', 'r ' + (r.acima >= 1 ? 'late' : 'mid')); tb.appendChild(tr); });
   document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens` + (rows.length > 300 ? ' (mostrando 300)' : '');
