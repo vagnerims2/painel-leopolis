@@ -301,9 +301,9 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <!-- ============ VISÃO GERAL ============ -->
   <section class="tab" data-tab="geral">
     <div class="alert" id="alertas-resumo">
-      <button data-goto="alertas"><div class="lbl">Sem liquidar há 10–19 dias</div><div class="num" data-source="alertas_resumo" data-field="d10" data-row="0">—</div></button>
-      <button data-goto="alertas"><div class="lbl">Sem liquidar há 20–29 dias</div><div class="num mid" data-source="alertas_resumo" data-field="d20" data-row="0">—</div></button>
-      <button data-goto="alertas"><div class="lbl">Sem liquidar há 30+ dias</div><div class="num late" data-source="alertas_resumo" data-field="d30" data-row="0">—</div></button>
+      <button data-goto="alertas" data-faixa="ate30"><div class="lbl">Sem liquidar há até 30 dias</div><div class="num" data-source="alertas_resumo" data-field="d10" data-row="0">—</div></button>
+      <button data-goto="alertas" data-faixa="31a90"><div class="lbl">Sem liquidar há 31 a 90 dias</div><div class="num mid" data-source="alertas_resumo" data-field="d20" data-row="0">—</div></button>
+      <button data-goto="alertas" data-faixa="mais90"><div class="lbl">Sem liquidar há mais de 90 dias</div><div class="num late" data-source="alertas_resumo" data-field="d30" data-row="0">—</div></button>
       <button data-goto="dotacoes"><div class="lbl">Dotações que não fecham o mês</div><div class="num late" data-source="alertas_resumo" data-field="dot_mes" data-row="0">—</div></button>
     </div>
     <section class="tiles">
@@ -357,7 +357,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <p class="note">Empenhos ordinários abertos sem nenhuma liquidação, comparados com o tempo médio de liquidação do mesmo tipo de despesa. Globais e estimativos ficam de fora (são liquidados aos poucos).</p>
       <div class="tools">
         <input id="a-busca" type="search" placeholder="Buscar nº, fornecedor, produto…">
-        <select id="a-faixa"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="mais30">Mais de 30 dias</option></select>
+        <select id="a-faixa"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
         <select id="a-sec"><option value="">Todas as secretarias</option></select>
         <label><input id="a-acima" type="checkbox"> só os acima do normal do tipo</label>
       </div>
@@ -371,7 +371,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Preços acima do padrão</h2>
       <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
       <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
-        <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="mais30">Mais de 30 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
+        <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
       <p class="note" id="pa-total"></p>
       <div class="tblwrap"><table id="t-pa"><thead><tr><th>Produto</th><th>Data</th><th>Empenho</th><th class="hide-sm">Fornecedor</th><th class="r">Preço pago</th><th class="r">Mediana do ano</th><th class="r">Acima</th></tr></thead><tbody></tbody></table></div>
     </div>
@@ -420,7 +420,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <select id="f-tipo"><option value="">Todos os tipos de despesa</option></select>
         <select id="f-sec"><option value="">Todas as secretarias</option></select>
         <select id="f-lic"><option value="">Todas as modalidades</option></select>
-        <select id="faixa"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="mais30">Mais de 30 dias</option></select>
+        <select id="faixa"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
       </div>
       <div class="linha-total"><p class="note" id="filtro-total"></p><button type="button" class="btn2" id="btn-csv">Exportar seleção (CSV)</button></div>
       <div class="tblwrap"><table id="tbl" data-source="emp" data-row-key="empenho"><thead><tr>
@@ -609,7 +609,7 @@ dash.calc('parados', {
 });
 dash.calc('alertas_resumo', {
   title: 'Resumo dos alertas', description: 'Quantos empenhos parados por faixa de dias e quantas dotações recorrentes não fecham o mês.', inputs: ['parados', 'dotacoes'],
-  fn: (parados, dotacoes) => [{ d10: parados.filter(r => r.dias >= 10 && r.dias < 20).length, d20: parados.filter(r => r.dias >= 20 && r.dias < 30).length, d30: parados.filter(r => r.dias >= 30).length,
+  fn: (parados, dotacoes) => [{ d10: parados.filter(r => r.dias <= 30).length, d20: parados.filter(r => r.dias > 30 && r.dias <= 90).length, d30: parados.filter(r => r.dias > 90).length,
     dot_mes: dotacoes.filter(r => r.recorrente === 'Sim' && Number(r.falta_fechar_mes) > 0).length }]
 });
 dash.calc('semana', {
@@ -701,6 +701,7 @@ function triCols(el, rows, label, title) { const max = Math.max(1, ...rows.map(r
     [[r.e, C0], [r.l, C1], [r.p, C2]].forEach(([v, c]) => { const d = document.createElement('div'); d.style.background = c; d.style.height = (Math.max(0, v) / max * 100) + '%'; p.appendChild(d); });
     const l = document.createElement('div'); l.className = 'clbl'; l.textContent = label(r); col.append(p, l);
     hoverable(col, ev => showTip(ev, title(r), [`Empenhado: ${brl.format(r.e)}`, `Liquidado: ${brl.format(r.l)}`, `Pago: ${brl.format(r.p)}`])); el.appendChild(col); }); }
+const naFaixa = (fx, dd) => !fx || (fx === 'ate30' ? dd <= 30 : fx === '31a90' ? dd > 30 && dd <= 90 : dd > 90);
 function td(tr, txt, cls) { const c = document.createElement('td'); c.textContent = txt; if (cls) c.className = cls; tr.appendChild(c); return c; }
 function fornCell(tr, forn, sub) { const c = td(tr, forn); if (sub) { const s = document.createElement('div'); s.className = 'sub2'; s.textContent = sub; c.appendChild(s); } return c; }
 function emptyRow(tb, n, msg) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = n; c.textContent = msg; c.style.color = 'var(--color-fg-muted)'; tr.appendChild(c); tb.appendChild(tr); }
@@ -714,7 +715,7 @@ function pillCell(tr, txt, cls) { const c = document.createElement('td'); const 
 function irPara(aba) { document.querySelectorAll('#dash-root .tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.go === aba)));
   document.querySelectorAll('#dash-root .tab').forEach(s => { s.hidden = s.dataset.tab !== aba; }); dash.setLink(aba); }
 document.querySelectorAll('#dash-root .tabs button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.go)));
-document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListener('click', () => irPara(b.dataset.goto)));
+document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListener('click', () => { irPara(b.dataset.goto); if (b.dataset.faixa) { const s = document.getElementById('a-faixa'); s.value = b.dataset.faixa; s.dispatchEvent(new Event('change')); } }));
 { const h = ['alertas', 'dotacoes', 'semana'].includes(location.hash.slice(1)) ? '' : location.hash.slice(1); if (document.querySelector(`#dash-root .tabs button[data-go="${h}"]`)) irPara(h); }
 
 // ---------- Empenhos ----------
@@ -738,7 +739,7 @@ function drawTable() {
   const fq = nz(fFonte.value.trim()), fcode = /^\d+$/.test(fq) ? fq : null;
   const okF = (r) => !fq || (fcode ? String(r.fonte).split(' - ')[0] === fcode : nz(r.fonte).includes(fq));
   const q = nz(busca.value.trim()), f = faixa.value;
-  const okI = (dd) => !f || (f === 'ate30' ? dd <= 30 : dd > 30);
+  const okI = (dd) => naFaixa(f, dd);
   const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
     && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q)))
@@ -778,11 +779,11 @@ function filtrarEmpenhos(o) { irPara('empenhos'); busca.value = o.busca || ''; f
 const aBusca = document.getElementById('a-busca'), aFaixa = document.getElementById('a-faixa'), aSec = document.getElementById('a-sec'), aAcima = document.getElementById('a-acima');
 function drawAlertas() { const d = dash.data('parados'), tb = document.querySelector('#t-alertas tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
   fillSelect(aSec, uniq(d.data, 'secretaria')); const q = nz(aBusca.value.trim()), fx = aFaixa.value;
-  const rows = d.data.filter(r => (!fx || (fx === 'ate30' ? r.dias <= 30 : r.dias > 30)) && (!aSec.value || r.secretaria === aSec.value) && (!aAcima.checked || (r.media_tipo !== null && r.dias > r.media_tipo * 1.5 + 5)) && (!q || nz([r.empenho, r.fornecedor, r.produtos].join(' ')).includes(q)));
+  const rows = d.data.filter(r => naFaixa(fx, r.dias) && (!aSec.value || r.secretaria === aSec.value) && (!aAcima.checked || (r.media_tipo !== null && r.dias > r.media_tipo * 1.5 + 5)) && (!q || nz([r.empenho, r.fornecedor, r.produtos].join(' ')).includes(q)));
   document.getElementById('a-total').textContent = `${intF.format(rows.length)} empenhos parados · ${brl.format(rows.reduce((a, r) => a + r.valor, 0))}`;
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho; td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data));
     fornCell(tr, r.fornecedor, [r.produtos, r.tipo_despesa].filter(Boolean).join(' · ')); td(tr, r.secretaria, 'hide-sm'); td(tr, brl.format(r.valor), 'r');
-    td(tr, String(r.dias), 'r ' + (r.dias >= 30 ? 'late' : r.dias >= 20 ? 'mid' : '')); td(tr, r.media_tipo === null ? '—' : `${d1.format(r.media_tipo)} dias`, 'r hide-sm'); tb.appendChild(tr); });
+    td(tr, String(r.dias), 'r ' + (r.dias > 90 ? 'late' : r.dias > 30 ? 'mid' : '')); td(tr, r.media_tipo === null ? '—' : `${d1.format(r.media_tipo)} dias`, 'r hide-sm'); tb.appendChild(tr); });
   if (!rows.length) emptyRow(tb, 7, 'Nenhum empenho parado com esse filtro.'); }
 aBusca.addEventListener('input', drawAlertas); [aFaixa, aSec, aAcima].forEach(e => e.addEventListener('change', drawAlertas));
 const tmPor = document.getElementById('tm-por'), tmLentos = document.getElementById('tm-lentos');
@@ -873,8 +874,8 @@ function drawConsumo() { const d = dash.data('consumo_lic'), tb = document.query
 clBusca.addEventListener('input', drawConsumo); clMod.addEventListener('change', drawConsumo);
 const paLim = document.getElementById('pa-lim'), paPer = document.getElementById('pa-per'), paBusca = document.getElementById('pa-busca');
 function drawPrecos() { const d = dash.data('precos_alto'), tb = document.querySelector('#t-pa tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const lim = Number(paLim.value) / 100, q = nz(paBusca.value.trim());
-  const corte = new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10), pp = paPer.value;
-  const rows = d.data.filter(r => r.acima >= lim && (!pp || (pp === 'ate30' ? r.data >= corte : r.data < corte)) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
+  const pp = paPer.value;
+  const rows = d.data.filter(r => r.acima >= lim && naFaixa(pp, Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5)) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
   rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.secretaria + ' · ' + r.compras + ' compras no ano'); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
     const c = td(tr, '+' + d1.format(r.acima * 100) + '%', 'r ' + (r.acima >= 1 ? 'late' : 'mid')); tb.appendChild(tr); });
   document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens` + (rows.length > 300 ? ' (mostrando 300)' : '');
