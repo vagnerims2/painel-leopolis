@@ -10,17 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida7; pip install -q requests
+          mkdir -p saida8; pip install -q requests
           python3 - <<'PY'
           import sys; sys.path.insert(0,'.')
           import motor_coleta as c
           t = c.tabelas_mes(2026, 10)
-          dias = [(c.iso(r['c'][1]), r['a']) for r in t['liq'] if r['a'] and r['c'][1].endswith('/10/2026')]
-          d, url = [x for x in dias if x[0] == '2026-10-16'][0]
-          txt = c.pdf_texto(url)
-          open('saida7/liq_16_10.txt', 'w').write(txt)
-          b = c.get(url, binario=True); open('saida7/liq_16_10.pdf', 'wb').write(b)
+          url = [r['a'] for r in t['emp'] if r['a'] and r['c'][1] == '13/10/2026'][0]
+          open('saida8/emp_13_10.txt', 'w').write(c.pdf_texto(url)[:60000])
           PY
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida7 && git commit -qm "resultado7" && git push -q origin investigacao
+          git add saida8 && git commit -qm "resultado8" && git push -q origin investigacao
