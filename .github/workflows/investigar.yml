@@ -1,0 +1,22 @@
+name: Investigar portal
+on:
+  push:
+    branches: [investigacao]
+permissions:
+  contents: write
+jobs:
+  ver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p saida; B="https://leopolispr.equiplano.com.br:7300/transparencia"
+          curl -sSk -m 60 "$B/" -o saida/home.html
+          grep -oiE 'href="[^"]*"' saida/home.html | sort -u > saida/links.txt
+          grep -iE 'nota|fiscal|nfe|documento' saida/links.txt > saida/links_nota.txt || true
+          for u in $(grep -oE '"[^"]*"' saida/links_nota.txt | tr -d '"' | head -8); do
+            n=$(echo "$u" | tr -c 'a-zA-Z0-9' '_' | cut -c1-80); curl -sSk -m 60 "$B/$u" -o "saida/p_$n.html" || true; done
+          ls -la saida
+      - run: |
+          git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
+          git add saida && git commit -qm "resultado" && git push -q origin investigacao
