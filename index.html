@@ -310,6 +310,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .vis-sel button{font:inherit;font-size:14px;font-weight:600;padding:8px 18px;border:0;background:#fff;color:#1F4E8C;cursor:pointer}
 #dash-root .vis-sel button[aria-selected=true]{background:#1F4E8C;color:#fff}
 @media print{#dash-root .vis-sel{display:none}}
+#dash-root .motivo{font-weight:400;font-size:11px;color:#1F4E8C;background:#eaf2fc;border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block}
 
 /* versão para o cidadão: só informação geral */
 #dash-root .tabs button[data-go=alertas],#dash-root .tabs button[data-go=dotacoes],#dash-root .tabs button[data-go=semana],
@@ -461,7 +462,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Buscar nº do empenho, nº da nota, fornecedor, produto, contrato…">
+        <input id="busca" type="search" placeholder="Nº do empenho, da nota, da dotação ou do contrato; ou nome do fornecedor/produto…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -794,6 +795,19 @@ const soEst = document.getElementById('so-est');
 const busca = document.getElementById('busca'), soSaldo = document.getElementById('so-saldo'), fSit = document.getElementById('f-sit'), fFonte = document.getElementById('f-fonte'),
   fNat = document.getElementById('f-nat'), fTipo = document.getElementById('f-tipo'), fSec = document.getElementById('f-sec'), fLic = document.getElementById('f-lic'), faixa = document.getElementById('faixa');
 let sortK = 'dias', sortDir = -1;
+// busca: número → só correspondência exata (empenho, nota, dotação, contrato, licitação), com o motivo; texto → nome, produto etc.
+const semZeros = (v) => String(v || '').replace(/^0+(?=\d)/, '');
+function casaBusca(r, q) { r._motivo = '';
+  if (/^\d+(\/\d{2,4})?$/.test(q)) { const n = semZeros(q.split('/')[0]);
+    if (semZeros(r.empenho) === n) return true;
+    const nf = (notasPorEmp()[r.empenho] || []).find(x => semZeros(String(x.numero).split('/')[0]) === n);
+    if (nf) { r._motivo = `achado pela nota fiscal nº ${nf.numero}`; return true; }
+    if (semZeros(r.dotacao) === n) { r._motivo = `achado pela dotação ${r.dotacao}`; return true; }
+    const num = (t) => (String(t || '').match(/(\d+)\s*\/\s*\d{4}/) || [])[1];
+    if (semZeros(num(r.contrato)) === n) { r._motivo = `achado pelo contrato ${r.contrato}`; return true; }
+    if (semZeros(num(r.licitacao)) === n) { r._motivo = `achado pela licitação ${r.licitacao}`; return true; }
+    return false; }
+  return nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q); }
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
   fillSelect(fSec, uniq(d.data, 'secretaria')); fillSelect(fLic, uniq(d.data, 'modalidade')); fillSelect(fNat, uniq(d.data, 'natureza'), natLabel);
@@ -807,8 +821,9 @@ function drawTable() {
   const okI = (dd) => naFaixa(f, dd);
   const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
-    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q) || (/^\d{3,}$/.test(q) && (notasPorEmp()[r.empenho] || []).some(x => String(x.numero).replace(/^0+/, '') === q.replace(/^0+/, '')))))
-    .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); });
+    && (!q || casaBusca(r, q)))
+    .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); })
+    .sort((a, b) => (a._motivo ? 1 : 0) - (b._motivo ? 1 : 0));   // o próprio empenho primeiro, depois os achados por nota/dotação/contrato
   const s = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
   document.getElementById('t-valor').textContent = brl.format(s('valor')); document.getElementById('t-falta').textContent = brl.format(s('falta_liquidar'));
   document.getElementById('t-lnp').textContent = brl.format(s('liquidado_nao_pago')); document.getElementById('t-saldo').textContent = brl.format(s('saldo_a_pagar'));
@@ -820,7 +835,7 @@ function drawTable() {
   const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 500; }
   const lim = window.__empLim || 500;
   rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
-    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
+    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); { const pc = pillCell(tr, r.situacao, sitCls(r.situacao)); if (r.estornos) { const x = document.createElement('div'); x.className = 'sub2 est'; x.textContent = r.estornos; pc.appendChild(x); } }
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
