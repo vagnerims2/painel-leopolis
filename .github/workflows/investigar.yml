@@ -10,10 +10,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida3; B="https://leopolispr.equiplano.com.br:7300/transparencia"
-          curl -sSk -m 120 -D saida3/h1.txt "$B/relacaoDocumentosFiscais/downloadDocumento?formulario.idFornecedorDoc=92319" -o saida3/doc1.bin -w "%{http_code} %{content_type} %{size_download}\n" > saida3/st.txt
-          curl -sSk -m 120 -D saida3/h2.txt "$B/relacaoDocumentosFiscais/downloadDocumento?formulario.idFornecedorDoc=92324" -o saida3/doc2.bin -w "%{http_code} %{content_type} %{size_download}\n" >> saida3/st.txt
-          file saida3/doc1.bin saida3/doc2.bin >> saida3/st.txt
+          mkdir -p saida4; B="https://leopolispr.equiplano.com.br:7300/transparencia/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais"
+          Q="formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial=16/10/2026&formulario.dtFinal=19/10/2026&formulario.codEntidade=300&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade="
+          J=saida4/cj.txt
+          (time curl -sSk -m 200 -c $J -b $J "$B?$Q&d-5470-p=1" -o saida4/p1.html) 2>> saida4/t.txt
+          (time curl -sSk -m 200 -c $J -b $J "$B?$Q&d-5470-p=2" -o saida4/p2.html) 2>> saida4/t.txt
+          (time curl -sSk -m 200 "$B?$Q&d-5470-p=2" -o saida4/p2_semcookie.html) 2>> saida4/t.txt
+          Q2="formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial=01/01/2026&formulario.dtFinal=20/10/2026&formulario.codEntidade=300&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade="
+          (time curl -sSk -m 300 "$B?$Q2&d-5470-p=3" -o saida4/ano_p3.html) 2>> saida4/t.txt
+          for f in saida4/*.html; do echo "$f $(grep -o '[0-9.]* itens encontrad' $f) linhas=$(grep -c 'class=\"odd\"\|class=\"even\"' $f) primeira=$(grep -o 'idFornecedorDoc=[0-9]*' $f | head -1)" >> saida4/t.txt; done
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida3 && git commit -qm "resultado3" && git push -q origin investigacao
+          git add saida4 && git commit -qm "resultado4" && git push -q origin investigacao
