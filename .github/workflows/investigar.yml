@@ -10,11 +10,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida6; B="https://leopolispr.equiplano.com.br:7300/transparencia/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscaisAjax"
-          F="formulario.tpFiltroRelacaoDocFiscais=1&formulario.codEntidade=300&formulario.codFornecedor=&formulario.idOrgao=&formulario.idUnidade="
-          curl -sSk -m 200 -X POST -d "$F&formulario.dtInicial=16/10/2026&formulario.dtFinal=19/10/2026&draw=2&start=50&length=50&order[0][column]=1&order[0][dir]=asc" "$B" -o saida6/a1.json -w "%{http_code} %{content_type} %{size_download}\n" >> saida6/t.txt
-          curl -sSk -m 300 -X POST -d "$F&formulario.dtInicial=01/01/2026&formulario.dtFinal=31/01/2026&draw=1&start=0&length=2000" "$B" -o saida6/a2.json -w "%{http_code} %{content_type} %{size_download} %{time_total}\n" >> saida6/t.txt
-          head -c 2500 saida6/a1.json >> saida6/t.txt
+          mkdir -p saida7; pip install -q requests
+          python3 - <<'PY'
+          import sys; sys.path.insert(0,'.')
+          import motor_coleta as c
+          t = c.tabelas_mes(2026, 10)
+          dias = [(c.iso(r['c'][1]), r['a']) for r in t['liq'] if r['a'] and r['c'][1].endswith('/10/2026')]
+          d, url = [x for x in dias if x[0] == '2026-10-16'][0]
+          txt = c.pdf_texto(url)
+          open('saida7/liq_16_10.txt', 'w').write(txt)
+          b = c.get(url, binario=True); open('saida7/liq_16_10.pdf', 'wb').write(b)
+          PY
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida6 && git commit -qm "resultado6" && git push -q origin investigacao
+          git add saida7 && git commit -qm "resultado7" && git push -q origin investigacao
