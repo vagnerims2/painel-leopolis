@@ -1,0 +1,24 @@
+
+real	0m4.291s
+user	0m0.006s
+sys	0m0.005s
+
+real	0m4.132s
+user	0m0.005s
+sys	0m0.005s
+
+real	0m4.563s
+user	0m0.006s
+sys	0m0.005s
+
+real	0m4.636s
+user	0m0.008s
+sys	0m0.003s
+saida4/ano_p3.html 13.064 itens encontrad
+13.064 itens encontrad linhas=50 primeira=idFornecedorDoc=82061
+saida4/p1.html 59 itens encontrad
+59 itens encontrad linhas=50 primeira=idFornecedorDoc=92319
+saida4/p2.html 59 itens encontrad
+59 itens encontrad linhas=50 primeira=idFornecedorDoc=92319
+saida4/p2_semcookie.html 59 itens encontrad
+59 itens encontrad linhas=50 primeira=idFornecedorDoc=92319
