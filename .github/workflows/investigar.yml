@@ -10,11 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida2; B="https://leopolispr.equiplano.com.br:7300/transparencia"
-          Q="formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial=16/10/2026&formulario.dtFinal=19/10/2026&formulario.codEntidade=300&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade="
-          curl -sSk -m 120 "$B/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais?$Q" -o saida2/lista_get.html -w "GET %{http_code} %{size_download}\n"
-          curl -sSk -m 120 -X POST -d "$Q" "$B/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais" -o saida2/lista_post.html -w "POST %{http_code} %{size_download}\n"
-          ls -la saida2
+          mkdir -p saida3; B="https://leopolispr.equiplano.com.br:7300/transparencia"
+          curl -sSk -m 120 -D saida3/h1.txt "$B/relacaoDocumentosFiscais/downloadDocumento?formulario.idFornecedorDoc=92319" -o saida3/doc1.bin -w "%{http_code} %{content_type} %{size_download}\n" > saida3/st.txt
+          curl -sSk -m 120 -D saida3/h2.txt "$B/relacaoDocumentosFiscais/downloadDocumento?formulario.idFornecedorDoc=92324" -o saida3/doc2.bin -w "%{http_code} %{content_type} %{size_download}\n" >> saida3/st.txt
+          file saida3/doc1.bin saida3/doc2.bin >> saida3/st.txt
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida2 && git commit -qm "resultado2" && git push -q origin investigacao
+          git add saida3 && git commit -qm "resultado3" && git push -q origin investigacao
