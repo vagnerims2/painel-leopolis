@@ -10,15 +10,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida4; B="https://leopolispr.equiplano.com.br:7300/transparencia/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais"
+          mkdir -p saida5; O="https://leopolispr.equiplano.com.br:7300"; B="$O/transparencia/relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais"
           Q="formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial=16/10/2026&formulario.dtFinal=19/10/2026&formulario.codEntidade=300&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade="
-          J=saida4/cj.txt
-          (time curl -sSk -m 200 -c $J -b $J "$B?$Q&d-5470-p=1" -o saida4/p1.html) 2>> saida4/t.txt
-          (time curl -sSk -m 200 -c $J -b $J "$B?$Q&d-5470-p=2" -o saida4/p2.html) 2>> saida4/t.txt
-          (time curl -sSk -m 200 "$B?$Q&d-5470-p=2" -o saida4/p2_semcookie.html) 2>> saida4/t.txt
-          Q2="formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial=01/01/2026&formulario.dtFinal=20/10/2026&formulario.codEntidade=300&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade="
-          (time curl -sSk -m 300 "$B?$Q2&d-5470-p=3" -o saida4/ano_p3.html) 2>> saida4/t.txt
-          for f in saida4/*.html; do echo "$f $(grep -o '[0-9.]* itens encontrad' $f) linhas=$(grep -c 'class=\"odd\"\|class=\"even\"' $f) primeira=$(grep -o 'idFornecedorDoc=[0-9]*' $f | head -1)" >> saida4/t.txt; done
+          curl -sSk -m 60 "$O/esadmin/recursos/equiplano/js/monta-tabela-dinamica-2.0.js" -o saida5/monta.js
+          curl -sSk -m 200 "$B?$Q&6578706f7274=1&d-5470-e=1" -o saida5/exp_csv.txt
+          curl -sSk -m 200 "$B?$Q&6578706f7274=1&d-5470-e=2" -o saida5/exp_xls.txt
+          curl -sSk -m 200 -X POST -d "$Q&d-5470-p=2" "$B" -o saida5/post_p2.html
+          for f in saida5/post_p2.html; do echo "$f $(grep -o 'idFornecedorDoc=[0-9]*' $f | head -1)" >> saida5/t.txt; done
+          head -c 1500 saida5/exp_csv.txt >> saida5/t.txt; echo >> saida5/t.txt; head -c 1500 saida5/exp_xls.txt >> saida5/t.txt
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida4 && git commit -qm "resultado4" && git push -q origin investigacao
+          git add saida5 && git commit -qm "resultado5" && git push -q origin investigacao
