@@ -274,35 +274,51 @@ def ler_pagamentos(t, dia):
 
 # ---------- coleta ----------
 # ---------- documentos fiscais (notas) ----------
-_RE_LINHA_DOC = re.compile(r'<tr class="(?:odd|even)">(.*?)</tr>', re.S)
-_RE_CEL = re.compile(r'<td[^>]*>(.*?)</td>', re.S)
-def _txt(h):
-    return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', h))).strip()
+def post_json(url, dados):
+    """POST (mesma consulta que a própria página do portal faz para paginar a tabela)"""
+    global _VERIFICA_SSL
+    for i in range(3):
+        try:
+            r = SESSAO.post(url, data=dados, timeout=180, verify=_VERIFICA_SSL)
+            r.raise_for_status(); return r.json()
+        except requests.exceptions.SSLError:
+            if _VERIFICA_SSL:
+                _VERIFICA_SSL = False; urllib3.disable_warnings(); continue
+            raise
+        except Exception:
+            if i == 2: raise
+            time.sleep(2)
 
 def ler_documentos(desde, ate, ano=None, avisar=print):
-    """Relação de documentos fiscais por data de liquidação (link do PDF anexado e chave de acesso da NF-e)."""
+    """Relação de documentos fiscais por data de liquidação: PDF anexado no portal, chave de acesso da NF-e e link da NFS-e."""
     ano = ano or datetime.now().year
     br = lambda d: '/'.join(reversed(d.split('-')))
-    q = (f'formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial={br(desde)}&formulario.dtFinal={br(ate)}'
-         f'&formulario.codEntidade={ENT}&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade=')
-    out, pag, total = [], 1, None
-    while True:
-        t = get(f'{BASE}relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais?{q}&d-5470-p={pag}')
-        if total is None:
-            m = re.search(r'([\d.]+) itens? encontrad', t); total = int(m.group(1).replace('.', '')) if m else 0
-            if total > 50: avisar(f'Lendo {total} documentos fiscais de {br(desde)} a {br(ate)}…')
-        linhas = _RE_LINHA_DOC.findall(t)
-        for r in linhas:
-            c = _RE_CEL.findall(r)
-            if len(c) < 12: continue
-            idd = re.search(r'idFornecedorDoc=(\d+)', c[0]); chave = re.search(r'\b(\d{44})\b', c[7])
-            tipo = _txt(re.sub(r'<a.*?</a>', '', c[7], flags=re.S))
-            out.append({'id': idd.group(1) if idd else '', 'f': _txt(c[1]), 'doc': _txt(c[2]), 'ano': _txt(c[4]), 'l': _txt(c[5]),
-                        'dl': iso(_txt(c[6])), 'tipo': 'NF-e' if chave and tipo.startswith('Chave') else tipo, 'chave': chave.group(1) if chave else '',
-                        'serie': _txt(c[8]), 'nr': _txt(c[9]), 'dd': iso(_txt(c[10])) if re.match(r'\d\d/\d\d/\d{4}', _txt(c[10])) else '', 'v': num(_txt(c[11]))})
-        if not linhas or len(out) >= total or pag > 400:
-            break
-        pag += 1
+    url = f'{BASE}relacaoDocumentosFiscais/listaRelacaoDocumentosFiscaisAjax'
+    out, ini = [], datetime.fromisoformat(desde)
+    fim_total = datetime.fromisoformat(ate)
+    while ini <= fim_total:   # um mês por vez
+        prox = (ini.replace(day=1) + timedelta(days=32)).replace(day=1)
+        fim = min(fim_total, prox - timedelta(days=1))
+        start = 0
+        while True:
+            d = post_json(url, {'formulario.tpFiltroRelacaoDocFiscais': '1', 'formulario.codEntidade': str(ENT), 'formulario.codFornecedor': '',
+                                'formulario.idOrgao': '', 'formulario.idUnidade': '', 'formulario.dtInicial': br(ini.strftime('%Y-%m-%d')),
+                                'formulario.dtFinal': br(fim.strftime('%Y-%m-%d')), 'draw': '1', 'start': str(start), 'length': '1000'})['paginacao']
+            regs = d.get('registros') or []
+            for x in regs:
+                ch = (x.get('chaveAcessoNfe') or '').strip()
+                tipo = re.sub(r'<[^>]+>', ' ', x.get('tpDocFiscal') or '').strip()
+                tipo = 'NF-e' if ch and tipo.startswith('Chave') else re.sub(r'\s+', ' ', re.sub(r'\d{44}|\bLink\b', '', tipo)).strip()
+                out.append({'id': str(x.get('idFornecedorDoc') or ''), 'f': x.get('nmFornecedor') or '', 'doc': x.get('docFornecedor') or '',
+                            'ano': str(x.get('exercicoLiquidacao') or ''), 'l': str(x.get('nrLiquidacao') or ''), 'dl': (x.get('dtLiquidacao') or '')[:10],
+                            'tipo': tipo, 'chave': ch, 'serie': x.get('serieDocFiscal') or '', 'nr': str(x.get('nrDocumento') or ''),
+                            'dd': (x.get('dtDoc') or '')[:10], 'v': float(x.get('vlDoc') or 0), 'link': x.get('link') or ''})
+            start += len(regs)
+            if not regs or start >= int(d.get('quantidadeTotal') or 0):
+                break
+        ini = fim + timedelta(days=1)
+    if len(out) > 200:
+        avisar(f'{len(out)} documentos fiscais lidos de {br(desde)} a {br(ate)}.')
     return out
 
 def _q(ano):

@@ -28,7 +28,7 @@ for p in N['pagamentos']: M['pagamentos'][p['n']] = p
 M['mov'], M['saldo'], M['fontes'] = N['mov'], N['saldo'], N['fontes']
 M.setdefault('docs', {})
 for x in N.get('docs', []):
-    if x.get('id'): M['docs'][x['id']] = x
+    M['docs'][x.get('id') or f"L{x['l']}-{x['nr']}-{x['v']}"] = x
 M['atualizado'] = N['gerado']
 json.dump(M, open(master_p, 'w', encoding='utf-8'), ensure_ascii=False)
 
@@ -248,9 +248,9 @@ for x in M.get('docs', {}).values():
     l = L.get(x['l']) if x.get('ano') == str(hoje.year) else None
     emp = l['e'] if l and x['l'] in liq_ok else ''
     dr.append(dict(id=x['id'], liquidacao=x['l'], data_liquidacao=x['dl'], empenho=emp, fornecedor=x['f'], cpf_cnpj=x.get('doc', ''), tipo=x['tipo'], numero=x['nr'],
-                   serie=x['serie'], data_documento=x['dd'], valor=round(x['v'], 2), chave=x['chave'], restos_a_pagar='Sim' if x.get('ano') != str(hoje.year) else ''))
-dr.sort(key=lambda r: (r['data_liquidacao'], int(r['liquidacao'] or 0)), reverse=True)
-wcsv('notas.csv', dr, ['id', 'liquidacao', 'data_liquidacao', 'empenho', 'fornecedor', 'cpf_cnpj', 'tipo', 'numero', 'serie', 'data_documento', 'valor', 'chave', 'restos_a_pagar'])
+                   serie=x['serie'], data_documento=x['dd'], valor=round(x['v'], 2), chave=x['chave'], link=x.get('link', ''), restos_a_pagar='Sim' if x.get('ano') != str(hoje.year) else ''))
+dr.sort(key=lambda r: (r['data_liquidacao'], int(r['liquidacao'] or 0) if str(r['liquidacao']).isdigit() else 0), reverse=True)
+wcsv('notas.csv', dr, ['id', 'liquidacao', 'data_liquidacao', 'empenho', 'fornecedor', 'cpf_cnpj', 'tipo', 'numero', 'serie', 'data_documento', 'valor', 'chave', 'link', 'restos_a_pagar'])
 wcsv('saldo_fontes.csv', sorted([dict(fonte=f['fonte'], codigo=f['cod'], saldo_a_pagar=round(f['v'], 2)) for f in M['fontes']], key=lambda x: -x['saldo_a_pagar']), ['fonte', 'codigo', 'saldo_a_pagar'])
 
 # ---------- dotações: saldo atual e necessidade do mês ----------

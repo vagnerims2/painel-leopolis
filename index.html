@@ -981,6 +981,7 @@ function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lis
     const ac = document.createElement('div'); ac.className = 'nf-acoes';
     const bt = (txt, href, cls) => { const a = document.createElement('a'); a.className = 'btn2 ' + (cls || ''); a.textContent = txt; a.href = href; a.target = '_blank'; a.rel = 'noopener'; ac.appendChild(a); return a; };
     if (r.id) bt('Baixar / ver a nota (PDF)', PORTAL_DOC + r.id, 'pri');
+    if (r.link && /^https?:\/\//.test(r.link)) bt('Consultar a nota no site emissor', r.link);
     if (r.chave) { bt('Consultar NF-e na Receita', RECEITA_NFE + r.chave);
       const cp = document.createElement('button'); cp.type = 'button'; cp.className = 'btn2'; cp.textContent = 'Copiar chave de acesso';
       cp.addEventListener('click', () => { try { navigator.clipboard.writeText(r.chave); cp.textContent = 'Chave copiada'; } catch (e) { prompt('Chave de acesso', r.chave); } }); ac.appendChild(cp);
