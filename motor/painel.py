@@ -120,7 +120,8 @@ def principal(forcar=False, arquivo_coleta=None):
         except OSError:
             extra = []
         res = coleta.coletar(desde, desde, avisar=log, mov_anterior=mestre.get('mov'), emp_conhecido=conhecido if conhecido else None,
-                             saldo_anterior=mestre.get('saldo'), emp_por_liq_dia=por_liq, dias_extra=extra)
+                             saldo_anterior=mestre.get('saldo'), emp_por_liq_dia=por_liq, dias_extra=extra,
+                             docs_desde=None if mestre.get('docs') else f'{hoje.year}-01-01')
         del mestre
     if len(res['erros']) > 10:
         raise RuntimeError(f"Muitos erros na coleta ({len(res['erros'])}); nada foi publicado. Primeiros: {res['erros'][:3]}")

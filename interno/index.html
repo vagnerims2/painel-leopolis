@@ -148,6 +148,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 #dash-root .tabs button[data-go=empenhos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 4h18v3H3zM3 10h18v3H3zM3 16h18v3H3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=produtos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=requisicoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM9 12h8v2H9zm0 4h8v2H9z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=notas]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M5 2h14v20l-3-2-2 2-2-2-2 2-2-2-3 2V2zm3 5v2h8V7H8zm0 4v2h8v-2H8zm0 4v2h5v-2H8z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=semana]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 2h2v2h6V2h2v2h4v18H3V4h4V2zm12 8H5v10h14V10z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=compras]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M4 20V10h3v10H4zm6 0V4h3v16h-3zm6 0v-7h3v7h-3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=conferencia]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m9 16.2-4.2-4.2-1.4 1.4L9 19 21 7l-1.4-1.4z'/%3E%3C/svg%3E")}
@@ -269,7 +270,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
 /* ===== adaptativo: usa a tela inteira e aumenta tudo em telas grandes ===== */
 @media screen and (min-width:1100px){
-  #dash-root .pg{min-height:100vh}
+  #dash-root .pg{min-height:100vh;grid-template-rows:auto auto 1fr}
+  #dash-root .pg>.foot{align-self:start}
   #dash-root .tblwrap{max-height:max(32rem,calc(100vh - 300px))}
   #dash-root .cols{height:clamp(250px,30vh,420px)}
   #dash-root .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))}
@@ -291,6 +293,19 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   #dash-root .tile{min-width:0;overflow:hidden}
 }
 
+#dash-root .nf-bt{display:inline-block;margin-left:6px;font:inherit;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;border:1px solid #b9cbe6;background:#eaf2fc;color:#1F4E8C;cursor:pointer;vertical-align:middle}
+#dash-root .nf-bt:hover{background:#1F4E8C;color:#fff}
+#dash-root .nf-modal{position:fixed;inset:0;background:rgba(15,23,42,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+#dash-root .nf-modal[hidden]{display:none}
+#dash-root .nf-caixa{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:85vh;overflow:auto;padding:18px;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+#dash-root .nf-item{border:1px solid var(--color-border-line);border-radius:10px;padding:10px 12px;margin:10px 0}
+#dash-root .nf-cab{font-weight:600}
+#dash-root .nf-chave{font-variant-numeric:tabular-nums;word-break:break-all}
+#dash-root .nf-acoes{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+#dash-root .nf-acoes .btn2{text-decoration:none;display:inline-block}
+#dash-root .nf-acoes .btn2.pri{background:#1F4E8C;color:#fff;border-color:#1F4E8C}
+@media print{#dash-root .nf-bt,#dash-root .nf-modal{display:none!important}}
+
 </style>
 </head>
 <body>
@@ -310,9 +325,16 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <button data-go="dotacoes" aria-selected="false">Dotações</button>
     <button data-go="empenhos" aria-selected="false">Empenhos</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
+    <button data-go="notas" aria-selected="false">Notas fiscais</button>
     <button data-go="semana" aria-selected="false">Dia e semana</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
   </nav>
+
+  <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
+    <div class="linha-total"><h2 id="nf-tit">Notas fiscais</h2><button type="button" class="btn2" id="nf-fechar">Fechar</button></div>
+    <div id="nf-lista"></div>
+    <p class="note">O arquivo é o anexado pela prefeitura no Portal da Transparência; o navegador baixa e abre o PDF. A consulta da NF-e é feita no site da Receita (pode pedir para confirmar que você não é um robô). Para o XML completo, use a chave de acesso no seu sistema ou no portal da NF-e.</p>
+  </div></div>
 
   <!-- ============ VISÃO GERAL ============ -->
   <section class="tab" data-tab="geral">
@@ -492,6 +514,24 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
 
 
+  <!-- ============ NOTAS FISCAIS ============ -->
+  <section class="tab" data-tab="notas" hidden>
+    <div class="card" id="notas">
+      <h2>Notas fiscais</h2>
+      <p class="note">Documentos fiscais das liquidações de 2026, como na "Relação de documentos fiscais" do Portal da Transparência. Toque em <b>Nota</b> para baixar o arquivo anexado no portal ou consultar a NF-e no site da Receita pela chave de acesso.</p>
+      <div class="tools">
+        <input id="n-busca" type="search" placeholder="Fornecedor, CNPJ, nº da nota, empenho, liquidação, chave…">
+        <select id="n-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
+        <select id="n-tipo"><option value="">Todos os tipos</option></select>
+        <input id="n-de" type="date" title="Liquidação a partir de" style="flex:0 1 10rem"><input id="n-ate" type="date" title="Liquidação até" style="flex:0 1 10rem">
+      </div>
+      <p class="note" id="n-total">—</p>
+      <div class="tblwrap"><table id="t-notas"><thead><tr>
+        <th>Liquidação</th><th>Empenho</th><th>Fornecedor</th><th class="hide-sm">Documento</th><th class="r">Valor</th><th></th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
+  </section>
+
   <!-- ============ DIA E SEMANA ============ -->
   <section class="tab" data-tab="semana" hidden>
     <section class="tiles">
@@ -574,7 +614,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   };
   const v = Date.now();
   fetch('../data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  const OPCIONAIS = [];
+  const OPCIONAIS = ['notas'];
   Promise.all(FONTES.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
     .concat(OPCIONAIS.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
@@ -771,7 +811,7 @@ function drawTable() {
   const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 500; }
   const lim = window.__empLim || 500;
   rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
-    td(tr, r.empenho).style.fontWeight = '600'; td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
+    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); { const pc = pillCell(tr, r.situacao, sitCls(r.situacao)); if (r.estornos) { const x = document.createElement('div'); x.className = 'sub2 est'; x.textContent = r.estornos; pc.appendChild(x); } }
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
@@ -865,7 +905,7 @@ const lBusca = document.getElementById('l-busca'), lNp = document.getElementById
 function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySelector('#t-liq tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(lBusca.value.trim());
   const rows = d.data.filter(r => (!lNp.checked || r.pago === 'Não') && (!q || nz([r.liquidacao, r.empenho, r.fornecedor, r.documento].join(' ')).includes(q)));
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.liquidacao; td(tr, r.liquidacao).style.fontWeight = '600'; td(tr, br(r.data)); td(tr, r.empenho);
-    fornCell(tr, r.fornecedor, r.tipo_despesa); td(tr, r.documento, 'hide-sm'); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : 'A pagar', r.pago === 'Sim' ? 'ok' : 'mid'); tb.appendChild(tr); });
+    fornCell(tr, r.fornecedor, r.tipo_despesa); botaoNF(td(tr, r.documento, 'hide-sm'), notasPorLiq()[r.liquidacao], `Notas fiscais da liquidação ${r.liquidacao}`); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : 'A pagar', r.pago === 'Sim' ? 'ok' : 'mid'); tb.appendChild(tr); });
   if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
 lBusca.addEventListener('input', drawLiq); lNp.addEventListener('change', drawLiq);
 
@@ -918,6 +958,51 @@ function fillMarks(src, fmt) { const t = dash.data(src); document.querySelectorA
   if (t.status !== 'ok' || !t.data[0]) { el.textContent = '—'; el.classList.toggle('dash-skeleton', t.status === 'loading'); return; }
   el.classList.remove('dash-skeleton'); const k = el.dataset.field, v = t.data[0][k]; el.textContent = fmt[k] ? fmt[k](v) : (typeof v === 'number' ? intF.format(v) : String(v)); }); }
 
+
+// ---------- Notas fiscais ----------
+const PORTAL_DOC = 'https://leopolispr.equiplano.com.br:7300/transparencia/relacaoDocumentosFiscais/downloadDocumento?formulario.idFornecedorDoc=';
+const RECEITA_NFE = 'https://www.nfe.fazenda.gov.br/portal/consultaRecaptcha.aspx?tipoConsulta=resumo&tipoConteudo=7PhJ+gAVw2g=&nfe=';
+const notasPorEmp = () => { const d = dash.data('notas'); if (d.status !== 'ok') return {}; if (window.__npe && window.__npe.src === d.data) return window.__npe.m;
+  const m = {}; d.data.forEach(r => { if (r.empenho) (m[r.empenho] = m[r.empenho] || []).push(r); }); window.__npe = { src: d.data, m }; return m; };
+const notasPorLiq = () => { const d = dash.data('notas'); if (d.status !== 'ok') return {}; if (window.__npl && window.__npl.src === d.data) return window.__npl.m;
+  const m = {}; d.data.forEach(r => { (m[r.liquidacao] = m[r.liquidacao] || []).push(r); }); window.__npl = { src: d.data, m }; return m; };
+const docTxt = (r) => `${r.tipo}${r.numero ? ' nº ' + r.numero : ''}${r.serie && !/outras/i.test(r.serie) ? ' série ' + r.serie : ''}`;
+function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lista'); box.replaceChildren(); document.getElementById('nf-tit').textContent = titulo;
+  lista.forEach(r => { const it = document.createElement('div'); it.className = 'nf-item';
+    const h = document.createElement('div'); h.className = 'nf-cab'; h.textContent = `${docTxt(r)} · ${brl2.format(N(r.valor))}`;
+    const sub = document.createElement('div'); sub.className = 'sub2'; sub.textContent = `${r.fornecedor} · emitida em ${br(r.data_documento)} · liquidação ${r.liquidacao} de ${br(r.data_liquidacao)}${r.empenho ? ' · empenho ' + r.empenho : ''}`;
+    const ac = document.createElement('div'); ac.className = 'nf-acoes';
+    const bt = (txt, href, cls) => { const a = document.createElement('a'); a.className = 'btn2 ' + (cls || ''); a.textContent = txt; a.href = href; a.target = '_blank'; a.rel = 'noopener'; ac.appendChild(a); return a; };
+    if (r.id) bt('Baixar / ver a nota (PDF)', PORTAL_DOC + r.id, 'pri');
+    if (r.chave) { bt('Consultar NF-e na Receita', RECEITA_NFE + r.chave);
+      const cp = document.createElement('button'); cp.type = 'button'; cp.className = 'btn2'; cp.textContent = 'Copiar chave de acesso';
+      cp.addEventListener('click', () => { try { navigator.clipboard.writeText(r.chave); cp.textContent = 'Chave copiada'; } catch (e) { prompt('Chave de acesso', r.chave); } }); ac.appendChild(cp);
+      const ch = document.createElement('div'); ch.className = 'sub2 nf-chave'; ch.textContent = 'Chave: ' + r.chave.replace(/(\d{4})(?=\d)/g, '$1 '); sub.after(ch); it.append(h, sub, ch, ac); }
+    else it.append(h, sub, ac);
+    box.appendChild(it); });
+  if (!lista.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'Nenhum documento fiscal encontrado no portal para este lançamento.'; box.appendChild(p); }
+  document.getElementById('nf-modal').hidden = false; }
+document.getElementById('nf-fechar').addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; });
+document.getElementById('nf-modal').addEventListener('click', (e) => { if (e.target.id === 'nf-modal') e.target.hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('nf-modal').hidden = true; });
+function botaoNF(cell, lista, titulo) { if (!lista || !lista.length) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'nf-bt'; b.textContent = lista.length > 1 ? `Nota (${lista.length})` : 'Nota';
+  b.title = 'Ver notas fiscais'; b.addEventListener('click', (e) => { e.stopPropagation(); abrirNotas(lista, titulo); }); cell.appendChild(b); }
+const nBusca = document.getElementById('n-busca'), nPer = document.getElementById('n-per'), nTipo = document.getElementById('n-tipo'), nDe = document.getElementById('n-de'), nAte = document.getElementById('n-ate');
+function drawNotas() { const d = dash.data('notas'), tb = document.querySelector('#t-notas tbody'), tot = document.getElementById('n-total'); tb.replaceChildren();
+  if (d.status !== 'ok' || !d.data.length) { tot.textContent = d.status === 'loading' ? 'Carregando…' : 'As notas fiscais aparecem aqui depois da próxima atualização automática.'; return; }
+  fillSelect(nTipo, uniq(d.data, 'tipo')); const q = nz(nBusca.value.trim()), qd = q.replace(/\D/g, ''), hoje = Date.now();
+  const rows = d.data.filter(r => (!nTipo.value || r.tipo === nTipo.value) && (!nDe.value || r.data_liquidacao >= nDe.value) && (!nAte.value || r.data_liquidacao <= nAte.value)
+    && naFaixa(nPer.value, Math.floor((hoje - new Date(r.data_liquidacao + 'T12:00:00')) / 864e5))
+    && (!q || nz([r.fornecedor, r.numero, r.empenho, r.liquidacao, r.tipo].join(' ')).includes(q) || (qd.length >= 4 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd)))));
+  tot.textContent = `${intF.format(rows.length)} documentos · ${brl2.format(rows.reduce((a, r) => a + N(r.valor), 0))}`;
+  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr');
+    const c1 = td(tr, r.liquidacao); c1.style.fontWeight = '600'; const s1 = document.createElement('div'); s1.className = 'sub2'; s1.textContent = br(r.data_liquidacao); c1.appendChild(s1);
+    td(tr, r.empenho || (r.restos_a_pagar ? 'restos a pagar' : '—')); fornCell(tr, r.fornecedor, r.cpf_cnpj);
+    const c4 = td(tr, docTxt(r), 'hide-sm'); const s4 = document.createElement('div'); s4.className = 'sub2'; s4.textContent = 'emitida em ' + br(r.data_documento); c4.appendChild(s4);
+    td(tr, brl2.format(N(r.valor)), 'r'); botaoNF(td(tr, ''), [r], `${docTxt(r)} — ${r.fornecedor}`); tb.appendChild(tr); });
+  if (rows.length > 500) emptyRow(tb, 6, `Mostrando 500 de ${intF.format(rows.length)}. Refine a busca.`); if (!rows.length) emptyRow(tb, 6, 'Nenhum documento fiscal com esse filtro.'); }
+nBusca.addEventListener('input', drawNotas); [nPer, nTipo, nDe, nAte].forEach(e => e.addEventListener('change', drawNotas));
+dash.onData(drawNotas);
 
 dash.onData(() => {
   fillMarks('info', {}); fillMarks('alertas_resumo', {}); 

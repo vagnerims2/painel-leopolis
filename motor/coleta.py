@@ -273,6 +273,38 @@ def ler_pagamentos(t, dia):
 
 
 # ---------- coleta ----------
+# ---------- documentos fiscais (notas) ----------
+_RE_LINHA_DOC = re.compile(r'<tr class="(?:odd|even)">(.*?)</tr>', re.S)
+_RE_CEL = re.compile(r'<td[^>]*>(.*?)</td>', re.S)
+def _txt(h):
+    return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', ' ', h))).strip()
+
+def ler_documentos(desde, ate, ano=None, avisar=print):
+    """Relação de documentos fiscais por data de liquidação (link do PDF anexado e chave de acesso da NF-e)."""
+    ano = ano or datetime.now().year
+    br = lambda d: '/'.join(reversed(d.split('-')))
+    q = (f'formulario.tpFiltroRelacaoDocFiscais=1&formulario.dtInicial={br(desde)}&formulario.dtFinal={br(ate)}'
+         f'&formulario.codEntidade={ENT}&formulario.codFornecedor=&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.idOrgao=&formulario.idUnidade=')
+    out, pag, total = [], 1, None
+    while True:
+        t = get(f'{BASE}relacaoDocumentosFiscais/listaRelacaoDocumentosFiscais?{q}&d-5470-p={pag}')
+        if total is None:
+            m = re.search(r'([\d.]+) itens? encontrad', t); total = int(m.group(1).replace('.', '')) if m else 0
+            if total > 50: avisar(f'Lendo {total} documentos fiscais de {br(desde)} a {br(ate)}…')
+        linhas = _RE_LINHA_DOC.findall(t)
+        for r in linhas:
+            c = _RE_CEL.findall(r)
+            if len(c) < 12: continue
+            idd = re.search(r'idFornecedorDoc=(\d+)', c[0]); chave = re.search(r'\b(\d{44})\b', c[7])
+            tipo = _txt(re.sub(r'<a.*?</a>', '', c[7], flags=re.S))
+            out.append({'id': idd.group(1) if idd else '', 'f': _txt(c[1]), 'doc': _txt(c[2]), 'ano': _txt(c[4]), 'l': _txt(c[5]),
+                        'dl': iso(_txt(c[6])), 'tipo': 'NF-e' if chave and tipo.startswith('Chave') else tipo, 'chave': chave.group(1) if chave else '',
+                        'serie': _txt(c[8]), 'nr': _txt(c[9]), 'dd': iso(_txt(c[10])) if re.match(r'\d\d/\d\d/\d{4}', _txt(c[10])) else '', 'v': num(_txt(c[11]))})
+        if not linhas or len(out) >= total or pag > 400:
+            break
+        pag += 1
+    return out
+
 def _q(ano):
     return f'formulario.codEntidade={ENT}&formulario.exercicio={ano}'
 
@@ -297,7 +329,7 @@ def assinatura(ano=None):
     return hashlib.sha1('\n'.join(partes).encode('utf-8')).hexdigest(), '\n'.join(partes)
 
 def coletar(desde, liq_desde=None, ano=None, avisar=print, mov_anterior=None, emp_conhecido=None,
-            saldo_anterior=None, emp_por_liq_dia=None, dias_extra=None):
+            saldo_anterior=None, emp_por_liq_dia=None, dias_extra=None, docs_desde=None):
     """mov_anterior: o 'mov' da coleta passada; qualquer dia cujo total mudou no portal é relido,
     mesmo que seja anterior a 'desde' (o portal às vezes publica lançamentos com data retroativa)"""
     ano = ano or datetime.now().year; liq_desde = liq_desde or desde; mov_anterior = mov_anterior or {}
@@ -407,5 +439,9 @@ def coletar(desde, liq_desde=None, ano=None, avisar=print, mov_anterior=None, em
         c = r['c'] + [''] * 5
         if re.match(r'^\d+ - ', c[3]):
             res['fontes'].append({'fonte': c[3], 'cod': c[3].split(' - ')[0], 'v': num(c[4])})
-    avisar(f"Coleta: {len(res['empenhos'])} empenhos, {len(res['liquidacoes'])} liquidações, {len(res['pagamentos'])} pagamentos, {len(res['saldo'])} saldos, {len(res['erros'])} erros")
+    try:
+        res['docs'] = ler_documentos(docs_desde or liq_desde, datetime.now().strftime('%Y-%m-%d'), ano, avisar)
+    except Exception as e:
+        res['erros'].append(f'documentos fiscais: {e}'); res['docs'] = []
+    avisar(f"Coleta: {len(res['empenhos'])} empenhos, {len(res['liquidacoes'])} liquidações, {len(res['pagamentos'])} pagamentos, {len(res['saldo'])} saldos, {len(res.get('docs', []))} documentos fiscais, {len(res['erros'])} erros")
     return res

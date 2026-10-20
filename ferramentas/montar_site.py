@@ -23,7 +23,8 @@ js = js.replace("fillMarks('conf', {});", '')
 js = js.replace("td(tr, r.qtd_liquidada_equiplano === '' ? '—' : qtdF.format(N(r.qtd_liquidada_equiplano)), 'r hide-sm'); ", '')
 body = body.replace('confira no Equiplano antes de pedir. Para mandar ao contador, baixe a lista em CSV em Sources (Dotações).', 'confira no sistema contábil. A lista pode ser baixada em CSV no rodapé.')
 body = body.replace(' A coluna "Liq. (Equiplano)" vem do último relatório de requisições enviado.', '')
-assert 'equiplano' not in (body + js).lower(), [m.start() for m in re.finditer('equiplano', (body+js).lower())]
+_chk = (body + js).lower().replace('equiplano.com.br', '')
+assert 'equiplano' not in _chk, [m.start() for m in re.finditer('equiplano', _chk)]
 
 EXTERNO_CSS = """
 /* versão para o cidadão: só informação geral */
@@ -58,6 +59,6 @@ cab = '' if modo == 'externo' else '<meta name="robots" content="noindex,nofollo
 titulo = 'Despesas do Município — Leópolis' if modo == 'externo' else 'Painel interno de Empenhos — Leópolis'
 out = shell.replace('<!--CAB-->', cab).replace('__DADOS__', dados).replace('<title>Painel de Empenhos — Leópolis</title>', '<title>' + titulo + '</title>').replace('/*ESTILO*/', style).replace('<!--CORPO-->', body).replace('/*PAGINA*/', js)
 if modo == 'externo' or not COM_REQUISICOES:
-    out = out.replace("const OPCIONAIS = ['requisicoes'];", 'const OPCIONAIS = [];')
+    out = out.replace("const OPCIONAIS = ['requisicoes', 'notas'];", "const OPCIONAIS = ['notas'];")
 open(sys.argv[2], 'w', encoding='utf-8').write(out)
 print('ok', len(out))

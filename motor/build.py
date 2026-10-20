@@ -26,6 +26,9 @@ for l in N['liquidacoes']:
     M['liquidacoes'][l['n']] = l
 for p in N['pagamentos']: M['pagamentos'][p['n']] = p
 M['mov'], M['saldo'], M['fontes'] = N['mov'], N['saldo'], N['fontes']
+M.setdefault('docs', {})
+for x in N.get('docs', []):
+    if x.get('id'): M['docs'][x['id']] = x
 M['atualizado'] = N['gerado']
 json.dump(M, open(master_p, 'w', encoding='utf-8'), ensure_ascii=False)
 
@@ -239,6 +242,15 @@ for l in sorted(L.values(), key=lambda x: (x['d'], int(x['n'])), reverse=True):
 wcsv('liquidacoes.csv', lr, ['liquidacao', 'data', 'empenho', 'fornecedor', 'secretaria', 'tipo_despesa', 'fonte', 'valor', 'documento', 'vencimento', 'pago'])
 
 # ---------- saldo por fonte (oficial) ----------
+# ---------- documentos fiscais (link do PDF no portal e chave de acesso) ----------
+dr = []
+for x in M.get('docs', {}).values():
+    l = L.get(x['l']) if x.get('ano') == str(hoje.year) else None
+    emp = l['e'] if l and x['l'] in liq_ok else ''
+    dr.append(dict(id=x['id'], liquidacao=x['l'], data_liquidacao=x['dl'], empenho=emp, fornecedor=x['f'], cpf_cnpj=x.get('doc', ''), tipo=x['tipo'], numero=x['nr'],
+                   serie=x['serie'], data_documento=x['dd'], valor=round(x['v'], 2), chave=x['chave'], restos_a_pagar='Sim' if x.get('ano') != str(hoje.year) else ''))
+dr.sort(key=lambda r: (r['data_liquidacao'], int(r['liquidacao'] or 0)), reverse=True)
+wcsv('notas.csv', dr, ['id', 'liquidacao', 'data_liquidacao', 'empenho', 'fornecedor', 'cpf_cnpj', 'tipo', 'numero', 'serie', 'data_documento', 'valor', 'chave', 'restos_a_pagar'])
 wcsv('saldo_fontes.csv', sorted([dict(fonte=f['fonte'], codigo=f['cod'], saldo_a_pagar=round(f['v'], 2)) for f in M['fontes']], key=lambda x: -x['saldo_a_pagar']), ['fonte', 'codigo', 'saldo_a_pagar'])
 
 # ---------- dotações: saldo atual e necessidade do mês ----------
