@@ -1,0 +1,4 @@
+200  666997
+200  662667
+saida3/doc1.bin: PDF document, version 1.6
+saida3/doc2.bin: PDF document, version 1.6

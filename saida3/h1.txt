@@ -1,0 +1,6 @@
+HTTP/1.1 200 
+Set-Cookie: JSESSIONID=3595C611DDAE72D803E7F5FF699CA1B9; Path=/transparencia; Secure; HttpOnly
+Content-Disposition: attachment;filename=20261016_142313_001.pdf
+Transfer-Encoding: chunked
+Date: Tue, 20 Oct 2026 09:33:01 GMT
+
