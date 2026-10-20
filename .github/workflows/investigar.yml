@@ -10,14 +10,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida8; pip install -q requests
-          python3 - <<'PY'
-          import sys; sys.path.insert(0,'.')
-          import motor_coleta as c
-          t = c.tabelas_mes(2026, 10)
-          url = [r['a'] for r in t['emp'] if r['a'] and r['c'][1] == '13/10/2026'][0]
-          open('saida8/emp_13_10.txt', 'w').write(c.pdf_texto(url)[:60000])
-          PY
+          mkdir -p saida9; B="https://leopolispr.equiplano.com.br:7300/transparencia"
+          for u in requisicoesCompra licitacoes extratoFornecedor contratosFornecedor fiscaisContratos; do curl -sSk -m 90 "$B/$u" -o "saida9/$u.html"; done
+          ls -la saida9
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida8 && git commit -qm "resultado8" && git push -q origin investigacao
+          git add saida9 && git commit -qm "resultado9" && git push -q origin investigacao
