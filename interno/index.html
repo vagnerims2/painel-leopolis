@@ -729,7 +729,7 @@ dash.calc('sem_licitacao', {
 });
 
 // ---------- formatação e utilidades ----------
-const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 });
+const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });   // sempre com centavos
 const brl2 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
 const brlC = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 });
 const intF = new Intl.NumberFormat('pt-BR'); const qtdF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 }); const d1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
