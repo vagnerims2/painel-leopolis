@@ -462,7 +462,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Nº do empenho, da nota, da dotação ou do contrato (exato); ou nome do fornecedor/produto…">
+        <input id="busca" type="search" placeholder="Nº do empenho ou da nota fiscal (exato), ou nome do fornecedor…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -795,7 +795,7 @@ const soEst = document.getElementById('so-est');
 const busca = document.getElementById('busca'), soSaldo = document.getElementById('so-saldo'), fSit = document.getElementById('f-sit'), fFonte = document.getElementById('f-fonte'),
   fNat = document.getElementById('f-nat'), fTipo = document.getElementById('f-tipo'), fSec = document.getElementById('f-sec'), fLic = document.getElementById('f-lic'), faixa = document.getElementById('faixa');
 let sortK = 'dias', sortDir = -1;
-// busca: número → só o empenho com aquele número exato; texto → filtra conforme digita
+// busca: número → o empenho com aquele número e os que têm nota fiscal com esse número; texto → nome do fornecedor
 const semZeros = (v) => String(v || '').replace(/^0+(?=\d)/, '');
 const ehNumero = (q) => /^\d+(\/\d{2,4})?$/.test(q);
 function casaBusca(r, q) { r._motivo = '';
@@ -803,12 +803,8 @@ function casaBusca(r, q) { r._motivo = '';
     if (semZeros(r.empenho) === n) return true;
     const nf = (notasPorEmp()[r.empenho] || []).find(x => semZeros(String(x.numero).split('/')[0]) === n);
     if (nf) { r._motivo = `achado pela nota fiscal nº ${nf.numero}`; return true; }
-    if (semZeros(r.dotacao) === n) { r._motivo = `achado pela dotação ${r.dotacao}`; return true; }
-    const num = (t) => (String(t || '').match(/(\d+)\s*\/\s*\d{4}/) || [])[1];
-    if (semZeros(num(r.contrato)) === n) { r._motivo = `achado pelo contrato ${r.contrato}`; return true; }
-    if (semZeros(num(r.licitacao)) === n) { r._motivo = `achado pela licitação ${r.licitacao}`; return true; }
     return false; }
-  return nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q); }
+  return nz(r.fornecedor).includes(q); }   // texto: só pelo nome do fornecedor
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
   fillSelect(fSec, uniq(d.data, 'secretaria')); fillSelect(fLic, uniq(d.data, 'modalidade')); fillSelect(fNat, uniq(d.data, 'natureza'), natLabel);
@@ -1020,7 +1016,7 @@ function drawNotas() { const d = dash.data('notas'), tb = document.querySelector
   const rows = d.data.filter(r => (!nTipo.value || r.tipo === nTipo.value) && (!nDe.value || r.data_liquidacao >= nDe.value) && (!nAte.value || r.data_liquidacao <= nAte.value)
     && naFaixa(nPer.value, Math.floor((hoje - new Date(r.data_liquidacao + 'T12:00:00')) / 864e5))
     && (!q || (ehNumero(q) ? (q.length >= 11 ? String(r.cpf_cnpj) === qd || String(r.chave) === qd : semZeros(String(r.numero).split('/')[0]) === semZeros(q.split('/')[0]))
-      : nz([r.fornecedor, r.tipo].join(' ')).includes(q) || (qd.length >= 11 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd))))));
+      : nz(r.fornecedor).includes(q) || (qd.length >= 11 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd))))));
   tot.textContent = `${intF.format(rows.length)} documentos · ${brl2.format(rows.reduce((a, r) => a + N(r.valor), 0))}`;
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr');
     const c1 = td(tr, r.liquidacao); c1.style.fontWeight = '600'; const s1 = document.createElement('div'); s1.className = 'sub2'; s1.textContent = br(r.data_liquidacao); c1.appendChild(s1);
