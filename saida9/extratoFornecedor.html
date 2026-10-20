@@ -1,0 +1,2001 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="pt-BR" xml:lang="pt-BR">
+<head>
+	<meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Condensed:300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Oswald:400,500,600" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="32x32" href="/transparencia/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/transparencia/favicon-16x16.png">
+    
+	<title>Extrato Movimentação por Fornecedor</title>
+	
+	<link type='text/css' rel='stylesheet' href='/esadmin/recursos/terceiros/bootstrap/3.3.5/css/bootstrap.min.css?0' />
+<link type='text/css' rel='stylesheet' href='/esadmin/recursos/terceiros/font-awesome/5.8.1/css/all.min.css?0' />
+<link type='text/css' rel='stylesheet' href='/esadmin/recursos/terceiros/hover/css/hover.css?0' />
+
+
+
+<link type="text/css" rel="stylesheet" href="/transparencia/css/transparencia.css">
+<link type="text/css" rel="stylesheet" href="/transparencia/css/loadingGif.css">
+	
+<script type="text/javascript">
+	var contexto = "/transparencia";
+</script>
+</head>
+<body>
+ <div class="modal fade"
+        id="mdAc"
+         tabindex="-1"
+         role="dialog"
+         style="font-size:17px;text-align-center;text-align: justify;"
+    >
+      <div class="modal-dialog"
+            role="document"
+      >
+        <div class="modal-content card">
+          <div class="modal-header">
+            <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+			<b style="color:black;">Acessibilidade</b>
+          </div>
+
+          <div class="modal-body">
+            <div class="row">
+              <div id="mensagemLogin" class="col-lg-12"></div>
+            </div>
+
+				<div style="background-color: transparent;">
+			
+				<p style="color:black;">Pensando na acessibilidade da informação a todos os cidadãos, algumas ferramentas foram desenvolvidas no Portal da Transparência, sendo elas:</p>
+	
+				<p><b style="color:black;" >Modo Alto Contraste</b></p>
+	 			<p style="color:black;"><i class="fa fa-adjust" ></i> : Para facilitar a leitura basta clicar neste ícone, localizado no menu superior da tela, que a combinação das cores (branco e preto) irão oferecer um maior contraste.</p>
+	
+	            <p><b style="color:black;" >Tamanho</b></p>
+				<p style="color:black;">Esta opção possibilita o redimensionamento das informações do portal.</p>
+	            <p style="color:black;"><i class="fa fa-search-plus" aria-hidden="true"></i> - Para aumentar a visibilidade, clicar nesta opção.</p>
+	           	<p style="color:black;"><i class="fa fa-search-minus" ></i> - Para diminuir a visibilidade, clicar nesta opção.</p>
+	            
+				<p><b style="color:black;" >Sugestões:</b></p>
+	            <p style="color:black;">
+		            <a href="https://chrome.google.com/webstore/detail/selection-reader-text-to/fdffijlhedcdiblbingmagmdnokokgbi?hl=pt-BR">
+		            <img src="/transparencia/img/imgLeitorSelecao.png" alt="some text" width=30 height=30>
+		           	</a>
+		            - Uma alternativa à leitura das informações disponíveis no Portal da Transparência, é a utilização da ferramenta "Leitor Selecção (Texto-para-Voz)", onde converte-se o texto em discurso, permitindo que o usuário ouça o conteúdo aqui disponível.
+					<p style="color:black;">Para isso, acessar: 
+						<a style="color:blue;" href="https://chrome.google.com/webstore/detail/selection-reader-text-to/fdffijlhedcdiblbingmagmdnokokgbi?hl=pt-BR">
+							Leitor Selecção (Texto-para-Voz)
+						</a>
+					</p>
+	            </p>
+	            <p style="color:black;">
+	            	<a  href="http://softwarepublico.gov.br/social/suite-vlibras"><img src="/transparencia/img/imgLibras.png" alt="some text" width=30 height=30></a>
+	            	- Por fim, para a tradução das informações disponíveis no portal em Língua Brasileira de Sinais - LIBRAS, sugerimos a utilização da ferramenta de código aberto e sem custo: Suite VLibras, a qual assegura o acesso ao portal para as pessoas que possuem redução ou ausência da capacidade auditiva.        
+	            	<p style="color:black;">Mais informações sobre a ferramenta: <a style="color:blue;" href="http://softwarepublico.gov.br/social/suite-vlibras">Suite VLibras</a> </p>
+	            </p>
+	         </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+ <div class="modal fade"
+        id="mdTa"
+         tabindex="-1"
+         role="dialog"
+         style="font-size:17px;text-align-center;text-align: justify;"
+    >
+      <div class="modal-dialog"
+            role="document"
+      >
+        <div class="modal-content card">
+          <div class="modal-header">
+            <button type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+			<b style="color:black;">Teclas de Atalho</b>
+          </div>
+
+          <div class="modal-body">
+            <div class="row">
+              <div id="mensagemLogin" class="col-lg-12"></div>
+            </div>
+
+				<div style="background-color: transparent;">
+			
+					<p style="color:black;"> Voltar para tela inicial do Portal da Transparência: <b>ALT + W</b></p>
+					
+					<p style="color:black;"> Acionar a Pesquisa: <b>ALT + N </b> </p>
+					
+					<p style="color:black;"> Aumentar o tamanho do texto: <b>ALT + Y</b> </p>
+					
+					<p style="color:black;"> Diminuir o tamanho do texto: <b>ALT + U</b> </p>
+					
+					<p style="color:black;"> Alterar o Modo Alto Contraste: <b>ALT + M</b> </p>
+					
+					<p style="color:black;"> Consultar as informações da Acessibilidade: <b>ALT + G</b> </p>
+					
+					<p style="color:black;"> Visualizar o Mapa do Site: <b>ALT + L</b> </p>
+					
+					<p style="color:black;"> Consultar as Perguntas e Respostas do sistema (FAQ): <b>ALT + V</b> </p>
+				
+	         </div>
+          </div>
+        </div>
+      </div>
+    </div>
+ 
+<div class="modal fade"
+     id="loginModal"
+     tabindex="-1"
+     role="dialog"
+     aria-labelledby="loginModalLabel"
+>
+	<div class="modal-dialog"
+       role="document"
+  >
+    <div class="modal-content card">
+      <div class="modal-header">
+        <button type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <h4 class="modal-title"
+            id="loginModalLabel"
+        >Login</h4>
+      </div>
+
+      <div class="modal-body">
+        <div class="row">
+          <div id="mensagemLoginTransparencia" class="col-lg-12"></div>
+        </div>
+        <div class="row">
+          <div class="col-md-4">
+            <img class="img-brasao center-block"
+                 src="/transparencia/img/brasao300.png"
+            />
+          </div>
+          <div class="col-md-8">
+            <div class="form-group">
+              <input type="text"
+                     id="login"
+                     class="form-control"
+                     maxlength="15"
+                     placeholder="Usuário"
+                     required
+                     autofocus
+              />
+            </div>
+            <div class="form-group">
+              <input type="password"
+                     id="senha"
+                     class="form-control"
+                     maxlength="30"
+                     placeholder="Senha"
+                     required
+              />
+            </div>
+            <div class="form-group">
+              <button type="button"
+                      class="btn btn-primary btn-block"
+                      onclick="login();"
+              >Acessar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+				<div class="row">
+          <div class="col-xs-12 text-center">
+            <p class="small">Versão 500.2082l</p>
+          </div>
+        </div>
+			</div>
+		</div>
+  </div>
+</div>
+<nav class="navbar navbar-default">
+	<div class="container-fluid">
+         <div class="navbar-header">
+             <button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-5" aria-expanded="false"> <span class="sr-only">Alterar navegação</span> <i class="fa fa-bars" aria-hidden="true"></i></button>
+			<a class="link-sem-estilo" href="/transparencia" accesskey="W" ><img class="img img-responsive navbar-brand" src="/transparencia/img/brasao300.png"><p class="padtop10">Município de Leópolis</p></a>
+    	</div>
+    	 <div class="collapse navbar-collapse">        	
+        	
+        	<p id="logarNoSistema" class="navbar-text navbar-right">
+        	
+	        	<a href="/transparencia/" class="navbar-link"><i class="fa fa-home" aria-hidden="true"></i> Início</a>
+	        		&#160;&#160;&#160;|&#160;&#160;&#160;	
+	        	<a href="https://radardatransparencia.atricon.org.br/" target="_blank" rel="noopener noreferrer" class="navbar-link"><i class="fa fa-link" aria-hidden="true"></i> Radar Transparência</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;	        				
+	        	<a href="/esportal/esportalprincipal.index.logic" class="navbar-link"><i class="fa fa-address-card" aria-hidden="true"></i> Subvenção/Intranet</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;		
+       			<a href="/esportal/esportalsolicitacaocadastrofornecedor.load.logic" class="navbar-link"><i class="fa fa-address-card" aria-hidden="true"></i> Cadastro Fornecedor</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;	
+	        	<a href="/transparencia/consultasMaisAcessadas" class="navbar-link"><i class="fa fa-list-ul" aria-hidden="true"></i> Consultas mais acessadas</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;		
+       			<a href="/transparencia/consultaHistoricoAcesso" class="navbar-link"><i class="fa fa-history" aria-hidden="true"></i> Histórico de acessos</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;        		
+	        		
+        			<a href="/transparencia/estruturaOrganizacional" class="navbar-link"><i class="fa fa-sitemap" aria-hidden="true"></i> Estrutura Organizacional</a>
+	        			&#160;&#160;&#160;|&#160;&#160;&#160;	
+        		    
+       			<a href="/transparencia/mapa" class="navbar-link"><i class="fa fa-map-marker" aria-hidden="true"  accesskey="L" ></i> Mapa do site</a>
+        		&#160;&#160;&#160;|&#160;&#160;&#160;
+        		
+        		<a href="" data-toggle="modal" data-target="#mdTa" class="navbar-link"><i class="fa fa-keyboard"></i> Teclas de Atalho</a>
+        		&#160;&#160;&#160;|&#160;&#160;&#160;
+        		
+	        	<a href="" data-toggle="modal" data-target="#mdAc" accesskey="G" class="navbar-link"><i class="fas fa-wheelchair" aria-hidden="true"></i> &#160 Acessibilidade</a>
+&#160;&#160;&#160;|&#160;&#160;&#160;
+<i id="contraste" class="fa fa-adjust" accesskey="M" ></i>
+&#160;&#160;&#160;|&#160;&#160;&#160;
+<i id="mais" class="fa fa-search-plus" aria-hidden="true" accesskey="Y" ></i>
+&#160;&#160;&#160;|&#160;&#160;&#160;
+<i id="menos" class="fa fa-search-minus" accesskey="U" ></i>
+&#160;&#160;&#160;|&#160;&#160;&#160;
+<a href="/transparencia/faq" class="navbar-link" accesskey="V" ><i class="fa fa-comment" aria-hidden="true"></i> FAQ</a>
+&#160;&#160;&#160;|&#160;&#160;&#160;
+
+
+	        	
+	        	
+        		
+	        	
+	        		<a type="button" id="botaoLogin" class="navbar-link" data-toggle="modal" data-target="#loginModal"><i class="fa fa-sign-in" aria-hidden="true"></i> Login</a>	        	
+	       		
+	        	
+	        	
+        	</p>
+		</div>
+	</div>
+    <div class="container-fluid navbar-inverse">
+    	<div class="navbar-header">
+        	<button type="button" class="collapsed navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-4" aria-expanded="false"> <span class="sr-only">Alterar navegação</span> <span class="icon-bar"></span> <span class="icon-bar"></span> <span class="icon-bar"></span> </button>
+		</div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-4">
+        	<ul class="nav navbar-nav">
+        		
+        		
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      			
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+                  		
+					
+                  		
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+					
+                  		
+					
+                  		
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          			
+                  		
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+                  			
+                      	
+					
+				
+          		
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="PPA" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-chart-line" aria-hidden="true"></i> PPA</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios do Plano Plurianual (quadriênio)</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/planoInvestimentos" title="Programas - Plano de Investimentos">Programas - Plano de Investimentos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/ldoFisicoFinanceiro" title="Anexo para LDO - Físico/financeiro">Anexo para LDO - Físico/financeiro <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/ldoMetaPrioridade" title="Anexo para LDO - Meta e Prioridades">Anexo para LDO - Meta e Prioridades <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoDasAcoesPrevistoRealizado" title="Demonstrativo das Ações - Previsto X Realizado">Demonstrativo das Ações - Previsto X Realizado <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Anexos</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoDaEstimativaDeReceita" title="Demonstrativo da estimativa de receita">Demonstrativo da estimativa de receita <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoPorProgramaDeGovernoInvestimentos" title="Demonstrativo por Programa de Governo - Investimentos">Demonstrativo por Programa de Governo - Investimentos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoPorProgramaDeGovernoAvaliacao" title="Demonstrativo por Programa de Governo - Avaliação">Demonstrativo por Programa de Governo - Avaliação <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoDasAcoes" title="Demonstrativo das ações">Demonstrativo das ações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoDosObjetivosAcoes" title="Demonstrativo dos Objetivos e Ações">Demonstrativo dos Objetivos e Ações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Orçamento" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-chart-pie" aria-hidden="true"></i> Orçamento</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios do Orçamento - Lei 4.320/64</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/sumarioGeral/sumario" title="Sumário Geral">Sumário Geral <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo01ReceitaDespesaPorCategorias/receitaDespesaPorCategoria" title="Anexo 01 - Receita e despesa por categorias">Anexo 01 - Receita e despesa por categorias <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo02ReceitasPorCategoria/receitaPorCategoria" title="Anexo 02 - Receita por categorias">Anexo 02 - Receita por categorias <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo02DespesasPorCategoriaSecretarias/despesasPorCategoria" title="Anexo 02 - Despesas por Categorias (por Secretarias)">Anexo 02 - Despesas por Categorias (por Secretarias) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo02DespesasPorCategoriaConsolidado/despesasPorCategoria" title="Anexo 02 - Despesas por Categorias (Consolidado)">Anexo 02 - Despesas por Categorias (Consolidado) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo06DespesasPorFuncoesDeGovernoSecretarias/despesasPorFuncoesDeGoverno" title="Anexo 06 - Despesas por Funções de Governo (por Secretarias)">Anexo 06 - Despesas por Funções de Governo (por Secretarias) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo07DespesasPorProgramasdeGovernoProjetosAtividades/despesasPorProgramasdeGoverno" title="Anexo 07 - Despesas por Programas de Governo/Projetos Atividades">Anexo 07 - Despesas por Programas de Governo/Projetos Atividades <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo08DespesasPorProgramasDeGovernoOrdinariosVinculados/despesasPorProgramasDeGoverno" title="Anexo 08 - Despesas por Programas de Governo/Ordinários e Vinculados">Anexo 08 - Despesas por Programas de Governo/Ordinários e Vinculados <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/anexo09DespesasPorSecretariasFuncoesDeGoverno/despesasPorSecretariasFuncoesDeGoverno" title="Anexo 09 - Despesas por Secretarias e Funções de Governo">Anexo 09 - Despesas por Secretarias e Funções de Governo <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/caracterizacaoDosObjetivos/caracterizacaoDosObjetivos" title="Caracterização dos objetivos">Caracterização dos objetivos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/quadroDeDetalhamentoDaDespesaOrcamentaria/detalhamentoDaDespesaOrcamentaria" title="Quadro de Detalhamento da Despesa Orçamentária (QDD)">Quadro de Detalhamento da Despesa Orçamentária (QDD) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="LDO" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="far fa-file-alt" aria-hidden="true"></i> LDO</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios da Lei de Diretrizes Orçamentárias</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/riscoFiscal/riscoFiscal" title="Risco Fiscal">Risco Fiscal <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/metasAnuais/metasAnuais" title="Metas Anuais">Metas Anuais <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/cumprimentoMetasFiscais" title="Cumprimento das Metas Fiscais do Exercício Anterior">Cumprimento das Metas Fiscais do Exercício Anterior <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/metasFiscais/metasFiscais" title="Metas Fiscais Atuais X Exerc. Anteriores">Metas Fiscais Atuais X Exerc. Anteriores <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/evolucaoPatrimonioLiquido/evolucaoPatrimonioLiquido" title="Evolução do Patrimônio Líquido">Evolução do Patrimônio Líquido <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/alienacaoBens/alienacaoBens" title="Recursos de Alienação de Bens">Recursos de Alienação de Bens <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitasDespesasRpps/receitasDespesasRpps" title="Receitas e Despesas Previdenciárias do RPPS">Receitas e Despesas Previdenciárias do RPPS <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/projecaoAtuarial/projecaoAtuarial" title="Projeção Atuarial">Projeção Atuarial <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/renunciaReceita/renunciaReceita" title="Estimativa e Compensação da Renúncia de Receita">Estimativa e Compensação da Renúncia de Receita <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/margemExpansaoDespesas" title="Margens de Expansão das Despesas de Carater Continuado">Margens de Expansão das Despesas de Carater Continuado <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/projetosEmAndamento/projetosEmAndamento" title="Projetos em Andamento">Projetos em Andamento <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/evolucaoReceita/evolucaoReceita" title="Evolução da Receita">Evolução da Receita <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="LRF" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-chart-line" aria-hidden="true"></i> LRF</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios Resumido da Execução Orçamentária-RREO</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/balancoOrcamentarioReceita" title="Balanço Orçamentário Receita">Balanço Orçamentário Receita <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/balancoOrcamentarioReceitaIntra" title="Balanço Orçamentário Receita Intra-Orçamentária">Balanço Orçamentário Receita Intra-Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/balancoOrcamentarioDespesa" title="Balanço Orçamentário Despesa">Balanço Orçamentário Despesa <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/balancoOrcamentarioDespesaIntra" title="Balanço Orçamentário Despesa Intra-Orçamentária">Balanço Orçamentário Despesa Intra-Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaFuncao" title="Demonstrativo da Execução da Despesa por Função">Demonstrativo da Execução da Despesa por Função <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaFuncaoSubFuncao" title="Demonstrativo da Execução da Despesa por Função e Subfunção">Demonstrativo da Execução da Despesa por Função e Subfunção <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaFuncaoSubFuncaoIntra" title="Demonstrativo da Execução da Despesa por  Função e Subfunção Intra-Orçamentária">Demonstrativo da Execução da Despesa por  Função e Subfunção Intra-Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaCorrenteLiquida" title="Demonstrativo da Receita Corrente Líquida - RCL">Demonstrativo da Receita Corrente Líquida - RCL <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitasDespesasPrevidenciarias" title="Demonstrativo das Receitas e Despesas Previdenciárias">Demonstrativo das Receitas e Despesas Previdenciárias <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/resultadoPrimarioNominal" title="Demonstrativo do Resultado Primário e Nominal - modelo a partir de 2018">Demonstrativo do Resultado Primário e Nominal - modelo a partir de 2018 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/resultadoPrimario" title="Demonstrativo do Resultado Primário - modelo até 2017">Demonstrativo do Resultado Primário - modelo até 2017 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/resultadoNominal" title="Demonstrativo do Resultado Nominal - modelo até 2017">Demonstrativo do Resultado Nominal - modelo até 2017 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/restosAPagar" title="Demonstrativo dos Restos a Pagar por Poder e Órgão">Demonstrativo dos Restos a Pagar por Poder e Órgão <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaDespesaManutencaoDesenvEnsino" title="Demonstrativo das Receitas e Despesas com Manutenção e Desenvolvimento do Ensino - MDE">Demonstrativo das Receitas e Despesas com Manutenção e Desenvolvimento do Ensino - MDE <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaOperacaoCreditoDespesaCapital" title="Demonstrativo das Receitas de Operações de Créditos e Despesas de Capital">Demonstrativo das Receitas de Operações de Créditos e Despesas de Capital <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/projecaoRegimeServidores" title="Demonstrativo da Projeção Atuarial do Regime de Previdência">Demonstrativo da Projeção Atuarial do Regime de Previdência <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaAlienacaoAplicacaoRecurso" title="Demonstrativo da Receita de Alienação de Ativos e Aplicação de Recursos">Demonstrativo da Receita de Alienação de Ativos e Aplicação de Recursos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaDespesaAcoesSaude" title="Demonstrativo da Receita e Despesas com Ações e Serviços Públicos de Saúde">Demonstrativo da Receita e Despesas com Ações e Serviços Públicos de Saúde <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/parceriasPublicoPrivada" title="Demonstrativo das Parcerias Público-Privadas">Demonstrativo das Parcerias Público-Privadas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/resumoExecucaoOrcamentaria" title="Demonstrativo Simplificado do Relatório Resumido da Execução Orçamentária">Demonstrativo Simplificado do Relatório Resumido da Execução Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatório de Gestão Fiscal</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaComPessoal" title="Demonstrativo da Despesa com Pessoal">Demonstrativo da Despesa com Pessoal <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/dividaConsolidadaLiquida" title="Demonstrativo da Dívida Consolidada Líquida - DCL">Demonstrativo da Dívida Consolidada Líquida - DCL <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/garantiasContragarantiasValores" title="Demonstrativo das Garantias e Contragarantias de Valores">Demonstrativo das Garantias e Contragarantias de Valores <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/operacoesCredito" title="Demonstrativo das Operações de Créditos">Demonstrativo das Operações de Créditos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/disponibilidadeCaixaRestosAPagar" title="Demonstrativo da Disponibilidade de Caixa e dos Restos a Pagar - modelo a partir de 2015">Demonstrativo da Disponibilidade de Caixa e dos Restos a Pagar - modelo a partir de 2015 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/disponibilidadeCaixa" title="Demonstrativo da Disponibilidade de Caixa - modelo até 2014">Demonstrativo da Disponibilidade de Caixa - modelo até 2014 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoRestosAPagar" title="Demonstrativo dos Restos a Pagar - modelo até 2014">Demonstrativo dos Restos a Pagar - modelo até 2014 <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/gestaoFiscal" title="Demonstrativo Simplificado do Relatório de Gestão Fiscal">Demonstrativo Simplificado do Relatório de Gestão Fiscal <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Execução Orçamentária" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-dollar-sign" aria-hidden="true"></i> Execução Orçamentária</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios da Execução Orçamentária - Lei 4.320/64 MCASP</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo01ReceitasDespesasPorCategoriaEconomica" title="Anexo 01 - Receitas e Despesas por Categoria Econômica">Anexo 01 - Receitas e Despesas por Categoria Econômica <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo02ReceitasPorCategoria" title="Anexo 02 - Receitas por Categoria">Anexo 02 - Receitas por Categoria <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo02DespesasPorCategoria" title="Anexo 02 - Despesas por Categoria">Anexo 02 - Despesas por Categoria <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo04DespesasPorCategoriaConsolidacao" title="Anexo 04-Despesas por Categoria - Consolidação">Anexo 04-Despesas por Categoria - Consolidação <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo05DespesasPorFuncaoConsolidacao" title="Anexo 05-Despesas por Função-Consolidação">Anexo 05-Despesas por Função-Consolidação <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo06DespesasPorFuncao" title="Anexo 06 - Despesas por Função">Anexo 06 - Despesas por Função <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo07DespesasPorFuncaoSubfuncaoProgramasProjetoAtividades" title="Anexo 07 - Despesas por Função/Subfunção/Programas por Projeto e Atividades">Anexo 07 - Despesas por Função/Subfunção/Programas por Projeto e Atividades <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo08DespesaProgramaDeTrabalhoDoGoverno" title="Anexo 08 - Despesas Programa de Trabalho de Governo">Anexo 08 - Despesas Programa de Trabalho de Governo <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo09DespesasPorOrgaoFuncao" title="Anexo 09 - Despesas por Órgão e Função">Anexo 09 - Despesas por Órgão e Função <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo10ComparativoDaReceitaPrevistaComArrecadada" title="Anexo 10 - Comparativo da Receita Prevista com Arrecadada">Anexo 10 - Comparativo da Receita Prevista com Arrecadada <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo11ComparativoDaDespesaAutorizadaComRealizada" title="Anexo 11 - Comparativo da Despesa Autorizada com a Realizada">Anexo 11 - Comparativo da Despesa Autorizada com a Realizada <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo12BalancoOrcamentario" title="Anexo 12 - Balanço Orçamentário">Anexo 12 - Balanço Orçamentário <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo13BalancoFinanceiro" title="Anexo 13 - Balanço Financeiro">Anexo 13 - Balanço Financeiro <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo14BalancoPatrimonial" title="Anexo 14 - Balanço Patrimonial">Anexo 14 - Balanço Patrimonial <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo15DemonstracoesDasVariacoesPatrimoniais" title="Anexo 15 - Demonstração das Variações Patrimoniais">Anexo 15 - Demonstração das Variações Patrimoniais <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo16DemonstrativoDaDividaFundadaInterna" title="Anexo 16 - Demonstração da Dívida Fundada Interna">Anexo 16 - Demonstração da Dívida Fundada Interna <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaAnexo17DemonstracoesDaDividaFlutuante" title="Anexo 17 - Demonstração da Dívida Flutuante">Anexo 17 - Demonstração da Dívida Flutuante <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execucaoOrcamentariaDemonstracaoDosFluxosDeCaixa" title="Anexo 18 - Demonstração do Fluxo de Caixa">Anexo 18 - Demonstração do Fluxo de Caixa <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/execOrcDemMutacoesDoPatrimonioLiquido" title="Anexo 19 - Demonstração das Mutações do Patrimônio Líquido">Anexo 19 - Demonstração das Mutações do Patrimônio Líquido <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Recursos Humanos" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-users" aria-hidden="true"></i> Recursos Humanos</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios do Departamento de Recursos Humanos</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelacaoDeServidoresAtivos" title="Relação de Servidores / Ativos">Relação de Servidores / Ativos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelacaoDeServidoresInativos" title="Relação de Servidores / Inativos">Relação de Servidores / Inativos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelacaoDeServidoresSalarios" title="Relação de Servidores / Salários">Relação de Servidores / Salários <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelacaoDeServidoresSalariosDetalhado" title="Relação de Servidores / Salários Detalhado">Relação de Servidores / Salários Detalhado <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelatorioQuadroFuncional" title="Quadro Funcional">Quadro Funcional <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelatorioQuadroFuncionalCedidoRecebido" title="Quadro Funcional Cedido Recebido ">Quadro Funcional Cedido Recebido  <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhRelatorioQuadroFuncionalComissionado" title="Quadro Funcional Comissionado">Quadro Funcional Comissionado <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relatorioQuadroCargo" title="Quadro de Cargos/Função">Quadro de Cargos/Função <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/srhEmpenhosDiariasConcedidasRecursosHumanos" title="Empenhos de Diárias Concedidas">Empenhos de Diárias Concedidas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown active">
+						<a href="#" class="dropdown-toggle" title="Outras Informações Orçamentária/Financeira" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-money-bill-alt" aria-hidden="true"></i> Outras Informações Orçamentária/Financeira</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios da execução orçamentária/financeira que visam atender os itens I e II da IN 89/2013</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaOrcamentaria" title="Despesa Orçamentária">Despesa Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/empenhosPorClassificacao" title="Empenhos por Classificação">Empenhos por Classificação <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaEmpenhada" title="Despesa Empenhada">Despesa Empenhada <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaEmpenhadaCompraDireta" title="Despesa Empenhada - Compra Direta">Despesa Empenhada - Compra Direta <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaLiquidada" title="Despesa Liquidada">Despesa Liquidada <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/ordemCronologicaPag" title="Ordem Cronológica de Pagamentos">Ordem Cronológica de Pagamentos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaPaga" title="Despesa Paga">Despesa Paga <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaEmpenhadaAPagar" title="Despesa Empenhada a Pagar">Despesa Empenhada a Pagar <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaDeAdiantamento" title="Despesa - Prestação de Contas de Adiantamento">Despesa - Prestação de Contas de Adiantamento <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/saldoCredoresAPagar" title="Saldo a Pagar por Data/Credor">Saldo a Pagar por Data/Credor <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/empenhosDiariasConcedidas" title="Empenhos de Diárias Concedidas">Empenhos de Diárias Concedidas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/transferenciasVoluntarias" title="Transferências Voluntárias (Convênio de Recurso Federal)">Transferências Voluntárias (Convênio de Recurso Federal) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/transferenciasTerceiros" title="Transferências Financeiras a Terceiros (Subvenção Social)">Transferências Financeiras a Terceiros (Subvenção Social) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/pagamentos" title="Total de Pagamentos por Fornecedor">Total de Pagamentos por Fornecedor <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relacaoDocumentosFiscais" title="Doc. Fiscais das Liquidações">Doc. Fiscais das Liquidações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/movimentacaoFinanceira" title="Mov. Financeira Não Decorrente Exec Orçamentária">Mov. Financeira Não Decorrente Exec Orçamentária <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaArrecadada" title="Receita Arrecadada">Receita Arrecadada <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/extratoFornecedor" title="Extrato Movimentação por Fornecedor">Extrato Movimentação por Fornecedor <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/pagamentosFornecedor" title="Pagamentos / Retenções por Fornecedor">Pagamentos / Retenções por Fornecedor <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/demonstrativoContasBancarias" title="Demonstrativo das Contas Bancárias">Demonstrativo das Contas Bancárias <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Transferências" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-exchange-alt" aria-hidden="true"></i> Transferências</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Transferências Voluntárias</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/recursosRecebidosConveniosFederais" title="Recursos Recebidos de Convênios Federais">Recursos Recebidos de Convênios Federais <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/transfVolunContratosParcerias" title="Contratos e Parcerias (Recurso Estadual e Municipal)">Contratos e Parcerias (Recurso Estadual e Municipal) <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Transferências Financeiras</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/transferenciasFinanceirasEntes" title="Transferências Entre Entes da Mesma Esfera de Governo">Transferências Entre Entes da Mesma Esfera de Governo <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/emendasParlamentares" title="Emendas Parlamentares">Emendas Parlamentares <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Licitações/Contratos/Compras" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-shopping-cart" aria-hidden="true"></i> Licitações/Contratos/Compras</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios diversos das Licitações e da execução de contratos que visam atender Lei da Transparência e Lei do Acesso a Informação (L.A.I)</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/fornecedoresImpedidosLicitar" title="Fornecedores Impedidos de Licitar">Fornecedores Impedidos de Licitar <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contratos" title="Contratos / Atas de Registro de Preço">Contratos / Atas de Registro de Preço <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contratosContrato" title="Contratos / Atas de Registro de Preço por Contrato">Contratos / Atas de Registro de Preço por Contrato <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contratosData" title="Contratos / Atas de Registro de Preço por Data">Contratos / Atas de Registro de Preço por Data <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contratosFornecedor" title="Contratos do Fornecedor">Contratos do Fornecedor <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/licitacaoAgenda" title="Agenda de Licitações">Agenda de Licitações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/licitacoes" title="Licitações">Licitações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/fiscaisContratos" title="Fiscais dos contratos">Fiscais dos contratos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/requisicoesCompra" title="Requisições de Compra">Requisições de Compra <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Pesquisas de Produtos</b> <i class=''></i></li>
+	                  		
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Chamamento Público</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/chamamentoPublico" title="Chamamento Público">Chamamento Público <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Relatórios Diversos" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="far fa-address-card" aria-hidden="true"></i> Relatórios Diversos</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios diversos que visam atender a Lei da Transparência e a Lei do Acesso a Informação (L.A.I)</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contasContabeis" title="Contas Contábeis">Contas Contábeis <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contasReceita" title="Contas de Receita">Contas de Receita <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/naturezasDespesa" title="Naturezas da Despesa">Naturezas da Despesa <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/leiAto" title="Leis e atos">Leis e atos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/bensPatrimoniais" title="Relação de Bens Patrimoniais">Relação de Bens Patrimoniais <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/bensPatrimoniaisPorPeriodo" title="Relação de Bens Patrimoniais Adquiridos por Período">Relação de Bens Patrimoniais Adquiridos por Período <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/bensPatrimoniaisRecebidosBaixadosPorDoacao" title="Relação de Bens Recebidos/Baixados por doação">Relação de Bens Recebidos/Baixados por doação <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/bensCedidos" title="Relação de Bens Cedidos">Relação de Bens Cedidos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relRenunciaDeReceitas" title="Renúncia de Receitas">Renúncia de Receitas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relacaoItensEmEstoque" title="Relação dos Itens em Estoque">Relação dos Itens em Estoque <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/inscritosDividaAtiva" title="Inscritos em Dívida Ativa">Inscritos em Dívida Ativa <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relacaoFrotaMunicipal" title="Relação da Frota Municipal">Relação da Frota Municipal <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Outras publicações" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-shopping-cart" aria-hidden="true"></i> Outras publicações</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios diversos das Licitações e da execução de contratos que visam atender Lei da Transparência e Lei do Acesso a Informação (L.A.I)</b> <i class=''></i></li>
+	                  		
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Audiências Públicas</b> <i class=''></i></li>
+	                  		
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"></b> <i class=''></i></li>
+	                  		
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="COVID-19" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fas fa-medkit" aria-hidden="true"></i> COVID-19</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;"> </b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/dadosSobreCovid19" title="Dados sobre o Coronavírus">Dados sobre o Coronavírus <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/publicacoesCovid19" title="Painel de Publicações">Painel de Publicações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaCovid19" title="Receitas">Receitas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/despesaCovid19" title="Despesas">Despesas <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/receitaDespesaCovid19" title="Comparativo Receita x Despesa">Comparativo Receita x Despesa <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/contratosContratoCovid19" title="Contratos/Atas de Registro de Preço">Contratos/Atas de Registro de Preço <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/revisaoContratoCovid19" title="Revisão de Contratos">Revisão de Contratos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/licitacoesCovid19" title="Licitações">Licitações <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/relacaoServidoresCovid19" title="Relação de Servidores Admitidos">Relação de Servidores Admitidos <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+          			<li class="dropdown">
+						<a href="#" class="dropdown-toggle" title="Contas Públicas" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class=" " aria-hidden="true"></i> Contas Públicas</a>
+						<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+												
+							<li class="text-center" style="min-width: 300px;"><b style="color: black;">Relatórios disponibilizados para atender a IN 28/TCU - Contas Públicas</b> <i class=''></i></li>
+	                  		
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/cpOrcamentoReceita" title="Orçamento anual da receita, Art. 2° Inc IX">Orçamento anual da receita, Art. 2° Inc IX <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/cpOrcamentoDespesa" title="Orçamento anual da despesa, Art. 2° Inc X">Orçamento anual da despesa, Art. 2° Inc X <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/cpExecucaoReceita" title="Execução do orçamento - Receita, Art. 2° Inc XI">Execução do orçamento - Receita, Art. 2° Inc XI <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+	                  		
+	                  		
+	                  			<li><a href="/transparencia/cpExecucaoDespesa" title="Execução do orçamento - Despesa, Art. 2° Inc XII">Execução do orçamento - Despesa, Art. 2° Inc XII <i class=''></i> </a></li>
+	                  		
+	                      	
+	                      	
+						
+						</ul>
+         			</li>
+				
+				<li class="dropdown">
+					<a href="/transparencia/dadosAbertos"  title="dadosAbertos" role="button" aria-haspopup="true" aria-expanded="false"><i class="" aria-hidden="true"></i>Dados abertos</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+</nav>
+<div id="loadingGif" class="loadingDiv" style="visibility:hidden;">
+	<img id src="/transparencia/img/equiplano_loading.gif" class="imgLoading" height="45px" alt="Carregando..." />
+	<span class="msgLoading">Carregando...</span>
+</div>
+<div class="container principal">
+	<div class="row">
+		<div class="col-xs-12">
+		
+			<h1 class="titulo-interna">Extrato Movimentação por Fornecedor <i class=''></i></h1>
+			
+													
+			<p style=" text-align: right;font-size: 13px">Início > Outras Informações Orçamentária/Financeira > Extrato Movimentação por Fornecedor</p>
+			<hr>
+		</div>
+	</div>
+	<div class="row" style="margin-right: 0; margin-left: 0;">
+		<div class='col-xs-12'>
+			<div id='mensagem'></div>
+		</div>
+	</div>
+	<div class="row" style="margin-right: 0; margin-left: 0;">
+		<div class="col-xs-12 text-left">
+			
+				<p style=" text-align: right;font-size: 13px">			
+					Última atualização:&nbsp;
+					
+						
+						<a href="/transparencia/extratoFornecedor?flagLogDataAtualizacao=1" title="Clique para visualizar"><i class='fas fa-share'></i></a>
+					
+					
+					
+				</p>
+					
+		
+			<form action='#'  method="post" >
+		<div id="overlayFornecedor"
+		     style="
+		        display:none;
+		        position:fixed;
+		        top:0;
+		        left:0;
+		        width:100%;
+		        height:100%;
+		        background:rgba(0,0,0,0.4);
+		        z-index:99990;
+		     ">
+		</div>	
+		<div id="loadingFornecedor"
+		     style="
+		        display:none;
+		        position:fixed;
+		        top:50%;
+		        left:50%;
+		        transform:translate(-50%, -50%);
+		        z-index:99999;
+		
+		        /* tamanho maior */
+		        width: 300px;
+		        height: 150px;
+		        padding:10px 10px;
+		
+		        background:#ffffff;
+		        border-radius:15px;
+		        box-shadow:0 0 25px rgba(0,0,0,0.35);
+		        text-align:center;
+		     ">
+		    <img src="/transparencia/img/equiplano_loading.gif"
+		         style="display:block; margin:0 auto 20px; width:50px; height:auto;" alt="Carregando..." />	     
+		    <div style="margin-top:20px; font-size:18px;">
+		    	Aguarde! Carregando fornecedor...
+		    </div>
+		</div>	
+		<input type="hidden" name="formulario.codFornecedor" id="formulario.codFornecedor" value=""/>
+		<div class="row">
+			<div id='coluna.formulario.codEntidade' class='col-lg-4 col-sm-4'><div id='grupo.formulario.codEntidade' class='form-group'><label id='label.formulario.codEntidade' for='formulario.codEntidade'>Entidade</label><select  onchange="carregaOpcoesViaAjax('extratoFornecedor/loadAjaxExercicios', 'formulario.exercicio', 'formulario.codEntidade=' + this.value);" name="formulario.codEntidade" id="formulario.codEntidade" class="form-control input-sm"><option value=""></option>
+			<option value="304">Câmara Municipal de Leópolis
+			<option value="300">Município de Leópolis
+			</option></select></div></div>
+		</div>
+		
+		<div class="row">
+			<div id='coluna.formulario.exercicio' class='col-lg-2 col-sm-4'><div id='grupo.formulario.exercicio' class='form-group'><label id='label.formulario.exercicio' for='formulario.exercicio'>Exercício</label><select  name="formulario.exercicio" id="formulario.exercicio" class="form-control input-sm"><option value=""></option></option></select></div></div>
+		</div>
+		
+		<div class="row">
+			<div id='coluna.formulario.idTipoLicitacao' class='col-lg-2 col-sm-4'><div id='grupo.formulario.idTipoLicitacao' class='form-group'><label id='label.formulario.idTipoLicitacao' for='formulario.idTipoLicitacao'>Modalidade</label><select  name="formulario.idTipoLicitacao" id="formulario.idTipoLicitacao" class="form-control input-sm"><option value=""></option>
+			<option value="3">Concorrência
+			<option value="4">Concurso
+			<option value="1">Convite
+			<option value="5">Leilão
+			<option value="6">Pregão
+			<option value="7">Processo dispensa
+			<option value="8">Processo inexigibilidade
+			<option value="9">RDC-Regime Diferenciado Contratações
+			<option value="2">Tomada de preços
+			</option></select></div></div>
+	
+			<div id='coluna.formulario.numeroLicitacao' class='col-lg-2 col-sm-4'><div id='grupo.formulario.numeroLicitacao' class='form-group'><label id='label.formulario.numeroLicitacao' for='formulario.numeroLicitacao'>Número</label><input onkeydown="return numeroUtil.validaSoNumero(event);" type="text" name="formulario.numeroLicitacao" id="formulario.numeroLicitacao" value="" class="form-control input-sm"/></div></div>
+			<div id='coluna.formulario.exercicioLicitacao' class='col-lg-2 col-sm-4'><div id='grupo.formulario.exercicioLicitacao' class='form-group'><label id='label.formulario.exercicioLicitacao' for='formulario.exercicioLicitacao'>Exercício</label><input onkeydown="return numeroUtil.validaSoNumero(event);" type="text" name="formulario.exercicioLicitacao" id="formulario.exercicioLicitacao" value="" class="form-control input-sm"/></div></div>
+			<br>*Quando utilizar esta linha de filtros, o filtro "Exercício" será ignorado.					
+		</div>
+		
+		<div class="row">			
+			<div id='coluna.formulario.nrDocumento' class='col-lg-2 col-sm-4'><div id='grupo.formulario.nrDocumento' class='form-group'><label id='label.formulario.nrDocumento' for='formulario.nrDocumento'>CPF/CNPJ</label><input onkeydown="return numeroUtil.validaSoNumero(event);" onchange="carregaFornecedor(this);" ondrop="return false;" onkeypress="return somenteNumeros(event);" oninput="filtrarNumeros(this);" type="text" name="formulario.nrDocumento" id="formulario.nrDocumento" value="" class="form-control input-sm"/></div></div>				
+			<div id='coluna.formulario.nmFornecedor' class='col-lg-4 col-sm-4'><div id='grupo.formulario.nmFornecedor' class='form-group'><label id='label.formulario.nmFornecedor' for='formulario.nmFornecedor'>Fornecedor</label><div class='form-group input-group'><input maxlength="80" placeholder="Digite o nome para pesquisar" class="autoComplete form-control input-sm" type="text" name="formulario.nmFornecedor" id="formulario.nmFornecedor" value="" autocomplete="off"/>
+				<span class="input-group-addon">
+					<i class="fa fa-search"></i>
+				</span>
+			</div></div></div>
+		</div>
+		
+		<div class="row">
+			<div id='coluna.formulario.mostrarSaldosZerados' class='col-lg-4 col-sm-4'><div id='grupo.formulario.mostrarSaldosZerados' class='form-group'><label id='label.formulario.mostrarSaldosZerados' for='formulario.mostrarSaldosZerados'>&#160;</label><div class='checkbox'><label><input type='checkbox' value='true' checked='checked' name="formulario.mostrarSaldosZerados" id="formulario.mostrarSaldosZerados" />Mostrar saldos zerados</label></div></div></div>
+		</div>
+		
+		<div class="row">
+	<div class="col-lg-1 col-sm-2">
+		<label>Gerar em:</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_PDF" name="formulario.tpFormatoExterno" value="PDF" checked='checked' />&#160;PDF</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_RTF" name="formulario.tpFormatoExterno" value="RTF"  />&#160;RTF</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_XLS" name="formulario.tpFormatoExterno" value="XLS"  />&#160;XLS</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_XLSX" name="formulario.tpFormatoExterno" value="XLS"  />&#160;XLSX</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_CSV" name="formulario.tpFormatoExterno" value="CSV"  />&#160;CSV</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_ODT" name="formulario.tpFormatoExterno" value="ODT"  />&#160;ODT</label>
+	</div>
+	<div class="col-lg-1 col-sm-2">
+		<label><input type="radio" id="tpFormatoExterno_TXT" name="formulario.tpFormatoExterno" value="TXT"  />&#160;TXT</label>
+	</div>
+</div>
+<br>
+	</form>
+		</div>
+	</div>
+	<div class="row" style="margin-right: 0; margin-left: 0;">
+		<div class="col-xs-12 text-left barraDeBotoes">
+			<input class="botaoImprimir btn btn-default" value="Visualizar" antiSpamBot="true" onclick="envia(this,'extratoFornecedor/process')" type="button"/>
+	<input class="botaoLimpar btn btn-default" value="Limpar" onclick="window.location = '/transparencia/extratoFornecedor';" type="button"/>
+			<i class="botaoProcessandoRequisicao fa fa-gear fa-spin fa-2x hidden" aria-hidden="true"></i>
+		</div>
+	</div>
+
+</div>
+<div class="container">
+	<div class="row text-center">
+		<a href="/transparencia" class="btn btn-default"><i class="fa fa-home" aria-hidden="true"></i> Página inicial</a>
+	</div>
+</div>
+<footer id="footer">
+	<div id="div_protecao_dados_1" style="z-index: 1; display: grid; position: fixed; bottom: 0px; width: 100%; height: 110px; background-color: rgba(38, 38, 41, 75%);">
+  <div style="width: 60%; color: white; margin: auto; font-family: Open-sans,Arial, Tahoma, Helvetica, sans-serif; font-size: 12px; display: flex; flex-wrap: wrap; align-content: center; align-items: center;" id="div_protecao_dados_2">
+	  <div style="width: 75%; text-align: justify; margin: 10px;">
+		   <h5>Política de uso de cookies</h5>
+		   <p>
+			      Utilizamos cookies e tecnologias semelhantes para fornecer-lhe uma melhor
+			      experiência de navegação,
+			      assim como providenciar alguns recursos essenciais.<br>	      
+			      Ao continuar navegando nessa página você concordará com as nossas 
+ 		      
+			      <a style="text-decoration: underline;color: white;"
+			        href="/esadmin/linksprotecaodados.politicasUsoCookies.logic"
+			        target="_blank"
+			      >Políticas de uso de cookies</a> e
+			      <a style="text-decoration: underline;color: white;"
+			        href="/esadmin/linksprotecaodados.politicasPrivacidade.logic"
+			        target="_blank"
+			      >Políticas de privacidade</a>. 
+		    </p> 
+	  
+	  </div>
+	  <div style="width: 20%;"><input type="button" class="botaoImprimir btn btn-default" value="Concordo" onclick="setCookieProtecaoDados()" style="margin: 0px;">
+	  </div>
+  </div>
+</div>
+	<div class="container">
+		<div class="col-md-3 col-sm-4 col-xs-3">
+			<p class="text-muted">
+				<b>Município de Leópolis</b>
+				<br>RUA PEDRO DOMINGUES DE SOUZA, 374
+				<br>CENTRO - Leópolis - PR
+				
+				<br>prefeitura@leopolis.pr.gov.br
+				<br> (43) 3627-1361
+				<br> 07:30 as 11:30 e das 13:00 as 17:00
+				
+				
+          		 
+          		 
+			</p>
+		</div>
+		
+		<div class="col-md-3 col-sm-4 col-xs-3">
+			<p class="text-muted">
+				<b></b>
+				<br>
+				<br>
+				
+				<br>
+				<br>
+				<br>
+				
+				
+          		
+          		 
+			</p>
+		</div>
+		
+		
+		<div class="col-md-4 col-sm-4 col-xs-4">
+			<p class="navbar-text" >
+        		<span><b>Informações atualizadas em tempo real</b></span>
+        		<br>Versão do Sistema: <span><b>500.2082l</b></span>
+        		<br>
+        		Data de atualização: <span><b>20/10/2026 03:09</b></span>
+        		<br>Número de Acessos: <span><b>6131847</b></span>
+        	</p>
+		
+		</div>
+		
+		<div class="col-md-2 col-sm-4 col-xs-2">
+			<p class="text-muted fontePP text-right">Desenvolvido por &nbsp;&nbsp;<img class="img-responsive pull-right" src="/transparencia/img/equiplano_logo.png"></p>
+		</div>
+	</div>
+</footer>
+
+
+<script  type='text/javascript' src='/esadmin/recursos/terceiros/jquery/2.1.4/js/jquery.min.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/terceiros/bootstrap/3.3.5/js/bootstrap.min.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/terceiros/cookie/js/jquery.cookie.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/terceiros/metismenu/js/metisMenu.min.js?0' charset='ISO-8859-1'></script>
+
+
+
+<script  type='text/javascript' src='/esadmin/recursos/terceiros/typeahead/0.0.5/js/bootstrap-typeahead.min.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/transparencia/js/jsAutoComplete.js?0' charset='ISO-8859-1'></script>
+
+
+
+
+<script  type='text/javascript' src='/esadmin/recursos/equiplano/js/select-ajax.js?0' charset='ISO-8859-1'></script>
+
+<script  type='text/javascript' src='/esadmin/recursos/equiplano/js/equiplano.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/equiplano/js/mensagem-util.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/equiplano/js/numero-util.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/esadmin/recursos/equiplano/js/menu-util.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/transparencia/js/jsComum.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/transparencia/js/jsLogin.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/transparencia/js/jsAcessibilidade.js?0' charset='ISO-8859-1'></script>
+<script  type='text/javascript' src='/transparencia/js/jsExtratoFornecedor.js?0' charset='ISO-8859-1'></script>
+</body>
+</html>
