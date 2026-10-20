@@ -455,7 +455,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Nº do empenho, da nota, da dotação ou do contrato; ou nome do fornecedor/produto…">
+        <input id="busca" type="search" placeholder="Nº do empenho (exato) ou nome do fornecedor, produto, contrato…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -485,7 +485,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Notas fiscais</h2>
       <p class="note">Documentos fiscais das liquidações de 2026, como na "Relação de documentos fiscais" do Portal da Transparência. Toque em <b>Nota</b> para baixar o arquivo anexado no portal ou consultar a NF-e no site da Receita pela chave de acesso.</p>
       <div class="tools">
-        <input id="n-busca" type="search" placeholder="Fornecedor, CNPJ, nº da nota, empenho, liquidação, chave…">
+        <input id="n-busca" type="search" placeholder="Nº da nota (exato), CNPJ, chave de acesso ou nome do fornecedor…">
         <select id="n-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
         <select id="n-tipo"><option value="">Todos os tipos</option></select>
         <input id="n-de" type="date" title="Liquidação a partir de" style="flex:0 1 10rem"><input id="n-ate" type="date" title="Liquidação até" style="flex:0 1 10rem">
@@ -788,18 +788,11 @@ const soEst = document.getElementById('so-est');
 const busca = document.getElementById('busca'), soSaldo = document.getElementById('so-saldo'), fSit = document.getElementById('f-sit'), fFonte = document.getElementById('f-fonte'),
   fNat = document.getElementById('f-nat'), fTipo = document.getElementById('f-tipo'), fSec = document.getElementById('f-sec'), fLic = document.getElementById('f-lic'), faixa = document.getElementById('faixa');
 let sortK = 'dias', sortDir = -1;
-// busca: número → só correspondência exata (empenho, nota, dotação, contrato, licitação), com o motivo; texto → nome, produto etc.
+// busca: número → só o empenho com aquele número exato; texto → filtra conforme digita
 const semZeros = (v) => String(v || '').replace(/^0+(?=\d)/, '');
+const ehNumero = (q) => /^\d+(\/\d{2,4})?$/.test(q);
 function casaBusca(r, q) { r._motivo = '';
-  if (/^\d+(\/\d{2,4})?$/.test(q)) { const n = semZeros(q.split('/')[0]);
-    if (semZeros(r.empenho) === n) return true;
-    const nf = (notasPorEmp()[r.empenho] || []).find(x => semZeros(String(x.numero).split('/')[0]) === n);
-    if (nf) { r._motivo = `achado pela nota fiscal nº ${nf.numero}`; return true; }
-    if (semZeros(r.dotacao) === n) { r._motivo = `achado pela dotação ${r.dotacao}`; return true; }
-    const num = (t) => (String(t || '').match(/(\d+)\s*\/\s*\d{4}/) || [])[1];
-    if (semZeros(num(r.contrato)) === n) { r._motivo = `achado pelo contrato ${r.contrato}`; return true; }
-    if (semZeros(num(r.licitacao)) === n) { r._motivo = `achado pela licitação ${r.licitacao}`; return true; }
-    return false; }
+  if (ehNumero(q)) return semZeros(r.empenho) === semZeros(q.split('/')[0]);
   return nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q); }
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
@@ -920,7 +913,7 @@ document.getElementById('btn-print-prod').addEventListener('click', () => { docu
 // ---------- Liquidações ----------
 const lBusca = document.getElementById('l-busca'), lNp = document.getElementById('l-np');
 function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySelector('#t-liq tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(lBusca.value.trim());
-  const rows = d.data.filter(r => (!lNp.checked || r.pago === 'Não') && (!q || nz([r.liquidacao, r.empenho, r.fornecedor, r.documento].join(' ')).includes(q)));
+  const rows = d.data.filter(r => (!lNp.checked || r.pago === 'Não') && (!q || (ehNumero(q) ? [r.liquidacao, String(r.empenho).split(' ')[0]].some(v => semZeros(v) === semZeros(q)) || (String(r.documento).match(/\d+/g) || []).some(v => semZeros(v) === semZeros(q)) : nz([r.fornecedor, r.documento].join(' ')).includes(q))));
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.liquidacao; td(tr, r.liquidacao).style.fontWeight = '600'; td(tr, br(r.data)); td(tr, r.empenho);
     fornCell(tr, r.fornecedor, r.tipo_despesa); botaoNF(td(tr, r.documento, 'hide-sm'), notasPorLiq()[r.liquidacao], `Notas fiscais da liquidação ${r.liquidacao}`); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : 'A pagar', r.pago === 'Sim' ? 'ok' : 'mid'); tb.appendChild(tr); });
   if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
@@ -1011,7 +1004,8 @@ function drawNotas() { const d = dash.data('notas'), tb = document.querySelector
   fillSelect(nTipo, uniq(d.data, 'tipo')); const q = nz(nBusca.value.trim()), qd = q.replace(/\D/g, ''), hoje = Date.now();
   const rows = d.data.filter(r => (!nTipo.value || r.tipo === nTipo.value) && (!nDe.value || r.data_liquidacao >= nDe.value) && (!nAte.value || r.data_liquidacao <= nAte.value)
     && naFaixa(nPer.value, Math.floor((hoje - new Date(r.data_liquidacao + 'T12:00:00')) / 864e5))
-    && (!q || nz([r.fornecedor, r.numero, r.empenho, r.liquidacao, r.tipo].join(' ')).includes(q) || (qd.length >= 4 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd)))));
+    && (!q || (ehNumero(q) ? (q.length >= 11 ? String(r.cpf_cnpj) === qd || String(r.chave) === qd : semZeros(String(r.numero).split('/')[0]) === semZeros(q.split('/')[0]))
+      : nz([r.fornecedor, r.tipo].join(' ')).includes(q) || (qd.length >= 11 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd))))));
   tot.textContent = `${intF.format(rows.length)} documentos · ${brl2.format(rows.reduce((a, r) => a + N(r.valor), 0))}`;
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr');
     const c1 = td(tr, r.liquidacao); c1.style.fontWeight = '600'; const s1 = document.createElement('div'); s1.className = 'sub2'; s1.textContent = br(r.data_liquidacao); c1.appendChild(s1);
