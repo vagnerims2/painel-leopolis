@@ -462,7 +462,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Nº do empenho (exato) ou nome do fornecedor, produto, contrato…">
+        <input id="busca" type="search" placeholder="Nº do empenho, da nota, da dotação ou do contrato (exato); ou nome do fornecedor/produto…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -799,7 +799,15 @@ let sortK = 'dias', sortDir = -1;
 const semZeros = (v) => String(v || '').replace(/^0+(?=\d)/, '');
 const ehNumero = (q) => /^\d+(\/\d{2,4})?$/.test(q);
 function casaBusca(r, q) { r._motivo = '';
-  if (ehNumero(q)) return semZeros(r.empenho) === semZeros(q.split('/')[0]);
+  if (ehNumero(q)) { const n = semZeros(q.split('/')[0]);
+    if (semZeros(r.empenho) === n) return true;
+    const nf = (notasPorEmp()[r.empenho] || []).find(x => semZeros(String(x.numero).split('/')[0]) === n);
+    if (nf) { r._motivo = `achado pela nota fiscal nº ${nf.numero}`; return true; }
+    if (semZeros(r.dotacao) === n) { r._motivo = `achado pela dotação ${r.dotacao}`; return true; }
+    const num = (t) => (String(t || '').match(/(\d+)\s*\/\s*\d{4}/) || [])[1];
+    if (semZeros(num(r.contrato)) === n) { r._motivo = `achado pelo contrato ${r.contrato}`; return true; }
+    if (semZeros(num(r.licitacao)) === n) { r._motivo = `achado pela licitação ${r.licitacao}`; return true; }
+    return false; }
   return nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q); }
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
