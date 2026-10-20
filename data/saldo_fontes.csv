@@ -1,9 +1,9 @@
 fonte,codigo,saldo_a_pagar
-0 - Recursos Ordinários (Livres),0,554264.08
+0 - Recursos Ordinários (Livres),0,555320.62
 829 - Fundo do Esporte Investimento,829,341640.01
 371 - Bloco de Investimento na Rede de Serviços Públicos de Saúde,371,341000.0
 1018 - Emendas Individuais Impositivas - transferência com finalidade definida - (Inciso II do Art. 166-A da E.C. 105/20...,1018,308701.04
-303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,146864.02
+303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,146970.18
 1040 - Transferências do FUNDEB - Complementação da União - VAAR,1040,113512.95
 501 - Receitas de Alienações de Ativos,501,84503.24
 103 - 5% sobre Transferências Constitucionais FUNDEB,103,55817.95
@@ -15,6 +15,7 @@ fonte,codigo,saldo_a_pagar
 826 - Bloco de Financiamento da Proteção Social Básica - SUAS ESTADO,826,18740.36
 1042 - Transferências de Recursos do FNDE referentes ao Programa Nacional de Alimentação Escolar (PNAE),1042,15012.1
 1063 - Transferências da Política Nacional Aldir Blanc,1063,13760.0
+817 - Garantia de Direitos de Crianças e Adolescentes,817,13440.0
 743 - FAMILIA ESTADO - PISO PARANAENSE - PPAS,743,8769.3
 1041 - Transferências de Recursos do FNDE referentes ao Programa Dinheiro Direto na Escola (PDDE),1041,7032.05
 1080 - Transferências do FUNDEB - Complementação da União - ETI,1080,4839.28
