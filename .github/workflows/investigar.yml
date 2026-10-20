@@ -10,11 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          mkdir -p saida10; B="https://leopolispr.equiplano.com.br:7300/transparencia/requisicoesCompra/process"
-          Q="formulario.codFornecedor=&formulario.codEntidade=300&formulario.dataInicial=13/10/2026&formulario.dataFinal=20/10/2026&formulario.nrDocumento=&formulario.nmFornecedor=&formulario.codProduto=&formulario.nmProduto=&formulario.numeroLicitacao=&formulario.codTipoLicitacao=&formulario.exercicioLicitacao="
-          curl -sSk -m 200 "$B?$Q&formulario.tpFormatoExterno=CSV" -o saida10/req.csv -w "%{http_code} %{content_type} %{size_download}\n" > saida10/t.txt
-          curl -sSk -m 200 "$B?$Q&formulario.tpFormatoExterno=PDF" -o saida10/req.pdf -w "%{http_code} %{content_type} %{size_download}\n" >> saida10/t.txt
-          curl -sSk -m 200 -X POST -d "$Q&formulario.tpFormatoExterno=CSV" "$B" -o saida10/req_post.csv -w "%{http_code} %{content_type} %{size_download}\n" >> saida10/t.txt
+          mkdir -p saida11; B="https://leopolispr.equiplano.com.br:7300/transparencia"
+          curl -sSk -m 200 "$B/licitacoes/listaLicitacoes?formulario.codEntidade=300&formulario.exercicio=2026&formulario.numeroLicitacao=&formulario.idTipoLicitacao=&formulario.situacaoLicitacao=&formulario.dtInicial=&formulario.dtFinal=&formulario.objeto=" -o saida11/lic.html
+          L=$(grep -oE "href=['\"][^'\"]*(detalhe|visualiza|licitacao)[^'\"]*" saida11/lic.html | head -3 | sed -E "s/href=['\"]//")
+          echo "$L" > saida11/links.txt; n=0
+          for u in $L; do n=$((n+1)); curl -sSk -m 120 "$B/licitacoes/$(echo $u | sed 's/&amp;/\&/g')" -o saida11/det$n.html; done
+          grep -il "e-mail\|email\|telefone" saida11/* > saida11/achou.txt || true
       - run: |
           git config user.name "Painel Leopolis (GitHub)"; git config user.email "vagnerims2@users.noreply.github.com"
-          git add saida10 && git commit -qm "resultado10" && git push -q origin investigacao
+          git add saida11 && git commit -qm "resultado11" && git push -q origin investigacao
