@@ -306,6 +306,11 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .nf-acoes .btn2.pri{background:#1F4E8C;color:#fff;border-color:#1F4E8C}
 @media print{#dash-root .nf-bt,#dash-root .nf-modal{display:none!important}}
 
+#dash-root .vis-sel{display:inline-flex;width:max-content;justify-self:start;align-self:start;gap:0;margin:0 0 10px;border:1px solid #b9cbe6;border-radius:10px;overflow:hidden;background:#fff}
+#dash-root .vis-sel button{font:inherit;font-size:14px;font-weight:600;padding:8px 18px;border:0;background:#fff;color:#1F4E8C;cursor:pointer}
+#dash-root .vis-sel button[aria-selected=true]{background:#1F4E8C;color:#fff}
+@media print{#dash-root .vis-sel{display:none}}
+
 /* versão para o cidadão: só informação geral */
 #dash-root .tabs button[data-go=alertas],#dash-root .tabs button[data-go=dotacoes],#dash-root .tabs button[data-go=semana],
 #dash-root #alertas-resumo,#dash-root #composicao,#dash-root .tab[data-tab=alertas],#dash-root .tab[data-tab=dotacoes],#dash-root .tab[data-tab=semana],
@@ -332,7 +337,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <button data-go="dotacoes" aria-selected="false">Dotações</button>
     <button data-go="empenhos" aria-selected="false">Empenhos</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
-    <button data-go="notas" aria-selected="false">Notas fiscais</button>
     <button data-go="semana" aria-selected="false">Dia e semana</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
   </nav>
@@ -452,11 +456,12 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
   <!-- ============ EMPENHOS ============ -->
   <section class="tab" data-tab="empenhos" hidden>
+    <div class="vis-sel" role="tablist"><button type="button" data-vis="emp" aria-selected="true">Empenhos</button><button type="button" data-vis="nf" aria-selected="false">Notas fiscais</button></div>
     <div class="card" id="pendencias">
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Buscar nº do empenho, fornecedor, produto, contrato…">
+        <input id="busca" type="search" placeholder="Buscar nº do empenho, nº da nota, fornecedor, produto, contrato…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -481,6 +486,20 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       </tr></thead><tbody></tbody>
       <tfoot><tr><td colspan="3" id="t-qtd">Total da seleção</td><td class="r" id="t-valor">—</td><td class="r hide-sm" id="t-falta">—</td><td class="r hide-sm" id="t-lnp">—</td><td class="r" id="t-saldo">—</td><td colspan="2"></td></tr></tfoot></table></div>
       <p class="note">Saldo por empenho calculado com empenhos, anulações, liquidações e pagamentos do portal e conferido com o saldo oficial por fornecedor e data.</p>
+    </div>
+    <div class="card" id="notas" hidden>
+      <h2>Notas fiscais</h2>
+      <p class="note">Documentos fiscais das liquidações de 2026, como na "Relação de documentos fiscais" do Portal da Transparência. Toque em <b>Nota</b> para baixar o arquivo anexado no portal ou consultar a NF-e no site da Receita pela chave de acesso.</p>
+      <div class="tools">
+        <input id="n-busca" type="search" placeholder="Fornecedor, CNPJ, nº da nota, empenho, liquidação, chave…">
+        <select id="n-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
+        <select id="n-tipo"><option value="">Todos os tipos</option></select>
+        <input id="n-de" type="date" title="Liquidação a partir de" style="flex:0 1 10rem"><input id="n-ate" type="date" title="Liquidação até" style="flex:0 1 10rem">
+      </div>
+      <p class="note" id="n-total">—</p>
+      <div class="tblwrap"><table id="t-notas"><thead><tr>
+        <th>Liquidação</th><th>Empenho</th><th>Fornecedor</th><th class="hide-sm">Documento</th><th class="r">Valor</th><th></th>
+      </tr></thead><tbody></tbody></table></div>
     </div>
   </section>
 
@@ -521,23 +540,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
 
 
-  <!-- ============ NOTAS FISCAIS ============ -->
-  <section class="tab" data-tab="notas" hidden>
-    <div class="card" id="notas">
-      <h2>Notas fiscais</h2>
-      <p class="note">Documentos fiscais das liquidações de 2026, como na "Relação de documentos fiscais" do Portal da Transparência. Toque em <b>Nota</b> para baixar o arquivo anexado no portal ou consultar a NF-e no site da Receita pela chave de acesso.</p>
-      <div class="tools">
-        <input id="n-busca" type="search" placeholder="Fornecedor, CNPJ, nº da nota, empenho, liquidação, chave…">
-        <select id="n-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select>
-        <select id="n-tipo"><option value="">Todos os tipos</option></select>
-        <input id="n-de" type="date" title="Liquidação a partir de" style="flex:0 1 10rem"><input id="n-ate" type="date" title="Liquidação até" style="flex:0 1 10rem">
-      </div>
-      <p class="note" id="n-total">—</p>
-      <div class="tblwrap"><table id="t-notas"><thead><tr>
-        <th>Liquidação</th><th>Empenho</th><th>Fornecedor</th><th class="hide-sm">Documento</th><th class="r">Valor</th><th></th>
-      </tr></thead><tbody></tbody></table></div>
-    </div>
-  </section>
 
   <!-- ============ DIA E SEMANA ============ -->
   <section class="tab" data-tab="semana" hidden>
@@ -805,7 +807,7 @@ function drawTable() {
   const okI = (dd) => naFaixa(f, dd);
   const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
-    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q)))
+    && (!q || nz([r.empenho, r.fornecedor, r.produtos, r.contrato, r.licitacao, r.dotacao, r.subelemento, r.tipo_despesa].join(' ')).includes(q) || (/^\d{3,}$/.test(q) && (notasPorEmp()[r.empenho] || []).some(x => String(x.numero).replace(/^0+/, '') === q.replace(/^0+/, '')))))
     .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); });
   const s = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
   document.getElementById('t-valor').textContent = brl.format(s('valor')); document.getElementById('t-falta').textContent = brl.format(s('falta_liquidar'));
@@ -1011,6 +1013,14 @@ function drawNotas() { const d = dash.data('notas'), tb = document.querySelector
   if (rows.length > 500) emptyRow(tb, 6, `Mostrando 500 de ${intF.format(rows.length)}. Refine a busca.`); if (!rows.length) emptyRow(tb, 6, 'Nenhum documento fiscal com esse filtro.'); }
 nBusca.addEventListener('input', drawNotas); [nPer, nTipo, nDe, nAte].forEach(e => e.addEventListener('change', drawNotas));
 dash.onData(drawNotas);
+
+// ---------- Empenhos | Notas fiscais (mesma aba) ----------
+function verEmp(v) { document.querySelectorAll('#dash-root .vis-sel button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.vis === v)));
+  const nf = v === 'nf'; document.getElementById('pendencias').hidden = nf; document.getElementById('notas').hidden = !nf;
+  const de = nf ? busca : nBusca, para = nf ? nBusca : busca; if (de.value && !para.value) { para.value = de.value; (nf ? drawNotas : drawTable)(); }
+  try { history.replaceState(null, '', nf ? '#notas' : '#empenhos'); } catch (e) {} }
+document.querySelectorAll('#dash-root .vis-sel button').forEach(b => b.addEventListener('click', () => verEmp(b.dataset.vis)));
+if (location.hash === '#notas') { irPara('empenhos'); verEmp('nf'); }
 
 dash.onData(() => {
   fillMarks('info', {}); fillMarks('alertas_resumo', {}); 
