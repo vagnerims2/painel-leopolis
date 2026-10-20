@@ -413,7 +413,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <label><input id="d-sup" type="checkbox" checked> só as que precisam suplementar</label>
       </div>
       <div class="tblwrap"><table id="t-dot" data-source="dotacoes" data-row-key="dotacao"><thead><tr>
-        <th data-field="dotacao">Dotação</th><th data-field="tipo_despesa">Elemento / fonte</th><th data-field="saldo_atual" class="r">Saldo</th><th data-field="media_mensal" class="r">Média/mês</th>
+        <th data-field="dotacao">Dotação</th><th data-field="tipo_despesa">Elemento da despesa / fonte</th><th data-field="saldo_atual" class="r">Saldo</th><th data-field="media_mensal" class="r">Média/mês</th>
         <th data-field="empenhado_mes" class="r hide-sm">Neste mês</th><th data-field="falta_fechar_mes" class="r">Falta p/ fechar o mês</th><th data-field="precisa_proximo_mes" class="r">P/ o mês que vem</th><th data-field="total_suplementar" class="r">Total</th>
       </tr></thead><tbody></tbody>
       <tfoot><tr><td colspan="5" id="d-qtd">Total</td><td class="r" id="d-t1">—</td><td class="r" id="d-t2">—</td><td class="r" id="d-t3">—</td></tr></tfoot></table></div>
@@ -735,7 +735,7 @@ document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListe
 { const h = location.hash.slice(1); if (document.querySelector(`#dash-root .tabs button[data-go="${h}"]`)) irPara(h); }
 
 // ---------- Empenhos ----------
-const NATUREZAS = { '3.1.90.04': 'Contratação por tempo determinado', '3.1.90.11': 'Vencimentos e vantagens fixas', '3.1.90.13': 'Obrigações patronais', '3.1.90.16': 'Outras despesas variáveis – pessoal', '3.1.90.94': 'Indenizações trabalhistas',
+const NATUREZAS = { '3.1.90.01': 'Aposentadorias e reformas', '3.1.90.03': 'Pensões', '3.2.90.21': 'Juros sobre a dívida por contrato', '4.6.90.71': 'Principal da dívida contratual resgatado', '3.1.90.04': 'Contratação por tempo determinado', '3.1.90.11': 'Vencimentos e vantagens fixas', '3.1.90.13': 'Obrigações patronais', '3.1.90.16': 'Outras despesas variáveis – pessoal', '3.1.90.94': 'Indenizações trabalhistas',
   '3.3.50.43': 'Subvenções sociais', '3.3.71.70': 'Rateio – consórcio público', '3.3.90.08': 'Outros benefícios assistenciais', '3.3.90.14': 'Diárias – civil', '3.3.90.30': 'Material de consumo', '3.3.90.31': 'Premiações',
   '3.3.90.32': 'Material, bem ou serviço p/ distribuição gratuita', '3.3.90.33': 'Passagens e locomoção', '3.3.90.35': 'Serviços de consultoria', '3.3.90.36': 'Outros serviços de terceiros – PF', '3.3.90.39': 'Outros serviços de terceiros – PJ',
   '3.3.90.40': 'Serviços de TI e comunicação – PJ', '3.3.90.46': 'Auxílio-alimentação', '3.3.90.47': 'Obrigações tributárias e contributivas', '3.3.90.48': 'Outros auxílios a pessoas físicas', '3.3.90.91': 'Sentenças judiciais',
@@ -812,12 +812,12 @@ function drawTempo() { const d = dash.data('tempo_medio'), tb = document.querySe
 // ---------- Dotações ----------
 const dBusca = document.getElementById('d-busca'), dRec = document.getElementById('d-rec'), dSup = document.getElementById('d-sup');
 function drawDot() { const d = dash.data('dotacoes'), tb = document.querySelector('#t-dot tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(dBusca.value.trim());
-  const rows = d.data.filter(r => (!dRec.checked || r.recorrente === 'Sim') && (!dSup.checked || Number(r.total_suplementar) > 0) && (!q || nz([r.dotacao, r.tipo_despesa, r.subelemento, r.fonte, r.secretaria].join(' ')).includes(q)));
+  const rows = d.data.filter(r => (!dRec.checked || r.recorrente === 'Sim') && (!dSup.checked || Number(r.total_suplementar) > 0) && (!q || nz([r.dotacao, r.tipo_despesa, r.subelemento, r.natureza, NATUREZAS[r.natureza] || '', r.fonte, r.secretaria].join(' ')).includes(q)));
   const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
   document.getElementById('d-qtd').textContent = `Total · ${intF.format(rows.length)} dotações`; document.getElementById('d-t1').textContent = brl.format(s('falta_fechar_mes'));
   document.getElementById('d-t2').textContent = brl.format(s('precisa_proximo_mes')); document.getElementById('d-t3').textContent = brl.format(s('total_suplementar'));
   rows.forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.dotacao; const c = td(tr, r.dotacao); c.style.fontWeight = '600'; const sc = document.createElement('div'); sc.className = 'sub2'; sc.textContent = r.secretaria; c.appendChild(sc);
-    fornCell(tr, `${r.subelemento} ${r.tipo_despesa}`, `${r.fonte} · último empenho ${r.ultimo_empenho} em ${br(r.data_ultimo)} · ${r.meses}`);
+    { const nat = r.natureza || String(r.subelemento).split('.').slice(0, 4).join('.'); fornCell(tr, `${nat}.00.00 ${(NATUREZAS[nat] || r.tipo_despesa).toUpperCase()}`, `${r.fonte} · último empenho ${r.ultimo_empenho} em ${br(r.data_ultimo)} · ${r.meses}`); }
     td(tr, brl.format(N(r.saldo_atual)), 'r'); td(tr, brl.format(N(r.media_mensal)), 'r'); td(tr, brl.format(N(r.empenhado_mes)), 'r hide-sm');
     td(tr, N(r.falta_fechar_mes) ? brl.format(N(r.falta_fechar_mes)) : '—', 'r' + (N(r.falta_fechar_mes) ? ' late' : '')); td(tr, N(r.precisa_proximo_mes) ? brl.format(N(r.precisa_proximo_mes)) : '—', 'r' + (N(r.precisa_proximo_mes) ? ' mid' : ''));
     td(tr, N(r.total_suplementar) ? brl.format(N(r.total_suplementar)) : '—', 'r').style.fontWeight = '600'; tb.appendChild(tr); });
