@@ -28,8 +28,7 @@
   --serie0:#6fa8d6;--serie1:#4cc2b3;--serie2:#f0b45a;color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--font-anthropic-sans);font-size:15px;-webkit-text-size-adjust:100%}
-#dash-root{max-width:1320px;margin:0 auto;padding:0;overflow:hidden}
-@media (min-width:1360px){#dash-root{margin:16px auto}}
+#dash-root{max-width:none;margin:0;padding:0;overflow:hidden}
 #dash-root a{color:var(--serie0)}
 .dash-skeleton{color:transparent!important;background:linear-gradient(90deg,color-mix(in srgb,var(--color-fg) 6%,transparent),color-mix(in srgb,var(--color-fg) 12%,transparent),color-mix(in srgb,var(--color-fg) 6%,transparent));background-size:200% 100%;animation:skel 1.2s infinite linear;border-radius:6px;min-height:1em}
 @keyframes skel{to{background-position:-200% 0}}
@@ -267,6 +266,30 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .trilha .falta{opacity:.55}
 @media (max-width:640px){#dash-root .trilha{grid-template-columns:1fr 1fr}}
 #dash-root .sub2.est{color:var(--color-warn);max-width:16rem;white-space:normal;font-size:.85em}
+
+/* ===== adaptativo: usa a tela inteira e aumenta tudo em telas grandes ===== */
+@media screen and (min-width:1100px){
+  #dash-root .pg{min-height:100vh}
+  #dash-root .tblwrap{max-height:max(32rem,calc(100vh - 300px))}
+  #dash-root .cols{height:clamp(250px,30vh,420px)}
+  #dash-root .grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,26rem),1fr))}
+  #dash-root .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+@media screen and (min-width:1400px){#dash-root{zoom:1.06}}
+@media screen and (min-width:1650px){#dash-root{zoom:1.14}}
+@media screen and (min-width:1900px){#dash-root{zoom:1.24}}
+@media screen and (min-width:2300px){#dash-root{zoom:1.4}}
+@media screen and (min-width:2900px){#dash-root{zoom:1.7}}
+/* celular: menos margem, tudo em uma coluna e botões maiores para o dedo */
+@media screen and (max-width:640px){
+  #dash-root .pg>.tab{padding:0 8px}
+  #dash-root .card{padding:12px}
+  #dash-root .tools input[type=search],#dash-root .tools select{font-size:15px;min-height:40px}
+  #dash-root .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #dash-root .tblwrap{max-height:70vh}
+  #dash-root .tile .num{font-size:clamp(1.25rem,6.2vw,2rem);white-space:nowrap}
+  #dash-root .tile{min-width:0;overflow:hidden}
+}
 
 </style>
 </head>
@@ -678,7 +701,7 @@ document.querySelectorAll('#dash-root .sw1').forEach(e => e.style.background = C
 document.querySelectorAll('#dash-root .sw2').forEach(e => e.style.background = C2);
 function showTip(ev, title, lines) { tip.replaceChildren(); const t = document.createElement('div'); t.className = 't'; t.textContent = title; tip.appendChild(t);
   lines.forEach(l => { const d = document.createElement('div'); d.textContent = l; tip.appendChild(d); }); tip.style.display = 'block';
-  const b = root.getBoundingClientRect(); let x = ev.clientX - b.left + 12; const y = ev.clientY - b.top + 12; if (x + tip.offsetWidth > b.width) x = Math.max(0, b.width - tip.offsetWidth - 4); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
+  const z = parseFloat(getComputedStyle(document.getElementById('dash-root')).zoom) || 1; const b = root.getBoundingClientRect(); let x = (ev.clientX - b.left) / z + 12; const y = (ev.clientY - b.top) / z + 12; const W = b.width / z; if (x + tip.offsetWidth > W) x = Math.max(0, W - tip.offsetWidth - 4); tip.style.left = x + 'px'; tip.style.top = y + 'px'; }
 const hideTip = () => { tip.style.display = 'none'; };
 function hoverable(el, fn) { el.addEventListener('mousemove', fn); el.addEventListener('mouseleave', hideTip); }
 function failed(el) { el.replaceChildren(); const w = document.createElement('div'); w.style.cssText = 'display:flex;align-items:center;justify-content:center;gap:6px;min-height:inherit;height:100%;width:100%;color:var(--color-fg-muted);font-size:var(--cds-font-size-caption)';
