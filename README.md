@@ -5,7 +5,7 @@ Painel público de empenhos, liquidações e pagamentos da Prefeitura Municipal 
 - `index.html`: versão para o cidadão (resumo, empenhos, produtos e licitações).
 - `interno/index.html`: versão completa para os servidores (alertas, dotações, dia e semana).
 - As duas leem os mesmos arquivos da pasta `data/`.
-- `data/` é atualizada automaticamente nos dias úteis (9h, 11h40, 14h30 e 16h50).
+- `data/` é atualizada automaticamente pelo GitHub Actions nos dias úteis: o portal é consultado a cada 30 minutos, das 7h às 18h30 (horário de Brasília), e os arquivos só mudam quando há novidade. O notebook fica de reserva.
 - `ferramentas/montar_site.py` gera as duas páginas a partir do painel original (`externo` e `interno`).
 
 Painel informativo: em caso de divergência, vale o portal oficial.
