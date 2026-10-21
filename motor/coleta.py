@@ -208,7 +208,8 @@ def ler_empenhos(T):
         e = {'n': nE, 'd': iso(at(iE + 3)), 'tipo': at(iE + 2), 'lic': lic, 'contrato': contrato, 'forn': at(iF + 1) if iF >= 0 else '',
              'sec': at(iUn - 1) if iUn > 0 else '', 'unid': (at(iUn) + ' ' + at(iUn + 1)) if iUn > 0 else '', 'prog': at(iUn + 3) if iUn > 0 else '',
              'el': at(iEl) if iEl >= 0 else '', 'eld': at(iEl + 1) if iEl >= 0 else '', 'dot': at(iDot) if iDot > 0 else '', 'fdesc': at(iDot + 1) if iDot > 0 else '',
-             'sant': g('Saldo anterior'), 'v': g('Valor empenhado'), 'sat': g('Saldo atual'), 'movs': movs, 'items': itens, 'hist': hist}
+             'sant': g('Saldo anterior'), 'v': g('Valor empenhado'), 'sat': g('Saldo atual'), 'movs': movs, 'items': itens, 'hist': hist,
+             'req': str(int(at(iE + 4))) if re.match(r'^\d{1,7}$', at(iE + 4)) else ''}  # Requisição Nº = requisição de empenho
         if nE not in out:
             out[nE] = e
         else:
@@ -218,6 +219,8 @@ def ler_empenhos(T):
                     o['movs'].append(mv)
             if not o['hist'] and hist:
                 o['hist'] = hist
+            if not o.get('req') and e['req']:
+                o['req'] = e['req']
     return list(out.values())
 
 def ler_liquidacoes(t, dia):

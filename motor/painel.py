@@ -25,6 +25,8 @@ ESTADO = os.path.join(PASTA, 'estado.json')
 P = lambda *a: os.path.join(PASTA, *a)
 
 
+REQ_POR_RODADA = 30  # dias de empenho relidos por rodada até todos terem a requisição de empenho
+
 def log(msg):
     linha = f"{datetime.now():%d/%m/%Y %H:%M:%S}  {msg}"
     print(linha)
@@ -119,6 +121,11 @@ def principal(forcar=False, arquivo_coleta=None):
             extra = [x.strip() for x in open(P('reler.txt'), encoding='utf-8') if x.strip()]
         except OSError:
             extra = []
+        # requisição de empenho (campo "Requisição Nº"): os empenhos lidos antes de 21/10/2026 não têm; relê aos poucos, os mais recentes primeiro
+        faltam = sorted({e['d'] for e in mestre.get('empenhos', {}).values() if 'req' not in e and e.get('d', '') < desde}, reverse=True)
+        if faltam:
+            log(f'Requisição de empenho: {len(faltam)} dias ainda sem ela; relendo {min(REQ_POR_RODADA, len(faltam))} nesta rodada.')
+            extra = list(extra) + faltam[:REQ_POR_RODADA]
         res = coleta.coletar(desde, desde, avisar=log, mov_anterior=mestre.get('mov'), emp_conhecido=conhecido if conhecido else None,
                              saldo_anterior=mestre.get('saldo'), emp_por_liq_dia=por_liq, dias_extra=extra,
                              docs_desde=None if len(mestre.get('docs') or {}) > 1000 else f'{hoje.year}-01-01')
