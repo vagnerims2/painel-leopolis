@@ -553,7 +553,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
           <input id="req-busca" type="search" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor">
           <select id="req-parada"><option value="">Todas as etapas</option></select>
           <select id="req-sec"><option value="">Todas as secretarias</option></select>
-          <select id="req-atraso"><option value="">Todos os atrasos</option><option value="ate30">Enviadas, em aberto até 30 dias</option><option value="31a90">Enviadas, em aberto de 31 a 90 dias</option><option value="mais90">Enviadas, em aberto há mais de 90 dias</option><option value="naoenv">Ainda não enviadas</option></select>
+          <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="ate30">Enviadas há até 30 dias</option><option value="31a90">Enviadas há 31 a 90 dias</option><option value="mais90">Enviadas há mais de 90 dias</option></select>
           <select id="req-ordem"><option value="rec">Mais recentes primeiro</option><option value="atraso">Maior atraso primeiro</option></select>
           <button type="button" class="btn2" id="req-fechar">Fechar dados</button>
         </div>
@@ -561,7 +561,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <div class="tblwrap"><table id="t-req"><thead><tr>
           <th>Requisição</th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r">Atraso</th>
         </tr></thead><tbody></tbody></table></div>
-        <p class="note">Busca: digite o número da requisição de compra ou do empenho; para memorando, escreva "memorando 34" e escolha a secretaria ao lado. Toque numa linha para ver telefone, e-mail, situação na planilha e observações. "Atraso" conta os dias desde que a requisição apareceu como ENVIADO na planilha (amarelo: 31 a 90 dias; vermelho: mais de 90). As que já estavam enviadas antes deste controle contam desde a data da requisição. Se a célula trouxer a data (ex.: "ENVIADO 21/10"), vale essa data. Nas concluídas mostra quantos dias levou até o pagamento. A requisição de empenho vem do campo "Requisição Nº" do empenho no portal. Se a planilha ganhar a coluna "REQUISIÇÃO DE EMPENHO", a requisição de compra se liga ao empenho mesmo sem o número do empenho na planilha. Planilha lida em <span id="req-atual">—</span>.</p>
+        <p class="note">Busca: digite o número da requisição de compra ou do empenho; para memorando, escreva "memorando 34" e escolha a secretaria ao lado. Toque numa linha para ver telefone, e-mail, situação na planilha e observações. "Atraso": dias desde o ENVIADO na planilha (0 no dia do envio). A requisição de empenho vem do campo "Requisição Nº" do empenho no portal. Se a planilha ganhar a coluna "REQUISIÇÃO DE EMPENHO", a requisição de compra se liga ao empenho mesmo sem o número do empenho na planilha. Planilha lida em <span id="req-atual">—</span>.</p>
       </div>
     </div>
   </section>
@@ -1202,6 +1202,10 @@ function drawReq() {
   const box = document.getElementById('req-resumo'); box.replaceChildren();
   const ordem = ['Aguardando empenho', 'Aguardando requisição de empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada'];
   const corP = { ok: 'var(--color-ok)', mid: 'var(--color-warn)', neu: 'var(--color-fg-muted)' };
+  { const fxSel = document.getElementById('req-atraso'), n = lista.filter(l => l.naoEnviada).length;
+    if (n) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(fxSel.value === 'naoenv')); b.style.setProperty('--p', 'var(--color-fg-muted)');
+      const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = 'Aguardando envio'; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(n);
+      b.append(lb, nm); b.addEventListener('click', () => { fxSel.value = fxSel.value === 'naoenv' ? '' : 'naoenv'; drawReq(); }); box.appendChild(b); } }
   ordem.filter(x => lista.some(l => l.parada === x)).forEach(x => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(par.value === x));
     b.style.setProperty('--p', corP[etapaCor[x]] || 'var(--color-bad)');
     const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = x; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(lista.filter(l => l.parada === x).length);
@@ -1226,9 +1230,8 @@ function drawReq() {
         ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
     { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et) { const x = document.createElement('div'); x.className = 'sub2'; x.textContent = l.et; pc.appendChild(x); } }
-    { const c = td(tr, l.naoEnviada ? 'não enviada' : l.atraso == null ? '—' : (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`), 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
-      const sub = document.createElement('div'); sub.className = 'sub2'; sub.style.fontWeight = '400'; sub.textContent = l.desdeTxt || '';
-      if (sub.textContent) c.appendChild(sub); }
+    if (l.naoEnviada) { const c = pillCell(tr, 'aguardando envio', 'neu'); c.className = 'r'; }
+    else td(tr, l.aberta ? (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`) : '—', 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
     const abrir = () => { const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
       tr.setAttribute('aria-expanded', 'true'); const dt = document.createElement('tr'); dt.className = 'det'; const c = document.createElement('td'); c.colSpan = 5; dt.appendChild(c);
       const dl = document.createElement('dl'); dl.className = 'req-det';
