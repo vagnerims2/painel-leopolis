@@ -553,13 +553,15 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
           <input id="req-busca" type="search" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor">
           <select id="req-parada"><option value="">Todas as etapas</option></select>
           <select id="req-sec"><option value="">Todas as secretarias</option></select>
+          <select id="req-atraso"><option value="">Todos os atrasos</option><option value="ate30">Em aberto até 30 dias</option><option value="31a90">Em aberto de 31 a 90 dias</option><option value="mais90">Em aberto há mais de 90 dias</option></select>
+          <select id="req-ordem"><option value="rec">Mais recentes primeiro</option><option value="atraso">Maior atraso primeiro</option></select>
           <button type="button" class="btn2" id="req-fechar">Fechar dados</button>
         </div>
         <p class="note" id="req-total"></p>
         <div class="tblwrap"><table id="t-req"><thead><tr>
-          <th>Requisição</th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r hide-sm">Dias</th>
+          <th>Requisição</th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r">Atraso</th>
         </tr></thead><tbody></tbody></table></div>
-        <p class="note">Busca: digite o número da requisição de compra ou do empenho; para memorando, escreva "memorando 34" e escolha a secretaria ao lado. Toque numa linha para ver telefone, e-mail, situação na planilha e observações. "Dias" conta desde a última etapa concluída. A requisição de empenho vem do campo "Requisição Nº" do empenho no portal. Se a planilha ganhar a coluna "REQUISIÇÃO DE EMPENHO", a requisição de compra se liga ao empenho mesmo sem o número do empenho na planilha. Planilha lida em <span id="req-atual">—</span>.</p>
+        <p class="note">Busca: digite o número da requisição de compra ou do empenho; para memorando, escreva "memorando 34" e escolha a secretaria ao lado. Toque numa linha para ver telefone, e-mail, situação na planilha e observações. "Atraso" conta os dias desde a data da requisição de compra, enquanto ela não for concluída (amarelo: 31 a 90 dias; vermelho: mais de 90). Nas concluídas mostra quantos dias levou da requisição ao pagamento. A requisição de empenho vem do campo "Requisição Nº" do empenho no portal. Se a planilha ganhar a coluna "REQUISIÇÃO DE EMPENHO", a requisição de compra se liga ao empenho mesmo sem o número do empenho na planilha. Planilha lida em <span id="req-atual">—</span>.</p>
       </div>
     </div>
   </section>
@@ -1175,11 +1177,17 @@ function trilha(l, empMap, temRE, reMap) {
   if (pag > 0.004 && e.ultimo_pagamento) desde = e.ultimo_pagamento;
   return { P, parada, desde, emp: e };
 }
+// atraso da requisição de compra: dias desde a data dela até hoje (em aberto) ou até o último pagamento (concluída)
+function atrasoReq(l, t) { const ini = dmy(l.d); if (!ini) return { aberta: false, atraso: null };
+  const fim = t.parada === 'Concluída' ? (t.emp && t.emp.ultimo_pagamento) : '';
+  if (t.parada === 'Cancelada' || t.parada === 'Empenho anulado') return { aberta: false, atraso: null };
+  if (fim) return { aberta: false, atraso: Math.max(0, Math.round((new Date(fim + 'T12:00:00') - new Date(ini + 'T12:00:00')) / 864e5)) };
+  return { aberta: true, atraso: dias(ini) }; }
 function prepararReq() {
   const d = dash.data('emp'); if (!REQ.linhas || d.status !== 'ok') return null;
   const empMap = {}, reMap = {}; d.data.forEach(r => { empMap[semZeros(r.empenho)] = r; if (r.requisicao_empenho) (reMap[semZeros(r.requisicao_empenho)] = reMap[semZeros(r.requisicao_empenho)] || []).push(r); });
   const temRE = REQ.linhas.some(l => l.re);
-  return REQ.linhas.map(l => { const t = trilha({ ...l, e: l.e ? semZeros(l.e) : '' }, empMap, temRE, reMap); return { ...l, ...t, eLig: t.emp ? semZeros(t.emp.empenho) : (l.e ? semZeros(l.e) : ''), reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null }; });
+  return REQ.linhas.map(l => { const t = trilha({ ...l, e: l.e ? semZeros(l.e) : '' }, empMap, temRE, reMap); return { ...l, ...t, eLig: t.emp ? semZeros(t.emp.empenho) : (l.e ? semZeros(l.e) : ''), reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null, ...atrasoReq(l, t) }; });
 }
 function drawReq() {
   const lista = prepararReq(); const tb = document.querySelector('#t-req tbody'); if (!lista) return; tb.replaceChildren();
@@ -1198,9 +1206,10 @@ function drawReq() {
   const q = nz(document.getElementById('req-busca').value.trim()), mm = q.match(/^mem\w*\.?\s*n?[ºo°.]*\s*(\d+)(\/\d{2,4})?$/), memo = mm ? semZeros(mm[1]) : '';
   const num = !mm && /^\d+(\/\d{2,4})?$/.test(q) ? semZeros(q.split('/')[0]) : '';
   const motivo = (l) => { if (!num) return ''; if (semZeros(l.r) === num) return ''; if (l.eLig && l.eLig === num) return 'achada pelo empenho ' + l.eLig; if (l.reNum && semZeros(l.reNum) === num) return 'achada pela requisição de empenho ' + l.reNum; return null; };
-  const rows = lista.filter(l => (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value)
+  const fx = document.getElementById('req-atraso').value, ordemReq = document.getElementById('req-ordem').value;
+  const rows = lista.filter(l => (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (l.aberta && naFaixa(fx, l.atraso)))
     && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : nz(l.f).includes(q))))
-    .sort((a, b) => (Number(b.r) || 0) - (Number(a.r) || 0));
+    .sort((a, b) => ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0));
   document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
   rows.slice(0, 600).forEach(l => {
     const tr = document.createElement('tr'); tr.className = 'lin'; tr.tabIndex = 0; tr.setAttribute('aria-expanded', 'false');
@@ -1213,7 +1222,10 @@ function drawReq() {
         ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
     { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et) { const x = document.createElement('div'); x.className = 'sub2'; x.textContent = l.et; pc.appendChild(x); } }
-    td(tr, l.dias == null ? '—' : String(l.dias), 'r hide-sm' + (l.parada === 'Concluída' || l.parada === 'Cancelada' ? '' : l.dias > 30 ? ' late' : l.dias > 10 ? ' mid' : ''));
+    { const c = td(tr, l.atraso == null ? '—' : (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`), 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
+      const sub = document.createElement('div'); sub.className = 'sub2'; sub.style.fontWeight = '400';
+      sub.textContent = l.atraso == null ? '' : l.aberta ? (l.dias != null && l.dias !== l.atraso ? `nesta etapa há ${l.dias}` : 'em aberto') : 'levou até o pagamento';
+      if (sub.textContent) c.appendChild(sub); }
     const abrir = () => { const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
       tr.setAttribute('aria-expanded', 'true'); const dt = document.createElement('tr'); dt.className = 'det'; const c = document.createElement('td'); c.colSpan = 5; dt.appendChild(c);
       const dl = document.createElement('dl'); dl.className = 'req-det';
@@ -1289,7 +1301,7 @@ document.getElementById('req-fechar').addEventListener('click', () => { REQ.linh
   document.getElementById('req-senha').value = ''; document.getElementById('req-trava').hidden = false; document.getElementById('req-aberto').hidden = true;
   document.getElementById('req-msg').className = 'note'; document.getElementById('req-msg').textContent = 'Dados fechados.'; if (typeof drawTable === 'function') drawTable(); });
 document.getElementById('req-busca').addEventListener('input', drawReq);
-['req-parada', 'req-sec'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
+['req-parada', 'req-sec', 'req-atraso', 'req-ordem'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
 dash.onData(() => { if (REQ.linhas) { ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
 { let s = ''; try { s = sessionStorage.getItem('req-senha') || ''; } catch (e) {} if (s) tentarSenha(s, true); }
 </script>
