@@ -1200,7 +1200,7 @@ function drawReq() {
   fillSelect(sec, secs); fillSelect(par, ETAPAS.filter(x => lista.some(l => l.parada === x)));
   // resumo por etapa (clicar filtra)
   const box = document.getElementById('req-resumo'); box.replaceChildren();
-  const ordem = ['Aguardando empenho', 'Aguardando requisição de empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada'];
+  const ordem = ['Aguardando requisição de empenho', 'Aguardando empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada'];
   const corP = { ok: 'var(--color-ok)', mid: 'var(--color-warn)', neu: 'var(--color-fg-muted)' };
   { const fxSel = document.getElementById('req-atraso'), n = lista.filter(l => l.naoEnviada).length;
     if (n) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(fxSel.value === 'naoenv')); b.style.setProperty('--p', 'var(--color-fg-muted)');

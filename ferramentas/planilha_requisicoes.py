@@ -33,7 +33,7 @@ def baixar(url):
 
 
 # nome da coluna na planilha (normalizado) -> chave curta no arquivo
-COLUNAS = {'MEMORANDOS': 'm', 'MEMORANDO': 'm', 'SECRETARIA': 's', 'DATA': 'd', 'REQUISICAO': 'r', 'REQUISICAO DE COMPRA': 'r',
+COLUNAS = {'LIQUIDACAO': 'li', 'LIQUIDACOES': 'li', 'MEMORANDOS': 'm', 'MEMORANDO': 'm', 'SECRETARIA': 's', 'DATA': 'd', 'REQUISICAO': 'r', 'REQUISICAO DE COMPRA': 'r',
            'REQUISICAO DE EMPENHO': 're', 'REQ EMPENHO': 're', 'EMPENHO': 'e', 'ETAPA': 'et', 'STATUS': 'st',
            'DIAS DE ATRASO': 'da', 'EMPRESA': 'f', 'TELEFONE': 't', 'EMAIL': 'em', 'E MAIL': 'em', 'OBSERVACOES': 'o', 'OBSERVACAO': 'o'}
 
@@ -56,6 +56,8 @@ def ler(texto):
         for k in ('r', 'e', 're'):
             if k in r:
                 r[k] = re.sub(r'\.0$', '', r[k])
+                if k != 'r' and ',' in r[k]:   # mais de um número na célula ("7029, 7030"): guarda todos e usa o primeiro
+                    r[k + 's'] = r[k]; r[k] = r[k].split(',')[0].strip()
         out.append(r)
     return out
 
