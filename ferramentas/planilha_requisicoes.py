@@ -60,6 +60,37 @@ def ler(texto):
     return out
 
 
+def decifrar(pacote, senha):
+    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    from cryptography.hazmat.primitives import hashes
+    d = lambda x: base64.b64decode(x)
+    chave = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=d(pacote['sal']), iterations=pacote['iter']).derive(senha.encode('utf-8'))
+    return json.loads(AESGCM(chave).decrypt(d(pacote['iv']), d(pacote['dados']), None))
+
+
+ENVIADO = re.compile(r'ENVIAD', re.I)
+DATA_TXT = re.compile(r'(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?')
+
+
+def datas_de_envio(linhas, anteriores, hoje, primeira_vez):
+    """Data em que a requisição apareceu como ENVIADO na planilha (a planilha não guarda a data).
+    - se a própria célula trouxer a data ("ENVIADO 21/10"), usa ela;
+    - senão, guarda o dia em que o robô viu o ENVIADO pela primeira vez;
+    - as que já estavam enviadas quando o controle começou ficam marcadas como 'antes'."""
+    for r in linhas:
+        if not ENVIADO.search(r.get('et', '')):
+            continue
+        m = DATA_TXT.search(r.get('et', ''))
+        if m:
+            a = m.group(3) or str(hoje.year); a = a if len(a) == 4 else '20' + a
+            try:
+                r['env'] = datetime(int(a), int(m.group(2)), int(m.group(1))).strftime('%Y-%m-%d'); continue
+            except ValueError:
+                pass
+        r['env'] = anteriores.get(r['r']) or ('antes' if primeira_vez else hoje.strftime('%Y-%m-%d'))
+
+
 def cifrar(dados, senha):
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
@@ -71,6 +102,13 @@ def cifrar(dados, senha):
     return {'v': 1, 'kdf': 'PBKDF2-SHA256', 'iter': ITER, 'sal': b(sal), 'iv': b(iv), 'dados': b(ct)}
 
 
+def velho_inicio(saida, senha):
+    try:
+        return decifrar(json.load(open(saida, encoding='utf-8')), senha).get('controle_envio')
+    except Exception:
+        return None
+
+
 def main():
     senha = os.environ.get('PAINEL_SENHA', '')
     fonte = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != '-' else os.environ.get('PLANILHA_URL', '')
@@ -80,8 +118,18 @@ def main():
         return
     texto = baixar(fonte) if fonte.startswith('http') else open(fonte, encoding='utf-8-sig').read()
     linhas = ler(texto)
-    agora = datetime.now(timezone(timedelta(hours=-3))).strftime('%d/%m/%Y %H:%M')
-    pacote = cifrar({'atualizado': agora, 'linhas': linhas}, senha)
+    hoje = datetime.now(timezone(timedelta(hours=-3)))
+    agora = hoje.strftime('%d/%m/%Y %H:%M')
+    # datas de envio já anotadas nas rodadas anteriores (ficam dentro do próprio arquivo criptografado)
+    anteriores, primeira_vez = {}, True
+    try:
+        velho = decifrar(json.load(open(saida, encoding='utf-8')), senha)
+        anteriores = {l['r']: l['env'] for l in velho.get('linhas', []) if l.get('env')}
+        primeira_vez = not velho.get('controle_envio')
+    except Exception:
+        pass
+    datas_de_envio(linhas, anteriores, hoje, primeira_vez)
+    pacote = cifrar({'atualizado': agora, 'controle_envio': (velho_inicio(saida, senha) or hoje.strftime('%Y-%m-%d')), 'linhas': linhas}, senha)
     # só regrava se o conteúdo mudou (evita commit a cada rodada por causa do sal novo)
     marca = __import__('hashlib').sha256(json.dumps(linhas, ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:16]
     pacote['marca'] = marca
