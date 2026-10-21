@@ -346,7 +346,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .req-det dd{margin:2px 0 0;overflow-wrap:anywhere;user-select:text}
 #dash-root .req-det .copiar{font:inherit;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:6px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);cursor:pointer}
 #dash-root .req-acoes{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
-#dash-root .req-nf{margin-top:4px}#dash-root .req-nf .nf-bt{margin-left:0}
+#dash-root .req-nf{margin-top:4px}#dash-root .req-nf .nf-bt{margin-left:0}#dash-root .nf-bt.nf-info{cursor:default;pointer-events:none}
 #dash-root .req-itens{width:100%;border-collapse:collapse;font-size:13px}#dash-root .req-itens td,#dash-root .req-itens th{padding:6px 8px;border-bottom:1px solid var(--color-border-line);text-align:left;vertical-align:top}#dash-root .req-itens .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}#dash-root .req-itens tfoot td{font-weight:600}
 #dash-root .req-badge{font-weight:400;font-size:11px;color:var(--color-fg);background:color-mix(in srgb,var(--color-ok) 14%,transparent);border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block;white-space:nowrap}
 @media (max-width:640px){#dash-root .trilha{min-width:24rem}#dash-root .trilha li{min-width:4.6rem;flex-basis:4.6rem;font-size:11px}#dash-root #t-req .hide-sm{display:none}}
@@ -1209,7 +1209,7 @@ function drawReq() {
     fornCell(tr, l.f || '—', l.s || '');
     { const c = document.createElement('td'); const ol = document.createElement('ol'); ol.className = 'trilha';
       l.P.forEach(p => { const li = document.createElement('li'); li.className = p.s; const b = document.createElement('b'); b.textContent = p.n; const sp = document.createElement('span'); sp.textContent = p.v; li.append(b, sp);
-        if (p.n === 'Liquidação' && l.eLig) { const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const w = document.createElement('div'); w.className = 'req-nf'; botaoNF(w, nfs, `Notas fiscais do empenho ${l.eLig}`); li.appendChild(w); } }
+        if (p.n === 'Liquidação' && l.eLig) { const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const w = document.createElement('div'); w.className = 'req-nf'; const sp = document.createElement('span'); sp.className = 'nf-bt nf-info'; sp.textContent = nfs.length > 1 ? `Nota (${nfs.length})` : 'Nota'; sp.title = 'Tem nota fiscal nesta liquidação'; w.appendChild(sp); li.appendChild(w); } }
         ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
     { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et) { const x = document.createElement('div'); x.className = 'sub2'; x.textContent = l.et; pc.appendChild(x); } }
@@ -1229,7 +1229,8 @@ function drawReq() {
       const hoje = situacaoPortal(l);
       if (hoje) item('No portal hoje', hoje.txt);
       const ac = document.createElement('div'); ac.className = 'req-acoes';
-      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b); }
+      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
+        const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); } }
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
     tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });
     tb.appendChild(tr); });
@@ -1264,10 +1265,7 @@ function abrirItens(emp, e) {
     its.forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.marca && r.marca !== '-' ? 'Marca: ' + r.marca : '');
       td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl.format(N(r.valor_unitario)), 'r'); td(tr, brl.format(N(r.valor_total)), 'r'); soma += N(r.valor_total); tb.appendChild(tr); });
     t.querySelector('tfoot td.r').textContent = brl.format(soma); w.appendChild(t); box.appendChild(w); }
-  const ac = document.createElement('div'); ac.className = 'nf-acoes';
-  const nfs = notasPorEmp()[emp]; if (nfs && nfs.length) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; b.addEventListener('click', () => abrirNotas(nfs, `Notas fiscais do empenho ${emp}`)); ac.appendChild(b); }
-  const ir = document.createElement('button'); ir.type = 'button'; ir.className = 'btn2'; ir.textContent = 'Ver na aba Empenhos'; ir.addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; filtrarEmpenhos({ busca: emp }); }); ac.appendChild(ir);
-  box.appendChild(ac); document.getElementById('nf-modal').hidden = false;
+  document.getElementById('nf-modal').hidden = false;
 }
 function reqBadge(cell, emp) { if (!REQ || !REQ.porEmp) return; const l = REQ.ligadas ? REQ.ligadas[semZeros(emp)] : REQ.porEmp[semZeros(emp)]; if (!l) return; const s = document.createElement('div'); s.className = 'req-badge'; s.textContent = 'Req. ' + l.map(x => x.r).join(', '); s.title = 'Requisição de compra ligada pela planilha'; cell.appendChild(s); }
 function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; lig.forEach(x => { if (x.eLig && x.emp) (REQ.ligadas[x.eLig] = REQ.ligadas[x.eLig] || []).push(x); }); }
