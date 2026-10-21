@@ -1159,7 +1159,7 @@ function trilha(l, empMap, temRE, reMap) {
   if (!e) { P.push({ n: 'Empenho', v: `${l.e} (não achado)`, s: 'aqui' }, { n: 'Liquidação', v: '—', s: 'esp' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Empenho não achado no portal', desde, emp: e }; }
   if (e.situacao === 'Anulado') { P.push({ n: 'Empenho', v: `${e.empenho} anulado`, s: 'canc' }, { n: 'Liquidação', v: '—', s: 'canc' }, { n: 'Pagamento', v: '—', s: 'canc' }); return { P, parada: 'Empenho anulado', desde: e.data, emp: e }; }
   P.push({ n: 'Empenho', v: `${e.empenho} · ${br(e.data)}`, s: 'ok' }); desde = e.data;
-  const val = N(e.valor) - N(e.anulado), liq = N(e.liquidado), pag = N(e.pago), falta = N(e.falta_liquidar);
+  const val = N(e.valor), liq = N(e.liquidado), pag = N(e.pago), falta = N(e.falta_liquidar);
   if (liq <= 0.004) { P.push({ n: 'Liquidação', v: `falta ${brl.format(val)}`, s: 'aqui' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Aguardando liquidação', desde, emp: e }; }
   const liqParc = falta > 0.004;
   P.push({ n: 'Liquidação', v: liqParc ? `${brl.format(liq)} de ${brl.format(val)}` : `${brl.format(liq)}${e.primeira_liquidacao ? ' · ' + br(e.primeira_liquidacao) : ''}`, s: liqParc ? 'parc' : 'ok' });
@@ -1223,7 +1223,7 @@ function drawReq() {
       item('Secretaria', l.s); item('Memorando', l.m);
       item('Situação na planilha', [l.et, l.st].filter(Boolean).join(' · '));
       item('Observações', l.o);
-      if (l.emp) { const e = l.emp; item('Empenho no portal', `${e.empenho} de ${br(e.data)} · ${brl.format(N(e.valor) - N(e.anulado))} · liquidado ${brl.format(N(e.liquidado))} · pago ${brl.format(N(e.pago))}`); item('Fornecedor no portal', e.fornecedor); }
+      if (l.emp) { const e = l.emp; item('Empenho no portal', `${e.empenho} de ${br(e.data)} · empenhado ${brl.format(N(e.valor) + N(e.anulado))}${N(e.anulado) > 0.004 ? ` · anulado ${brl.format(N(e.anulado))} · valor final ${brl.format(N(e.valor))}` : ''} · liquidado ${brl.format(N(e.liquidado))} · pago ${brl.format(N(e.pago))}`); if (e.estornos) item('Anulações e estornos', e.estornos); item('Fornecedor no portal', e.fornecedor); }
       const ac = document.createElement('div'); ac.className = 'req-acoes';
       if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Abrir empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); filtrarEmpenhos({ busca: l.eLig }); }); ac.appendChild(b); }
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
