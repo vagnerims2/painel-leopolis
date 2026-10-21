@@ -1223,7 +1223,6 @@ function drawReq() {
       item('Secretaria', l.s); item('Memorando', l.m);
       // situação de hoje no portal, numa frase (a observação da planilha pode estar desatualizada)
       const hoje = situacaoPortal(l);
-      if (l.o) item('Observação da planilha', l.o + (hoje && hoje.resolveu && /falta|liquidar|pagar/i.test(l.o) ? ' (no portal já está resolvido)' : ''));
       if (hoje) item('No portal hoje', hoje.txt);
       const ac = document.createElement('div'); ac.className = 'req-acoes';
       if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Abrir empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); filtrarEmpenhos({ busca: l.eLig }); }); ac.appendChild(b); }
@@ -1239,14 +1238,14 @@ const SEC_GRUPOS = [[/SAUDE/, 'Saúde'], [/EDUCA/, 'Educação'], [/ASSIST|BEM E
 function secGrupo(s) { const t = String(s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); if (!t) return ''; const g = SEC_GRUPOS.find(([re]) => re.test(t)); return g ? g[1] : String(s).trim(); }
 const memosDe = (m) => String(m || '').replace(/\/\s*\d{2,4}/g, ' ').match(/\d+/g)?.map(semZeros) || [];
 function situacaoPortal(l) { const e = l.emp; if (!e) return null;
-  const val = N(e.valor), liq = N(e.liquidado), pag = N(e.pago), falta = N(e.falta_liquidar), lnp = N(e.liquidado_nao_pago), anul = N(e.anulado);
-  const an = anul > 0.004 ? ` ${brl.format(anul)} do empenho ${anul > 0 && /em (\d\d\/\d\d\/\d{4})/.test(e.estornos || '') ? 'foram anulados em ' + e.estornos.match(/em (\d\d\/\d\d\/\d{4})/)[1] : 'foram anulados'}.` : '';
-  if (e.situacao === 'Anulado') return { txt: 'Empenho anulado.', resolveu: true };
-  const p = [];
-  if (falta > 0.004) p.push(`Falta liquidar ${brl.format(falta)}` + (liq > 0.004 ? ` (liquidado ${brl.format(liq)} de ${brl.format(val)})` : '') + '.');
-  if (lnp > 0.004) p.push(`Liquidado e ainda não pago: ${brl.format(lnp)}.`);
-  if (!p.length) return { txt: `Tudo liquidado e pago (${brl.format(pag)}).` + (an ? an + ' Por isso não falta liquidar.' : ''), resolveu: true };
-  return { txt: p.join(' ') + an, resolveu: false };
+  if (e.situacao === 'Anulado') return { txt: 'Empenho anulado' };
+  const anul = N(e.anulado), falta = N(e.falta_liquidar), lnp = N(e.liquidado_nao_pago), p = [`Empenhado ${brl.format(N(e.valor) + anul)}`];
+  if (anul > 0.004) p.push(`Estorno de empenho ${brl.format(anul)}`);
+  p.push(`Liquidado ${brl.format(N(e.liquidado))}`, `Pago ${brl.format(N(e.pago))}`);
+  if (falta > 0.004) p.push(`Falta liquidar ${brl.format(falta)}`);
+  if (lnp > 0.004) p.push(`Liquidado a pagar ${brl.format(lnp)}`);
+  p.push(`Saldo do empenho ${brl.format(N(e.saldo_a_pagar))}`);
+  return { txt: p.join(' · ') };
 }
 function reqBadge(cell, emp) { if (!REQ || !REQ.porEmp) return; const l = REQ.ligadas ? REQ.ligadas[semZeros(emp)] : REQ.porEmp[semZeros(emp)]; if (!l) return; const s = document.createElement('div'); s.className = 'req-badge'; s.textContent = 'Req. ' + l.map(x => x.r).join(', '); s.title = 'Requisição de compra ligada pela planilha'; cell.appendChild(s); }
 function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; lig.forEach(x => { if (x.eLig && x.emp) (REQ.ligadas[x.eLig] = REQ.ligadas[x.eLig] || []).push(x); }); }
