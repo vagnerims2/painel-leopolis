@@ -346,6 +346,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .req-det dd{margin:2px 0 0;overflow-wrap:anywhere;user-select:text}
 #dash-root .req-det .copiar{font:inherit;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:6px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);cursor:pointer}
 #dash-root .req-acoes{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+#dash-root .req-nf{margin-top:4px}#dash-root .req-nf .nf-bt{margin-left:0}
+#dash-root .req-itens{width:100%;border-collapse:collapse;font-size:13px}#dash-root .req-itens td,#dash-root .req-itens th{padding:6px 8px;border-bottom:1px solid var(--color-border-line);text-align:left;vertical-align:top}#dash-root .req-itens .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}#dash-root .req-itens tfoot td{font-weight:600}
 #dash-root .req-badge{font-weight:400;font-size:11px;color:var(--color-fg);background:color-mix(in srgb,var(--color-ok) 14%,transparent);border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block;white-space:nowrap}
 @media (max-width:640px){#dash-root .trilha{min-width:24rem}#dash-root .trilha li{min-width:4.6rem;flex-basis:4.6rem;font-size:11px}#dash-root #t-req .hide-sm{display:none}}
 </style>
@@ -1046,7 +1048,7 @@ const notasPorEmp = () => { const d = dash.data('notas'); if (d.status !== 'ok')
 const notasPorLiq = () => { const d = dash.data('notas'); if (d.status !== 'ok') return {}; if (window.__npl && window.__npl.src === d.data) return window.__npl.m;
   const m = {}; d.data.forEach(r => { (m[r.liquidacao] = m[r.liquidacao] || []).push(r); }); window.__npl = { src: d.data, m }; return m; };
 const docTxt = (r) => `${r.tipo}${r.numero ? ' nº ' + r.numero : ''}${r.serie && !/outras/i.test(r.serie) ? ' série ' + r.serie : ''}`;
-function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lista'); box.replaceChildren(); document.getElementById('nf-tit').textContent = titulo;
+function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lista'); box.replaceChildren(); { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = false; } document.getElementById('nf-tit').textContent = titulo;
   lista.forEach(r => { const it = document.createElement('div'); it.className = 'nf-item';
     const h = document.createElement('div'); h.className = 'nf-cab'; h.textContent = `${docTxt(r)} · ${brl2.format(N(r.valor))}`;
     const sub = document.createElement('div'); sub.className = 'sub2'; sub.textContent = `${r.fornecedor} · emitida em ${br(r.data_documento)} · liquidação ${r.liquidacao} de ${br(r.data_liquidacao)}${r.empenho ? ' · empenho ' + r.empenho : ''}`;
@@ -1206,7 +1208,9 @@ function drawReq() {
       if (num && l._mot) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = l._mot; c.appendChild(m); } }
     fornCell(tr, l.f || '—', l.s || '');
     { const c = document.createElement('td'); const ol = document.createElement('ol'); ol.className = 'trilha';
-      l.P.forEach(p => { const li = document.createElement('li'); li.className = p.s; const b = document.createElement('b'); b.textContent = p.n; const sp = document.createElement('span'); sp.textContent = p.v; li.append(b, sp); ol.appendChild(li); });
+      l.P.forEach(p => { const li = document.createElement('li'); li.className = p.s; const b = document.createElement('b'); b.textContent = p.n; const sp = document.createElement('span'); sp.textContent = p.v; li.append(b, sp);
+        if (p.n === 'Liquidação' && l.eLig) { const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const w = document.createElement('div'); w.className = 'req-nf'; botaoNF(w, nfs, `Notas fiscais do empenho ${l.eLig}`); li.appendChild(w); } }
+        ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
     { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et) { const x = document.createElement('div'); x.className = 'sub2'; x.textContent = l.et; pc.appendChild(x); } }
     td(tr, l.dias == null ? '—' : String(l.dias), 'r hide-sm' + (l.parada === 'Concluída' || l.parada === 'Cancelada' ? '' : l.dias > 30 ? ' late' : l.dias > 10 ? ' mid' : ''));
@@ -1225,7 +1229,7 @@ function drawReq() {
       const hoje = situacaoPortal(l);
       if (hoje) item('No portal hoje', hoje.txt);
       const ac = document.createElement('div'); ac.className = 'req-acoes';
-      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Abrir empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); filtrarEmpenhos({ busca: l.eLig }); }); ac.appendChild(b); }
+      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b); }
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
     tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });
     tb.appendChild(tr); });
@@ -1246,6 +1250,24 @@ function situacaoPortal(l) { const e = l.emp; if (!e) return null;
   if (lnp > 0.004) p.push(`Liquidado a pagar ${brl.format(lnp)}`);
   p.push(`Saldo do empenho ${brl.format(N(e.saldo_a_pagar))}`);
   return { txt: p.join(' · ') };
+}
+function abrirItens(emp, e) {
+  const d = dash.data('itens'), its = d.status === 'ok' ? d.data.filter(r => semZeros(r.empenho) === emp) : [];
+  const box = document.getElementById('nf-lista'); box.replaceChildren();
+  document.getElementById('nf-tit').textContent = `Itens do empenho ${emp}`;
+  { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = true; }
+  if (e) { const p = document.createElement('p'); p.className = 'note'; p.textContent = [e.fornecedor, br(e.data), e.licitacao].filter(Boolean).join(' · '); box.appendChild(p); }
+  if (!its.length) { const p = document.createElement('p'); p.textContent = 'O portal não traz itens para este empenho.'; box.appendChild(p); }
+  else { const w = document.createElement('div'); w.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'req-itens';
+    t.innerHTML = '<thead><tr><th>Produto</th><th class="r">Qtd.</th><th class="r">Valor unit.</th><th class="r">Total</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="3">Total dos itens</td><td class="r"></td></tr></tfoot>';
+    const tb = t.querySelector('tbody'); let soma = 0;
+    its.forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.marca && r.marca !== '-' ? 'Marca: ' + r.marca : '');
+      td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl.format(N(r.valor_unitario)), 'r'); td(tr, brl.format(N(r.valor_total)), 'r'); soma += N(r.valor_total); tb.appendChild(tr); });
+    t.querySelector('tfoot td.r').textContent = brl.format(soma); w.appendChild(t); box.appendChild(w); }
+  const ac = document.createElement('div'); ac.className = 'nf-acoes';
+  const nfs = notasPorEmp()[emp]; if (nfs && nfs.length) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; b.addEventListener('click', () => abrirNotas(nfs, `Notas fiscais do empenho ${emp}`)); ac.appendChild(b); }
+  const ir = document.createElement('button'); ir.type = 'button'; ir.className = 'btn2'; ir.textContent = 'Ver na aba Empenhos'; ir.addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; filtrarEmpenhos({ busca: emp }); }); ac.appendChild(ir);
+  box.appendChild(ac); document.getElementById('nf-modal').hidden = false;
 }
 function reqBadge(cell, emp) { if (!REQ || !REQ.porEmp) return; const l = REQ.ligadas ? REQ.ligadas[semZeros(emp)] : REQ.porEmp[semZeros(emp)]; if (!l) return; const s = document.createElement('div'); s.className = 'req-badge'; s.textContent = 'Req. ' + l.map(x => x.r).join(', '); s.title = 'Requisição de compra ligada pela planilha'; cell.appendChild(s); }
 function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; lig.forEach(x => { if (x.eLig && x.emp) (REQ.ligadas[x.eLig] = REQ.ligadas[x.eLig] || []).push(x); }); }
