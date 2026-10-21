@@ -1,0 +1,33 @@
+name: Prévia (modo desenvolvedor)
+# Roda só no ramo previa-requisicoes: lê a requisição de empenho no portal e grava em previa/.
+# Não publica nada no site oficial (main).
+on:
+  push:
+    branches: [previa-requisicoes]
+    paths: ['ferramentas/previa_req_empenho.py', 'motor/coleta.py', '.github/workflows/previa.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  previa:
+    if: github.ref == 'refs/heads/previa-requisicoes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TZ: America/Sao_Paulo
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install -r motor/requisitos.txt
+      - name: Lê a requisição de empenho no portal
+        run: python ferramentas/previa_req_empenho.py
+      - name: Guarda no ramo da prévia
+        run: |
+          git config user.name "Painel Leopolis (prévia)"
+          git config user.email "vagnerims2@users.noreply.github.com"
+          git add previa
+          git diff --cached --quiet && exit 0
+          git commit -q -m "Prévia: requisição de empenho lida no portal"
+          git push -q origin HEAD:previa-requisicoes
