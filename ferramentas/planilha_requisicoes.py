@@ -38,9 +38,36 @@ COLUNAS = {'LIQUIDACAO': 'li', 'LIQUIDACOES': 'li', 'MEMORANDOS': 'm', 'MEMORAND
            'DIAS DE ATRASO': 'da', 'EMPRESA': 'f', 'TELEFONE': 't', 'EMAIL': 'em', 'E MAIL': 'em', 'OBSERVACOES': 'o', 'OBSERVACAO': 'o'}
 
 
+def coluna(h):
+    """chave curta de um cabeçalho; aceita variações ("Nº Requisição de Compra", "Req. Empenho", "Fornecedor"…)"""
+    n = norm(h)
+    if n in COLUNAS:
+        return COLUNAS[n]
+    n = re.sub(r'\b(N|NO|NUM|NUMERO|DA|DE|DO)\b', ' ', n); n = re.sub(r'\s+', ' ', n).strip()
+    if n in COLUNAS:
+        return COLUNAS[n]
+    if re.search(r'\bREQ\w* EMP', n): return 're'
+    if re.search(r'\bREQ\w*( COMPRA)?$', n): return 'r'
+    if re.search(r'^EMPENHO', n): return 'e'
+    if re.search(r'FORNECEDOR|EMPRESA|CREDOR', n): return 'f'
+    if re.search(r'^(FONE|TELEFONE|CELULAR|WHATS)', n): return 't'
+    if re.search(r'MAIL', n): return 'em'
+    if re.search(r'LIQUIDA', n): return 'li'
+    if re.search(r'MEMORANDO', n): return 'm'
+    if re.search(r'OBSERVA', n): return 'o'
+    return ''
+
+
 def ler(texto):
     linhas = list(csv.reader(io.StringIO(texto)))
-    cab = [COLUNAS.get(norm(h), '') for h in linhas[0]]
+    # o cabeçalho pode não estar na 1ª linha (título em cima): usa a primeira linha que tenha requisição e empresa
+    for i, ln in enumerate(linhas[:15]):
+        ks = [coluna(h) for h in ln]
+        if 'r' in ks and ('f' in ks or 't' in ks):
+            linhas = linhas[i:]; break
+    cab = []
+    for h in linhas[0]:
+        k = coluna(h); cab.append(k if k not in cab else '')   # coluna repetida: vale a primeira
     out = []
     for ln in linhas[1:]:
         r = {}
@@ -111,7 +138,39 @@ def velho_inicio(saida, senha):
         return None
 
 
+def main_aberto(fonte, saida):
+    """Versão sem senha (pedido de 22/10/2026: a aba Requisições é só de funcionários). Grava JSON aberto, no mesmo
+    formato de data/planilha.json. Se a planilha vier vazia ou bem menor que a anterior, não troca o arquivo."""
+    texto = baixar(fonte) if fonte.startswith('http') else open(fonte, encoding='utf-8-sig').read()
+    linhas = ler(texto)
+    hoje = datetime.now(timezone(timedelta(hours=-3)))
+    try:
+        velho = json.load(open(saida, encoding='utf-8'))
+    except Exception:
+        velho = {}
+    antes = velho.get('linhas') or []
+    if not linhas or (len(antes) >= 50 and len(linhas) < 0.6 * len(antes)):
+        raise SystemExit(f'Planilha de requisições: veio com {len(linhas)} linhas (antes {len(antes)}); mantive o arquivo anterior.')
+    anteriores = {l['r']: l['env'] for l in antes if l.get('env')}
+    datas_de_envio(linhas, anteriores, hoje, not velho.get('controle_envio'))
+    marca = __import__('hashlib').sha256(json.dumps(linhas, ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:16]
+    if velho.get('marca') == marca:
+        print(f'Planilha de requisições: {len(linhas)} linhas, sem mudança.'); return
+    cont = {k: sum(1 for l in linhas if l.get(k)) for k in ('r', 're', 'e', 'f', 't', 'em')}
+    os.makedirs(os.path.dirname(os.path.abspath(saida)), exist_ok=True)
+    json.dump({'atualizado': hoje.strftime('%d/%m/%Y %H:%M'), 'controle_envio': velho.get('controle_envio') or hoje.strftime('%Y-%m-%d'),
+               'marca': marca, 'linhas': linhas}, open(saida, 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
+    print(f'Planilha de requisições: {len(linhas)} linhas gravadas em {saida} (preenchidas: {cont}).')
+
+
 def main():
+    if '--aberto' in sys.argv:
+        args = [a for a in sys.argv[1:] if a != '--aberto']
+        fonte = args[0] if args and args[0] != '-' else os.environ.get('PLANILHA_URL', '')
+        saida = args[1] if len(args) > 1 else os.path.join(os.path.dirname(__file__), '..', 'data', 'planilha_previa.json')
+        if not fonte:
+            print('Planilha de requisições: endereço (PLANILHA_URL) não configurado; pulando.'); return
+        return main_aberto(fonte, saida)
     senha = os.environ.get('PAINEL_SENHA', '')
     fonte = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != '-' else os.environ.get('PLANILHA_URL', '')
     saida = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), '..', 'data', 'planilha.enc.json')
