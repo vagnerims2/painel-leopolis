@@ -404,10 +404,15 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .ind-row.com-baixo .ind-trilho{margin-bottom:18px}
 #dash-root .st-ok{--st:var(--color-ok)} #dash-root .st-warn{--st:var(--color-warn)} #dash-root .st-bad{--st:var(--color-bad)}
 #dash-root .ind-row .val.st-ok{color:var(--color-ok)} #dash-root .ind-row .val.st-warn{color:var(--color-warn)} #dash-root .ind-row .val.st-bad{color:var(--color-bad)}
-#dash-root .ind-hist{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:190px;position:relative;margin-top:14px;border-bottom:1px solid var(--color-border-line)}
+#dash-root .ind-hist{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:6px;align-items:end;height:190px;position:relative;margin-top:14px;border-bottom:1px solid var(--color-border-line)}
 #dash-root .ind-hist .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-variant-numeric:tabular-nums}
-#dash-root .ind-hist .col b{width:56%;max-width:56px;border-radius:3px 3px 0 0;background:var(--serie0);display:flex;justify-content:center;padding-top:6px;box-sizing:border-box}
+#dash-root .ind-hist .col b{width:72%;max-width:56px;border-radius:3px 3px 0 0;background:var(--serie0);display:flex;justify-content:center;padding-top:6px;box-sizing:border-box}
 #dash-root .ind-hist .col b span{font-size:12px;font-weight:600;color:#fff}
+#dash-root .ind-hist .col.fech{margin-right:8px;border-right:1px dashed var(--color-border-line)}
+#dash-root .ind-hist .col.fech b{opacity:.75}
+#dash-root .ind-hist .col .val{font-size:12px;font-weight:600;color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}
+#dash-root .ind-hist{margin-bottom:22px}
+@media (max-width:640px){#dash-root .ind-hist{gap:2px}#dash-root .ind-hist .col b{width:84%;padding-top:5px}#dash-root .ind-hist .col .val{font-size:10px;writing-mode:vertical-rl;transform:rotate(180deg)}#dash-root .ind-hist .col small{font-size:9.5px}}
 #dash-root .ind-hist .col small{font-size:11px;color:var(--color-fg-muted);position:absolute;bottom:-18px}
 #dash-root .ind-hist .col{position:relative}
 #dash-root .ind-hist .linha{position:absolute;left:0;right:0;border-top:2px dashed var(--color-warn)}
@@ -1613,12 +1618,14 @@ const REC_ARQ = '../data/receitas.json';
         tip: [`Dívida consolidada: ${brl.format(D.dc)}`, `Caixa disponível: ${brl.format(D.caixa)}`, `Dívida líquida: ${brl.format(D.dcl)} (negativa = caixa maior que a dívida)`] }];
     const sts = ms.map(m => medidor(md, m));
     // histórico do pessoal
-    const h = $('ind-pes-hist'); h.replaceChildren(); const top = 60;
+    const h = $('ind-pes-hist'); h.replaceChildren(); const top = 60; h.style.setProperty('--n', P.historico.length); h.closest('.card').style.gridColumn = '1 / -1';
     const linha = (v, t, cls) => { const l = el('div', 'linha ' + (cls || '')); l.style.bottom = (v / top * 100) + '%'; l.appendChild(el('em', null, t)); h.appendChild(l); };
-    P.historico.forEach(([m, v]) => { const c = el('div', 'col'); const b = el('b'); b.style.background = v >= P.executivo.max ? 'var(--color-bad)' : v >= P.executivo.alerta ? 'var(--color-warn)' : 'var(--color-ok)'; b.style.height = (v / top * 100) + '%'; b.appendChild(el('span', null, pf.format(v) + '%')); c.append(b, el('small', null, m)); h.appendChild(c); });
+    P.historico.forEach(([m, v], i) => { const c = el('div', 'col' + (i === 0 && /^dez\//.test(m) ? ' fech' : '')); const b = el('b'); b.style.background = v >= P.executivo.max ? 'var(--color-bad)' : v >= P.executivo.alerta ? 'var(--color-warn)' : 'var(--color-ok)'; b.style.height = (v / top * 100) + '%'; b.appendChild(el('span', 'val', pf.format(v) + '%')); c.append(b, el('small', null, i === 0 ? m : m.split('/')[0])); h.appendChild(c); });
     linha(P.executivo.alerta, 'alerta ' + pf.format(P.executivo.alerta) + '%'); linha(P.executivo.max, 'máximo 54%', 'max');
     const h0 = P.historico[0], h1 = P.historico[P.historico.length - 1];
-    $('ind-pes-nota').textContent = `Subiu de ${pf.format(h0[1])}% (${h0[0]}) para ${pf.format(h1[1])}% (${h1[0]}). Continua abaixo do limite de alerta (${pf.format(P.executivo.alerta)}%), a ${pf.format(P.executivo.alerta - h1[1])} pontos dele. Verde: abaixo do alerta; amarelo: entre o alerta e o máximo; vermelho: acima do máximo.`;
+    { const x = P.executivo, v1 = h1[1], fech = /^dez\//.test(h0[0]) ? ` no fechamento de 20${h0[0].slice(-2)}` : ` em ${h0[0]}`;
+      const sit = v1 >= x.max ? `Está acima do máximo de ${pf.format(x.max)}%.` : v1 >= x.alerta ? `Passou do limite de alerta (${pf.format(x.alerta)}%); o máximo é ${pf.format(x.max)}%.` : `Continua abaixo do limite de alerta (${pf.format(x.alerta)}%), a ${pf.format(x.alerta - v1)} pontos dele.`;
+      $('ind-pes-nota').textContent = `${v1 >= h0[1] ? 'Subiu' : 'Caiu'} de ${pf.format(h0[1])}%${fech} para ${pf.format(v1)}% em ${h1[0]} (sempre os 12 meses até o mês). ${sit} Verde: abaixo do alerta; amarelo: entre o alerta e o máximo; vermelho: acima do máximo.`; }
     // dívida
     $('ind-div-nota').textContent = `A dívida é de ${brl.format(D.dc)}, ${pf.format(D.pct_dc)}% da receita corrente líquida. O dinheiro em caixa (${brl.format(D.caixa)}) é maior que a dívida, por isso a dívida líquida fica negativa.`;
     const dt = $('ind-div').tBodies[0]; dt.replaceChildren();

@@ -290,12 +290,22 @@ def gerar(saida, avisar=print, hoje=None):
     rcl = ler_rcl(lrf('receitaCorrenteLiquida', 1, mes, ano=am))
     pe = ler_pessoal(lrf('despesaComPessoal', 1, mes, entidades=(300,), ano=am))
     pt = ler_pessoal(lrf('despesaComPessoal', 1, mes, entidades=(304, 300), ano=am))
+    # evolução: dezembro do ano anterior (como o ano fechou) e depois todos os meses fechados do ano.
+    # Meses com mais de 2 meses de idade são reaproveitados da rodada anterior (o portal não muda mais).
     hist = []
-    pontos = [(ano - 1, 12)] + [(ano, x) for x in (4, 8) if (am == ano and x < mes)] + [(am, mes)]
-    for (a, mm) in dict.fromkeys(pontos):
+    try:
+        antes = {r[0]: r[1] for r in json.load(open(os.path.join(saida, 'indicadores.json'), encoding='utf-8'))['pessoal']['historico']}
+    except Exception:
+        antes = {}
+    pontos = [(am - 1, 12)] + [(am, x) for x in range(1, mes + 1)]
+    for (a, mm) in pontos:
+        rot = f'{MES_ABREV[mm - 1]}/{str(a)[2:]}'
+        recente = (a, mm) >= ((am, mes - 2) if mes > 2 else (am - 1, 10 + mes))
+        if rot in antes and not recente:
+            hist.append([rot, antes[rot]]); continue
         try:
             v = pe if (a, mm) == (am, mes) else ler_pessoal(lrf('despesaComPessoal', 1, mm, entidades=(300,), ano=a))
-            hist.append([f'{MES_ABREV[mm - 1]}/{str(a)[2:]}', v['pct']])
+            hist.append([rot, v['pct']])
         except Exception as e:
             avisar(f'Aviso: pessoal {mm}/{a} não veio ({e}).')
     dcl = ler_dcl(lrf('dividaConsolidadaLiquida', 3, quad, ano=aq), quad)
