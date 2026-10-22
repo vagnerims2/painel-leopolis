@@ -97,6 +97,40 @@ def requisicoes_em_atraso(site, senha, hoje):
 
 
 # ---------------------------------------------------------------- PDF
+from urllib.parse import quote
+from xml.sax.saxutils import escape
+
+def fone_br(t):
+    """(44) 99814-3205 e o número com DDI para os links"""
+    d = re.sub(r'\D', '', t or '')
+    if d.startswith('55') and len(d) > 11: d = d[2:]
+    if d.startswith('0'): d = d.lstrip('0')
+    if len(d) not in (10, 11): return (t or '').strip(), ''
+    vis = f'({d[:2]}) {d[2:-4]}-{d[-4:]}'
+    return vis, '55' + d
+
+def contatos(fornecedor, rs):
+    """linha com telefone e e-mail clicáveis (ligar, WhatsApp, e-mail já com assunto e a lista das requisições)"""
+    LINK = '<font color="#1a56db"><u>{}</u></font>'
+    partes = []
+    vis, cod = fone_br(rs[0]['telefone'])
+    if vis:
+        partes.append(f'Telefone: <b>{escape(vis)}</b>')
+        if cod:
+            partes.append(f'<a href="tel:+{cod}">{LINK.format("Ligar")}</a>')
+            partes.append(f'<a href="https://wa.me/{cod}">{LINK.format("WhatsApp")}</a>')
+    em = (rs[0]['email'] or '').strip()
+    if em and '@' in em:
+        reqs = ', '.join(r['req'] for r in rs)
+        assunto = f'Prefeitura de Leópolis - requisição(ões) {reqs} em aberto'
+        corpo = 'Prezados,\n\nConsta(m) em aberto na Prefeitura Municipal de Leópolis:\n' + '\n'.join(
+            f"- Requisição {r['req']}" + (f" / empenho {r['empenho']}" if r['empenho'] else '') + f" ({r['atraso']} dias desde o envio)" for r in rs) + \
+            '\n\nSolicitamos informar a previsão de entrega ou o envio da nota fiscal.\n\nAtenciosamente,'
+        href = f'mailto:{em}?subject={quote(assunto)}&body={quote(corpo)}'
+        partes.append(f'E-mail: <b>{escape(em)}</b>')
+        partes.append(f'<a href="{escape(href)}">{LINK.format("Enviar e-mail")}</a>')
+    return ' &nbsp;·&nbsp; '.join(partes) or '<font color="#6b6862">sem telefone e e-mail na planilha</font>'
+
 AZUL = colors.HexColor('#1e3a5f'); CINZA = colors.HexColor('#6b6862'); LINHA = colors.HexColor('#d9d6ce')
 
 def pdf(lista, titulo, arquivo, hoje, plan_atual):
@@ -119,8 +153,8 @@ def pdf(lista, titulo, arquivo, hoje, plan_atual):
     cab = ['Requisição', 'Memo', 'Secretaria', 'Req. emp.', 'Empenho', 'Valor / falta liq.', 'Nota(s) fiscal(is)', 'Parada em', 'Enviada', 'Atraso']
     for f in ordem:
         rs = sorted(grupos[f], key=lambda r: -r['atraso'])
-        contato = ' · '.join(x for x in (rs[0]['telefone'], rs[0]['email']) if x)
-        topo = Paragraph(f'<b>{f}</b>' + (f'  <font color="#6b6862">{contato}</font>' if contato else ''), st(fontSize=9.5, leading=12, textColor=AZUL))
+        topo = Paragraph(f'<b>{f}</b>', st(fontSize=9.5, leading=12, textColor=AZUL))
+        contato = Paragraph(contatos(f, rs), st(fontSize=8.5, leading=12))
         dados = [[Paragraph(c, pb) for c in cab]]
         for r in rs:
             dados.append([Paragraph(f"{r['req']}<br/><font color='#6b6862'>{r['data_req']}</font>", p), Paragraph(r['memo'] or '—', p),
@@ -131,7 +165,7 @@ def pdf(lista, titulo, arquivo, hoje, plan_atual):
         t = Table(dados, colWidths=larg, repeatRows=1)
         t.setStyle(TableStyle([('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#eef2f7')), ('LINEBELOW', (0, 0), (-1, -1), 0.4, LINHA),
                                ('VALIGN', (0, 0), (-1, -1), 'TOP'), ('TOPPADDING', (0, 0), (-1, -1), 3), ('BOTTOMPADDING', (0, 0), (-1, -1), 3)]))
-        els += [KeepTogether([topo, Spacer(1, 1.5 * mm), t]), Spacer(1, 5 * mm)]
+        els += [KeepTogether([topo, contato, Spacer(1, 1.5 * mm), t]), Spacer(1, 5 * mm)]
     doc.build(els)
 
 
