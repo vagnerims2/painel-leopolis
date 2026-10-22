@@ -91,10 +91,10 @@ aba(wb, 'Empenhos', E,
      'saldo_a_pagar': 'moeda', 'dias': 'int', 'primeira_liquidacao': 'data', 'dias_ate_liquidar': 'int', 'ultimo_pagamento': 'data', 'dias_ate_pagar': 'int'},
     {'fornecedor': 38, 'secretaria': 30, 'tipo_despesa': 34, 'fonte': 30, 'produtos': 60, 'estornos': 50, 'subelemento': 17, 'licitacao': 18})
 aba(wb, 'Itens', IT,
-    [('empenho', 'Empenho'), ('data', 'Data'), ('fornecedor', 'Fornecedor'), ('secretaria', 'Secretaria'), ('licitacao', 'Licitação'), ('produto', 'Produto'), ('marca', 'Marca'),
+    [('empenho', 'Empenho'), ('data', 'Data'), ('fornecedor', 'Fornecedor'), ('secretaria', 'Secretaria'), ('licitacao', 'Licitação'), ('produto', 'Produto'), ('marca', 'Marca'), ('unidade', 'Unidade'), ('embalagem', 'Embalagem'), ('codigo', 'Código CATMAT'),
      ('quantidade', 'Quantidade'), ('valor_unitario', 'Valor unitário'), ('valor_total', 'Valor total'), ('situacao', 'Situação do empenho')],
     {'empenho': 'int', 'data': 'data', 'quantidade': 'qtd', 'valor_unitario': 'moeda', 'valor_total': 'moeda'},
-    {'fornecedor': 36, 'secretaria': 30, 'produto': 50, 'marca': 18, 'licitacao': 18})
+    {'fornecedor': 36, 'secretaria': 30, 'produto': 50, 'marca': 18, 'licitacao': 18, 'embalagem': 14, 'codigo': 12})
 aba(wb, 'Liquidações', L,
     [('liquidacao', 'Liquidação'), ('data', 'Data'), ('empenho', 'Empenho'), ('fornecedor', 'Fornecedor'), ('secretaria', 'Secretaria'), ('tipo_despesa', 'Tipo de despesa'),
      ('fonte', 'Fonte'), ('valor', 'Valor'), ('documento', 'Documento fiscal'), ('vencimento', 'Vencimento'), ('pago', 'Paga')],

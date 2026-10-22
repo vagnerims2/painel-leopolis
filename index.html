@@ -419,7 +419,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     </div>
     <div class="card" id="precos-alto">
       <h2>Preços acima do padrão</h2>
-      <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
+      <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Só compara o mesmo produto: mesmo código do catálogo federal (CATMAT) ou mesmo nome, com a mesma unidade e a mesma embalagem, para não comparar galão de 5 L com refil de 800 ml. Os itens mais antigos estão sendo relidos no portal e entram aos poucos. Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
       <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
         <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
       <p class="note" id="pa-total"></p>
@@ -708,10 +708,11 @@ dash.calc('consumo_lic', {
 });
 dash.calc('precos_alto', {
   title: 'Preços acima do padrão', description: 'Itens com preço unitário acima da mediana do ano para o mesmo produto (produtos com 3 compras ou mais).', inputs: ['itens'],
-  fn: (itens) => { const chave = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim(); const g = {};
-    itens.filter(r => r.situacao !== 'Anulado' && Number(r.valor_unitario) > 0).forEach(r => { const k = chave(r.produto); (g[k] = g[k] || []).push(r); });
+  fn: (itens) => { const g = {};
+    // compara só o mesmo produto: mesmo código do catálogo (CATMAT) ou mesmo nome, mesma unidade e mesma embalagem (galão 5 L x refil 800 ml)
+    itens.filter(r => r.situacao !== 'Anulado' && Number(r.valor_unitario) > 0 && r.comparar).forEach(r => { const k = r.comparar; (g[k] = g[k] || []).push(r); });
     const out = []; Object.values(g).forEach(rs => { if (rs.length < 3) return; const v = rs.map(r => Number(r.valor_unitario)).sort((a, b) => a - b); const med = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
-      rs.forEach(r => { const pu = Number(r.valor_unitario); if (med > 0 && pu > med * 1.2) out.push({ chave: r.chave, produto: r.produto, data: r.data, empenho: r.empenho, fornecedor: r.fornecedor, secretaria: r.secretaria, preco: pu, mediana: med, acima: pu / med - 1, compras: rs.length }); }); });
+      rs.forEach(r => { const pu = Number(r.valor_unitario); if (med > 0 && pu > med * 1.2) out.push({ chave: r.chave, produto: r.produto, unidade: r.unidade || '', embalagem: r.embalagem || '', data: r.data, empenho: r.empenho, fornecedor: r.fornecedor, secretaria: r.secretaria, preco: pu, mediana: med, acima: pu / med - 1, compras: rs.length }); }); });
     return out.sort((a, b) => b.data < a.data ? -1 : b.data > a.data ? 1 : b.acima - a.acima); }
 });
 dash.calc('por_secretaria', {
@@ -896,11 +897,11 @@ function drawProd() { const d = dash.data('itens'), tb = document.querySelector(
   relatorioProduto(rows);
   const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
   res.textContent = `${intF.format(rows.length)} itens · quantidade ${qtdF.format(s('quantidade'))} · valor ${brl2.format(s('valor_total'))} · pagos: ${intF.format(rows.filter(r => r.situacao === 'Pago').length)} · em aberto: ${intF.format(rows.filter(r => !['Pago', 'Anulado'].includes(r.situacao)).length)}`;
-  rows.slice(0, 400).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; const p = td(tr, r.produto); p.style.fontWeight = '600'; if (r.marca) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = r.marca; p.appendChild(m); }
+  rows.slice(0, 400).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; const p = td(tr, r.produto); p.style.fontWeight = '600'; const sub = [r.marca, r.embalagem, r.unidade].filter(Boolean).join(' · '); if (sub) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = sub; p.appendChild(m); }
     td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl2.format(N(r.valor_unitario)), 'r'); td(tr, brl2.format(N(r.valor_total)), 'r hide-sm');
     pillCell(tr, r.situacao, sitCls(r.situacao)); tb.appendChild(tr); });
   if (rows.length > 400) emptyRow(tb, 9, `Mostrando 400 de ${intF.format(rows.length)} itens. Refine a busca.`); if (!rows.length) emptyRow(tb, 9, 'Nenhum item encontrado.');
-  const m = {}; rows.forEach(r => { const k = r.produto; const v = N(r.valor_unitario); if (!v) return; m[k] = m[k] || { n: 0, s: 0, min: v, max: v, quem: r.fornecedor }; m[k].n++; m[k].s += v; m[k].max = Math.max(m[k].max, v); if (v < m[k].min) { m[k].min = v; m[k].quem = r.fornecedor; } else if (v === m[k].min && m[k].n === 1) m[k].quem = r.fornecedor; });
+  const m = {}; rows.forEach(r => { const k = [r.produto, r.embalagem, r.unidade].filter(Boolean).join(' · '); const v = N(r.valor_unitario); if (!v) return; m[k] = m[k] || { n: 0, s: 0, min: v, max: v, quem: r.fornecedor }; m[k].n++; m[k].s += v; m[k].max = Math.max(m[k].max, v); if (v < m[k].min) { m[k].min = v; m[k].quem = r.fornecedor; } else if (v === m[k].min && m[k].n === 1) m[k].quem = r.fornecedor; });
   Object.entries(m).sort((a, b) => b[1].n - a[1].n).slice(0, 60).forEach(([k, v]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, intF.format(v.n), 'r'); td(tr, brl2.format(v.min), 'r'); td(tr, brl2.format(v.s / v.n), 'r'); td(tr, brl2.format(v.max), 'r'); td(tr, v.quem, 'hide-sm'); tp.appendChild(tr); });
   if (!Object.keys(m).length) emptyRow(tp, 6, 'Sem preços para a busca.'); }
 pBusca.addEventListener('input', drawProd); [pParte, pSit, pSec].forEach(e => e.addEventListener('change', drawProd));
@@ -953,7 +954,7 @@ const paLim = document.getElementById('pa-lim'), paPer = document.getElementById
 function drawPrecos() { const d = dash.data('precos_alto'), tb = document.querySelector('#t-pa tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const lim = Number(paLim.value) / 100, q = nz(paBusca.value.trim());
   const pp = paPer.value;
   const rows = d.data.filter(r => r.acima >= lim && naFaixa(pp, Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5)) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
-  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, r.secretaria + ' · ' + r.compras + ' compras no ano'); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
+  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, [r.embalagem, r.unidade, r.secretaria, r.compras + ' compras no ano'].filter(Boolean).join(' · ')); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
     const c = td(tr, '+' + d1.format(r.acima * 100) + '%', 'r ' + (r.acima >= 1 ? 'late' : 'mid')); tb.appendChild(tr); });
   document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens` + (rows.length > 300 ? ' (mostrando 300)' : '');
   if (!rows.length) emptyRow(tb, 7, 'Nenhum item acima do padrão nesse filtro.'); }
