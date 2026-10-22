@@ -355,6 +355,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #t-req tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}
 #dash-root .req-det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px 18px}
 #dash-root .req-det dt{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-fg-muted);font-weight:600}
+#dash-root .req-pitens{grid-column:1/-1}#dash-root .req-pitens th,#dash-root .req-pitens tfoot td{position:static}#dash-root .req-pitens .rec-tab td:nth-child(2){white-space:normal;min-width:10rem}#dash-root .req-pitens .tblwrap{max-width:100%;overflow-x:auto}#dash-root .req-pitens dt{margin-bottom:4px}
+#dash-root .req-pend.pend{color:var(--color-warn);font-weight:600}#dash-root .req-pend.receb{color:var(--color-ok)}#dash-root .req-pend.desat{opacity:.6;font-weight:500}#dash-root .req-pitens.desat .tblwrap{opacity:.45}
 #dash-root .req-det dd{margin:2px 0 0;overflow-wrap:anywhere;user-select:text}
 #dash-root .req-det .copiar{font:inherit;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:6px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);cursor:pointer}
 #dash-root .req-acoes{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
@@ -1520,6 +1522,29 @@ function prepararReq() {
   const temRE = REQ.linhas.some(l => l.re);
   return REQ.linhas.map(l => { const t = trilha({ ...l, e: l.e ? semZeros(l.e) : '' }, empMap, temRE, reMap); return { ...l, ...t, eLig: t.emp ? semZeros(t.emp.empenho) : (l.e ? semZeros(l.e) : ''), reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null, ...atrasoReq(l, t) }; });
 }
+// itens pendentes: relatório do Equiplano (só produtos com quantidade pendente), salvo no Drive e lido pelo robô
+const PEND = { reqs: null };
+fetch('../data/pendentes.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(PEND, d); if (REQ.linhas) drawReq(); }).catch(() => {});
+const dataBR = (d) => { const m = String(d || '').match(/(\d\d)\/(\d\d)\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
+// Itens pendentes, nesta ordem de prioridade:
+//  1) empenho pago no portal (ou totalmente liquidado) -> tudo recebido, mesmo que o PDF ainda mostre pendência;
+//  2) requisição no PDF -> itens do PDF; se houve liquidação no portal a partir do dia do PDF, a lista fica "desatualizada";
+//  3) requisição feita depois do PDF, já empenhada -> itens do empenho no portal, todos pendentes (ou "desatualizada" se já houve liquidação);
+//  4) requisição dentro do período do PDF e fora dele -> recebida.
+let PEND_IDX = null;
+function pendIdx() { if (PEND_IDX) return PEND_IDX; const it = dash.data('itens'), lq = dash.data('liquidacoes'); if (it.status !== 'ok' || lq.status !== 'ok') return null;
+  const itens = {}, liq = {}; it.data.forEach(r => { (itens[semZeros(r.empenho)] = itens[semZeros(r.empenho)] || []).push(r); });
+  lq.data.forEach(r => { const k = semZeros(r.empenho); if (!liq[k] || r.data > liq[k]) liq[k] = r.data; }); return (PEND_IDX = { itens, liq }); }
+function pendDe(l) { if (!PEND.reqs) return null;
+  const e = l.emp, ix = pendIdx(), emi = PEND.emitido ? dataBR(PEND.emitido) : '', ini = PEND.periodo ? dataBR(PEND.periodo[0]) : '';
+  if (e && e.situacao === 'Anulado') return null;
+  if (e && (e.situacao === 'Pago' || (N(e.liquidado) > 0.004 && N(e.falta_liquidar) < 0.005))) return { tipo: 'receb', porPortal: true };
+  const ultLiq = e && ix ? ix.liq[semZeros(e.empenho)] || '' : '', liqDepois = !!(ultLiq && emi && ultLiq >= emi);
+  const p = PEND.reqs[semZeros(l.r)]; if (p) return { tipo: 'pend', itens: p.i, desat: liqDepois, fonte: 'pdf' };
+  const d = dataBR(l.d), depois = !!(emi && ((d && d >= emi) || (e && e.data >= emi)));
+  if (depois) { if (!e || !ix) return null; const its = (ix.itens[semZeros(e.empenho)] || []).filter(r => r.situacao !== 'Anulado'); if (!its.length) return null;
+    return { tipo: 'pend', fonte: 'empenho', desat: N(e.liquidado) > 0.004, itens: its.map((r, k) => [String(k + 1).padStart(3, '0'), r.codigo || '', [r.produto, r.unidade].filter(Boolean).join(' · '), N(r.valor_total), N(r.valor_unitario), N(r.quantidade), 0, N(r.quantidade)]) }; }
+  if (!d || (ini && d < ini)) return null; return { tipo: 'receb' }; }
 function drawReq() {
   const lista = prepararReq(); const tb = document.querySelector('#t-req tbody'); if (!lista) return; tb.replaceChildren();
   const sec = document.getElementById('req-sec'), par = document.getElementById('req-parada');
@@ -1533,6 +1558,10 @@ function drawReq() {
     if (n) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(fxSel.value === 'naoenv')); b.style.setProperty('--p', 'var(--color-fg-muted)');
       const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = 'Aguardando envio'; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(n);
       b.append(lb, nm); b.addEventListener('click', () => { fxSel.value = fxSel.value === 'naoenv' ? '' : 'naoenv'; drawReq(); }); box.appendChild(b); } }
+  { const n = lista.filter(l => (pendDe(l) || {}).tipo === 'pend').length;
+    if (n) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(!!REQ.soPend)); b.style.setProperty('--p', 'var(--color-warn)');
+      const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = 'Com itens pendentes'; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(n);
+      b.append(lb, nm); b.addEventListener('click', () => { REQ.soPend = !REQ.soPend; drawReq(); }); box.appendChild(b); } }
   ordem.filter(x => lista.some(l => l.parada === x)).forEach(x => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(par.value === x));
     b.style.setProperty('--p', corP[etapaCor[x]] || 'var(--color-bad)');
     const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = x; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(lista.filter(l => l.parada === x).length);
@@ -1548,7 +1577,7 @@ function drawReq() {
       const nomes = new Map(); lista.forEach(l => [l.f, l.emp && l.emp.fornecedor].forEach(f => { f = String(f || '').replace(/^[\d.\s/-]+/, '').trim(); if (f.length > 2) { const k = nz(f); if (!nomes.has(k)) nomes.set(k, f); } }));
       [...nomes.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => { const o = document.createElement('option'); o.value = f; dl.appendChild(o); }); } }
   const fx = document.getElementById('req-atraso').value, ordemReq = document.getElementById('req-ordem').value;
-  const rows = lista.filter(l => (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : l.aberta && naFaixa(fx, l.atraso)))
+  const rows = lista.filter(l => (!REQ.soPend || (pendDe(l) || {}).tipo === 'pend') && (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : l.aberta && naFaixa(fx, l.atraso)))
     && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : palavras.every(w => nz([l.f, l.emp && l.emp.fornecedor].filter(Boolean).join(' ')).includes(w)))))
     .sort((a, b) => ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0));
   document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
@@ -1562,7 +1591,8 @@ function drawReq() {
         if (p.n === 'Liquidação' && l.eLig) { const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const w = document.createElement('div'); w.className = 'req-nf'; const sp = document.createElement('span'); sp.className = 'nf-bt nf-info'; sp.textContent = nfs.length > 1 ? `Nota (${nfs.length})` : 'Nota'; sp.title = 'Tem nota fiscal nesta liquidação'; w.appendChild(sp); li.appendChild(w); } }
         ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
-    { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et && l.parada !== 'Concluída') { const x = document.createElement('div'); x.className = 'sub2 req-et'; x.textContent = l.et; pc.appendChild(x); } }
+    { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et && l.parada !== 'Concluída') { const x = document.createElement('div'); x.className = 'sub2 req-et'; x.textContent = l.et; pc.appendChild(x); }
+      const pd = pendDe(l); if (pd) { const x = document.createElement('div'); x.className = 'sub2 req-pend ' + pd.tipo; x.textContent = pd.tipo === 'pend' ? (pd.itens.length === 1 ? '1 item pendente' : `${pd.itens.length} itens pendentes`) + (pd.desat ? ' — desatualizado' : '') : 'itens recebidos'; if (pd.desat) x.classList.add('desat'); pc.appendChild(x); } }
     if (l.naoEnviada) { const c = pillCell(tr, 'a enviar', 'neu'); c.className = 'r'; }
     else td(tr, l.aberta ? (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`) : '—', 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
     const abrir = () => { const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
@@ -1579,6 +1609,15 @@ function drawReq() {
       // situação de hoje no portal, numa frase (a observação da planilha pode estar desatualizada)
       const hoje = situacaoPortal(l);
       if (hoje) item('No portal hoje', hoje.txt);
+      { const pd = pendDe(l);
+        if (pd && pd.tipo === 'pend') { const w = document.createElement('div'); w.className = 'req-pitens'; const h = document.createElement('dt'); h.textContent = (pd.fonte === 'empenho' ? `Itens pendentes (itens do empenho ${l.eLig}; ainda não constam no relatório do Equiplano de ${PEND.emitido ? PEND.emitido.slice(0, 16) : '—'})` : `Itens pendentes (relatório do Equiplano de ${PEND.emitido ? PEND.emitido.slice(0, 16) : '—'})`) + (pd.desat ? ' — desatualizado' : ''); w.appendChild(h);
+          if (pd.desat) { w.classList.add('desat'); const n = document.createElement('div'); n.className = 'sub2'; n.textContent = 'Houve liquidação no portal depois do relatório: as quantidades abaixo podem já ter mudado. Atualizam quando o próximo relatório for salvo no Drive.'; w.appendChild(n); }
+          const tw = document.createElement('div'); tw.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'rec-tab';
+          t.innerHTML = '<thead><tr><th>Item</th><th>Produto</th><th class="r">Pedido</th><th class="r">Recebido</th><th class="r">Pendente</th><th class="r">Valor pendente</th></tr></thead><tbody></tbody><tfoot></tfoot>';
+          let tot = 0; pd.itens.forEach(i => { const r = document.createElement('tr'); td(r, i[0]); td(r, i[2]); td(r, qtdF.format(i[5]), 'r'); td(r, qtdF.format(i[6]), 'r'); const c = td(r, qtdF.format(i[7]), 'r'); c.style.fontWeight = '600'; const v = i[7] * i[4]; tot += v; td(r, brl.format(v), 'r'); t.tBodies[0].appendChild(r); });
+          const f = document.createElement('tr'); td(f, ''); td(f, 'Total pendente'); td(f, ''); td(f, ''); td(f, ''); td(f, brl.format(tot), 'r'); t.tFoot.appendChild(f);
+          tw.appendChild(t); w.appendChild(tw); dl.appendChild(w); }
+        else if (pd && pd.tipo === 'receb') item('Itens', pd.porPortal ? 'Todos recebidos (empenho pago ou totalmente liquidado no portal)' : `Todos recebidos (não constam como pendentes no relatório do Equiplano de ${PEND.emitido ? PEND.emitido.slice(0, 10) : '—'})`); }
       const ac = document.createElement('div'); ac.className = 'req-acoes';
       if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
         const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); } }

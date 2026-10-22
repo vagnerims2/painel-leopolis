@@ -54,10 +54,11 @@ sp = sp.replace('Prefeitura Municipal de Leópolis · Execução da despesa', 'P
 sp = sp.replace('Empenhos e liquidações — 2026</h1>', 'Despesas do Município — 2026</h1>')
 sp = re.sub(r'<p class="foot">.*?</p>', '<p class="foot">Fonte: Portal da Transparência do Município de Leópolis — despesa empenhada, liquidada e paga, receitas, demonstrativos da LRF e dívida ativa. Painel informativo, atualizado automaticamente nos dias úteis; em caso de divergência, vale o portal oficial. <span id="atualizado"></span><br>Baixar dados (CSV): <a href="data/empenhos.csv">empenhos</a> · <a href="data/itens.csv">itens</a> · <a href="data/liquidacoes.csv">liquidações</a> · <a href="data/movimento.csv">movimento diário</a> · <a href="data/saldo_fontes.csv">saldo por fonte</a></p>', sp, count=1, flags=re.S)
 sp = rep(sp, "{ const h = location.hash.slice(1); if (", "{ const h = ['alertas', 'dotacoes', 'semana', 'requisicoes'].includes(location.hash.slice(1)) ? '' : location.hash.slice(1); if (")
-chk = sp.lower().replace('equiplano.com.br', '')
-assert 'equiplano' not in chk and 'planilha.json' not in sp, 'conteúdo interno na versão pública'
 # link público desativado a pedido (22/10/2026): no lugar do painel fica um aviso. Para religar: PUBLICO_ATIVO = True
+# (antes de religar: tirar da versão pública o código dos itens pendentes do Equiplano, que a checagem abaixo vai acusar)
 PUBLICO_ATIVO = False
+chk = sp.lower().replace('equiplano.com.br', '')
+assert not PUBLICO_ATIVO or ('equiplano' not in chk and 'planilha.json' not in sp), 'conteúdo interno na versão pública'
 AVISO = '''<!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow"><title>Despesas do Município — Leópolis</title>
