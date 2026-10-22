@@ -61,6 +61,12 @@ jobs:
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
         run: python ferramentas/planilha_requisicoes.py --aberto - data/planilha.json
+      - name: Itens pendentes (relatório do Equiplano salvo no Drive -> data/pendentes.json)
+        if: success()
+        continue-on-error: true
+        env:
+          PENDENTES_PASTA: ${{ secrets.PENDENTES_PASTA }}
+        run: python ferramentas/pendentes.py - data/pendentes.json
       - name: Relatório semanal de requisições em atraso (segunda-feira, primeira rodada a partir das 7h)
         if: success()
         env:
