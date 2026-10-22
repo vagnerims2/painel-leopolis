@@ -218,6 +218,65 @@ def _cat(cod):
 
 _GRUPO_DA = [('1.1.1.2.50', 'IPTU'), ('1.1.1.4.51', 'ISS'), ('1.1.2', 'Taxas'), ('1.2.4', 'COSIP')]
 
+# ---------------------------------------------------------------- receita por mês (relatório de receitas)
+# O Anexo 10 do portal sempre soma de janeiro até o mês final. Guardamos o acumulado de cada mês, por categoria,
+# separado em [receita do ano, multas e juros, dívida ativa, multas e juros da dívida ativa]; o mês é a diferença
+# entre dois acumulados (a página faz a conta). Meses fechados não mudam e não são buscados de novo.
+_PARTE = {'1': 0, '2': 1, '3': 2, '4': 3}
+
+def acum_por_codigo(t):
+    """{código: arrecadado acumulado} de um CSV do Anexo 10"""
+    out = {}
+    for l in linhas(t):
+        m = re.match(r'^(\d(?:\.\d+){9})\.?;', l)
+        if m:
+            v = nums(l)
+            if len(v) >= 2:
+                out[m.group(1)] = v[1]
+    return out
+
+def acum_por_categoria(cods):
+    cats = {}
+    for cod, v in cods.items():
+        nome, _ = _cat(cod)
+        seg = cod.split('.')
+        k = cats.setdefault(nome, [0.0, 0.0, 0.0, 0.0]); k[_PARTE.get(seg[6] if len(seg) > 6 else '1', 0)] += v
+    return {n: [round(x, 2) for x in k] for n, k in cats.items() if any(abs(x) > 0.004 for x in k)}
+
+def receita_mensal(saida, ano, m, prontos, avisar=print, limite=6):
+    """atualiza data/receitas_mensal.json; prontos = {(ano, mês): texto do Anexo 10} já baixados nesta rodada"""
+    arq = os.path.join(saida, 'receitas_mensal.json')
+    try:
+        acum = json.load(open(arq, encoding='utf-8'))['acum']
+    except Exception:
+        acum = {}
+    meses = [(ano - 1, x) for x in range(1, 13)] + [(ano, x) for x in range(1, m + 1)]
+    recentes = {(ano, m), (ano, m - 1) if m > 1 else (ano - 1, 12)}
+    feitos = 0
+    for a, mm in meses:
+        k = f'{a}-{mm:02d}'
+        if k in acum and (a, mm) not in recentes and (a, mm) not in prontos:
+            continue
+        if (a, mm) in prontos:
+            t = prontos[(a, mm)]
+        else:
+            if feitos >= limite:
+                continue
+            try:
+                t = anexo10(a, 1, mm); feitos += 1
+            except Exception as e:
+                avisar(f'Aviso: Anexo 10 de jan. a {mm}/{a} não veio ({e}).'); continue
+        acum[k] = acum_por_categoria(acum_por_codigo(t))
+    faltam = [f'{a}-{mm:02d}' for a, mm in meses if f'{a}-{mm:02d}' not in acum]
+    if faltam:
+        avisar(f'Receita por mês: faltam {len(faltam)} meses, vêm nas próximas rodadas.')
+    rec = {'gerado': date.today().strftime('%d/%m/%Y'), 'ano': ano, 'mes': m, 'faltam': faltam,
+           'partes': ['Receita do ano', 'Multas e juros', 'Dívida ativa', 'Multas e juros da dívida ativa'],
+           'fonte': 'Portal da Transparência de Leópolis — Anexo 10 (receita arrecadada acumulada de janeiro até cada mês). Município de Leópolis (entidade 300).',
+           'acum': dict(sorted(acum.items()))}
+    with open(arq, 'w', encoding='utf-8') as f:
+        json.dump(rec, f, ensure_ascii=False)
+
 def ler_anexo10(t):
     ls = linhas(t)
     grupos, cats, da = [], {}, {}
@@ -268,7 +327,8 @@ def gerar(saida, avisar=print, hoje=None):
 
     # ---- receitas
     avisar('Receitas: Anexo 10 e arrecadação mensal…')
-    a_at, a_ant, a_ant_ano = ler_anexo10(anexo10(ano, 1, m)), ler_anexo10(anexo10(ano - 1, 1, m)), ler_anexo10(anexo10(ano - 1, 1, 12))
+    t_at, t_ant, t_ant_ano = anexo10(ano, 1, m), anexo10(ano - 1, 1, m), anexo10(ano - 1, 1, 12)
+    a_at, a_ant, a_ant_ano = ler_anexo10(t_at), ler_anexo10(t_ant), ler_anexo10(t_ant_ano)
     soma = sum(g[3] for g in a_at['grupos'])
     if a_at['total'] and abs(soma - a_at['total'][1]) > 1:
         raise RuntimeError(f'Anexo 10: soma dos grupos ({soma:.2f}) não bate com o total ({a_at["total"][1]:.2f})')
@@ -281,6 +341,10 @@ def gerar(saida, avisar=print, hoje=None):
            'cat26': a_at['cat'], 'cat25': a_ant['cat'], 'cat25ano': a_ant_ano['cat']}
     with open(os.path.join(saida, 'receitas.json'), 'w', encoding='utf-8') as f:
         json.dump(rec, f, ensure_ascii=False)
+    try:
+        receita_mensal(saida, ano, m, {(ano, m): t_at, (ano - 1, m): t_ant, (ano - 1, 12): t_ant_ano}, avisar=avisar)
+    except Exception as e:
+        avisar(f'Aviso: receita por mês não foi atualizada ({e}).')
 
     # ---- indicadores
     avisar('Indicadores da LRF: saúde, educação, pessoal, dívida e despesa por função…')
