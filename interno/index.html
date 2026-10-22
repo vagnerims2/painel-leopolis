@@ -66,6 +66,7 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 #dash-root .tile .num{font-family:var(--font-anthropic-serif);font-weight:400;font-size:calc(var(--cds-font-size-title) * 1.1);font-variant-numeric:tabular-nums;margin:var(--cds-gap-xs) 0;line-height:1.1}
 #dash-root .tile .sub{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-variant-numeric:tabular-nums}
 /* alertas */
+#dash-root .alert button.sem-link{cursor:default}
 #dash-root .alert{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,10rem),1fr));gap:var(--cds-gap-md)}
 #dash-root .alert button{all:unset;box-sizing:border-box;cursor:pointer;border-radius:var(--r);padding:var(--cds-pad-md) var(--cds-pad-lg);border:1px solid color-mix(in srgb,var(--t) 35%,var(--color-border-line));
   background:color-mix(in srgb,var(--t) 10%,var(--color-panel));transition:transform var(--cds-dur-slow),box-shadow var(--cds-dur-slow)}
@@ -312,9 +313,128 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 @media print{#dash-root .vis-sel{display:none}}
 #dash-root .motivo{font-weight:400;font-size:11px;color:#1F4E8C;background:#eaf2fc;border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block}
 
+/* ---------- Requisições: trilha requisição → empenho → liquidação → pagamento ---------- */
+#dash-root .req-trava{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);align-items:center;padding:var(--cds-pad-md);border:1px dashed var(--color-border-line);border-radius:10px;background:color-mix(in srgb,var(--color-fg) 3%,transparent)}
+#dash-root .req-trava[hidden]{display:none}
+#dash-root .req-trava label{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-weight:600;width:100%}
+#dash-root .req-trava input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);flex:1 1 12rem;min-width:0}
+#dash-root .req-trava .note{width:100%;margin:0}
+#dash-root .req-trava .erro{color:var(--color-bad)}
+#dash-root .req-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-md)}
+#dash-root .req-resumo button{font:inherit;text-align:left;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);display:flex;flex-direction:column;gap:2px;border-left:4px solid var(--p,var(--color-fg-muted))}
+#dash-root .req-resumo button[aria-pressed=true]{background:color-mix(in srgb,var(--p,var(--color-fg)) 10%,var(--color-panel));box-shadow:inset 0 0 0 1px var(--p,var(--color-fg))}
+#dash-root .req-resumo button:focus-visible{outline:2px solid var(--serie0);outline-offset:2px}
+#dash-root .req-resumo .lbl{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted)}
+#dash-root .req-resumo .num{font-size:1.4rem;font-weight:600;font-variant-numeric:tabular-nums}
+#dash-root .trilha{list-style:none;margin:0;padding:0;display:flex;gap:3px;flex-wrap:nowrap;min-width:25rem}
+#dash-root .trilha li{--p:var(--color-fg-muted);display:flex;flex-direction:column;min-width:4.8rem;flex:1 1 4.8rem;max-width:7.5rem;padding:3px 6px 4px;border-radius:5px;font-size:11px;line-height:1.25;border:1px solid color-mix(in srgb,var(--p) 28%,transparent);background:color-mix(in srgb,var(--p) 7%,transparent);position:relative}
+#dash-root .trilha li b{font-size:9.5px;font-weight:600;color:var(--color-fg-muted);text-transform:uppercase;letter-spacing:.04em}
+#dash-root .trilha li span{font-variant-numeric:tabular-nums;color:var(--color-fg);overflow-wrap:break-word;hyphens:none}
+#dash-root .trilha li.ok{--p:var(--color-ok)}
+#dash-root .trilha li.ok b::before{content:"✓ ";color:var(--color-ok)}
+#dash-root .trilha li.parc{--p:var(--color-warn)}
+#dash-root .trilha li.aqui{--p:var(--color-bad);background:color-mix(in srgb,var(--color-bad) 12%,transparent);border-width:2px}
+#dash-root .trilha li.aqui b{color:var(--color-bad)}
+#dash-root .trilha li.parc.aqui{--p:var(--color-warn);background:color-mix(in srgb,var(--color-warn) 14%,transparent)}
+#dash-root .trilha li.parc.aqui b{color:var(--color-warn)}
+#dash-root .trilha li.esp,#dash-root .trilha li.pula{opacity:.55;border-style:dashed}
+#dash-root .trilha li.canc{--p:var(--color-fg-muted);text-decoration:line-through}
+#dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
+@media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
+#dash-root #t-req tbody tr.lin{cursor:pointer}
+#dash-root #t-req tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}
+#dash-root .req-det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px 18px}
+#dash-root .req-det dt{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-fg-muted);font-weight:600}
+#dash-root .req-det dd{margin:2px 0 0;overflow-wrap:anywhere;user-select:text}
+#dash-root .req-det .copiar{font:inherit;font-size:11px;margin-left:6px;padding:1px 7px;border-radius:6px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);cursor:pointer}
+#dash-root .req-acoes{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+#dash-root .req-nf{margin-top:3px}#dash-root .req-nf .nf-bt{font-size:10px;padding:0 6px}#dash-root .req-nf .nf-bt{margin-left:0}#dash-root .nf-bt.nf-info{cursor:default;pointer-events:none}
+#dash-root .req-itens{width:100%;border-collapse:collapse;font-size:13px}#dash-root .req-itens td,#dash-root .req-itens th{padding:6px 8px;border-bottom:1px solid var(--color-border-line);text-align:left;vertical-align:top}#dash-root .req-itens .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}#dash-root .req-itens tfoot td{font-weight:600}
+#dash-root .req-badge{font-weight:400;font-size:11px;color:var(--color-fg);background:color-mix(in srgb,var(--color-ok) 14%,transparent);border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block;white-space:nowrap}
+@media (max-width:640px){#dash-root .trilha{min-width:24rem}#dash-root .trilha li{min-width:4.6rem;flex-basis:4.6rem;font-size:11px}#dash-root #t-req .hide-sm{display:none}}
+#dash-root .tabs button[data-go=receitas]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M2 6h20v12H2zm2 2v8h16V8zm8 1.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5z'/%3E%3C/svg%3E")}
+/* ---------- Receitas ---------- */
+#dash-root .rec-col{display:flex;flex-direction:column;gap:var(--cds-gap-md)}
+#dash-root .rec-leg{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--color-fg-muted)}
+#dash-root .rec-leg span{display:inline-block;width:10px;height:10px;border-radius:2px;margin-left:6px}
+#dash-root .rec-leg .k26{background:var(--serie0)} #dash-root .rec-leg .k25{background:color-mix(in srgb,var(--color-fg-muted) 45%,transparent)}
+#dash-root .rec-meses{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;align-items:end;height:220px;padding-top:8px;border-bottom:1px solid var(--color-border-line)}
+#dash-root .rec-mes{display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end;min-width:0}
+#dash-root .rec-barras{display:flex;gap:2px;align-items:flex-end;height:180px;width:100%;justify-content:center}
+#dash-root .rec-barras div{width:42%;border-radius:3px 3px 0 0;min-height:1px}
+#dash-root .rec-barras .b26{background:var(--serie0)} #dash-root .rec-barras .b25{background:color-mix(in srgb,var(--color-fg-muted) 45%,transparent)}
+#dash-root .rec-mes small{font-size:11px;color:var(--color-fg-muted)}
+#dash-root .rec-tab{width:100%;border-collapse:collapse;font-size:13px}
+#dash-root .rec-tab th,#dash-root .rec-tab td{padding:6px 8px;border-bottom:1px solid var(--color-border-line);text-align:left;vertical-align:middle}
+#dash-root .rec-tab .r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+#dash-root .rec-tab tfoot td{font-weight:600}
+#dash-root .rec-pct{display:flex;align-items:center;gap:6px;min-width:7rem}
+#dash-root .rec-pct i{flex:1;height:7px;border-radius:4px;background:color-mix(in srgb,var(--color-fg) 8%,transparent);position:relative;overflow:hidden}
+#dash-root .rec-pct i b{position:absolute;inset:0 auto 0 0;border-radius:4px;background:var(--serie0)}
+#dash-root .rec-pct i b.acima{background:var(--color-ok)}
+#dash-root .rec-pct span{font-size:12px;font-variant-numeric:tabular-nums;width:3.2rem;text-align:right}
+#dash-root .rec-var.up{color:var(--color-ok)} #dash-root .rec-var.down{color:var(--color-bad)}
+@media (max-width:640px){#dash-root .rec-meses{gap:2px;height:180px}#dash-root .rec-barras{height:140px}#dash-root .rec-mes small{font-size:9px}}
+/* ---------- Indicadores, dívida ativa e cidadão ---------- */
+#dash-root .tabs button[data-go=indicadores]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4a10 10 0 0 0-10 10h2a8 8 0 0 1 16 0h2A10 10 0 0 0 12 4zm4.2 4.4-5.4 4.2a2 2 0 1 0 2.4 2.4z'/%3E%3C/svg%3E")}
+#dash-root .tabs button[data-go=cidadao]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 12c5 0 9 2.5 9 5.5V22H3v-2.5C3 16.5 7 14 12 14z'/%3E%3C/svg%3E")}
+#dash-root .ind-lista{display:flex;flex-direction:column;gap:18px;margin-top:6px}
+#dash-root .ind-row{display:grid;grid-template-columns:minmax(10rem,15rem) 1fr 5.5rem;gap:4px 14px;align-items:center}
+#dash-root .ind-row .nome{font-size:13px;line-height:1.3}
+#dash-root .ind-row .nome small{display:block;color:var(--color-fg-muted);font-size:11.5px}
+#dash-root .ind-row .val{text-align:right;font-variant-numeric:tabular-nums;font-weight:600;font-size:15px}
+#dash-root .ind-row .val small{display:block;font-weight:400;font-size:11px;color:var(--color-fg-muted)}
+#dash-root .ind-trilho{position:relative;height:12px;border-radius:6px;background:color-mix(in srgb,var(--color-fg) 8%,transparent);margin:16px 0 4px}
+#dash-root .ind-trilho > b{position:absolute;inset:0 auto 0 0;border-radius:6px;background:var(--st,var(--serie0))}
+#dash-root .ind-trilho i{position:absolute;top:-5px;bottom:-5px;width:2px;margin-left:-1px;background:var(--color-fg)}
+#dash-root .ind-trilho i span{position:absolute;bottom:calc(100% + 2px);left:50%;transform:translateX(-50%);font-style:normal;font-size:10.5px;color:var(--color-fg-muted);white-space:nowrap}
+#dash-root .ind-trilho i.fim span{left:auto;right:0;transform:none}
+#dash-root .ind-trilho i.ini span{left:0;transform:none}
+#dash-root .ind-trilho i.baixo span{bottom:auto;top:calc(100% + 2px)}
+#dash-root .ind-row.com-baixo .ind-trilho{margin-bottom:18px}
+#dash-root .st-ok{--st:var(--color-ok)} #dash-root .st-warn{--st:var(--color-warn)} #dash-root .st-bad{--st:var(--color-bad)}
+#dash-root .ind-row .val.st-ok{color:var(--color-ok)} #dash-root .ind-row .val.st-warn{color:var(--color-warn)} #dash-root .ind-row .val.st-bad{color:var(--color-bad)}
+#dash-root .ind-hist{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;align-items:end;height:190px;position:relative;margin-top:14px;border-bottom:1px solid var(--color-border-line)}
+#dash-root .ind-hist .col{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-variant-numeric:tabular-nums}
+#dash-root .ind-hist .col b{width:56%;max-width:56px;border-radius:3px 3px 0 0;background:var(--serie0);display:flex;justify-content:center;padding-top:6px;box-sizing:border-box}
+#dash-root .ind-hist .col b span{font-size:12px;font-weight:600;color:#fff}
+#dash-root .ind-hist .col small{font-size:11px;color:var(--color-fg-muted);position:absolute;bottom:-18px}
+#dash-root .ind-hist .col{position:relative}
+#dash-root .ind-hist .linha{position:absolute;left:0;right:0;border-top:2px dashed var(--color-warn)}
+#dash-root .ind-hist .linha.max{border-top-color:var(--color-bad)}
+#dash-root .ind-hist .linha em{position:absolute;left:0;top:-17px;font-style:normal;font-size:10.5px;color:var(--color-fg-muted);background:var(--color-bg-elevated,var(--color-bg));padding:0 3px}
+#dash-root .ind-hist + .note{margin-top:26px}
+#dash-root .da-num{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));gap:12px;margin:10px 0 16px}
+#dash-root .da-num div{border-left:3px solid var(--k,var(--serie0));padding:2px 0 2px 10px}
+#dash-root .da-num b{display:block;font-size:19px;font-variant-numeric:tabular-nums;font-weight:600}
+#dash-root .da-num small{font-size:12px;color:var(--color-fg-muted);line-height:1.35;display:block}
+#dash-root .da-h3{font-size:13px;font-weight:600;margin:16px 0 8px}
+#dash-root .da-num + .grid .da-h3:first-child,#dash-root .grid > div > .da-h3:first-child{margin-top:4px}
+#dash-root .cid-barras{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+#dash-root .cid-barra{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:baseline;font-size:13px}
+#dash-root .cid-barra .t{grid-column:1 / -1;grid-row:2}
+#dash-root .cid-barra .t{height:12px;border-radius:3px;background:color-mix(in srgb,var(--color-fg) 6%,transparent);position:relative;overflow:hidden}
+#dash-root .cid-barra .t b{position:absolute;inset:0 auto 0 0;background:var(--k,var(--serie0));border-radius:3px}
+#dash-root .cid-barra .v{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;font-size:12.5px}
+#dash-root .cid-barra .v small{color:var(--color-fg-muted);margin-left:4px}
+#dash-root .cid-topo p{font-size:15.5px;line-height:1.6;margin:6px 0 0;max-width:62rem}
+#dash-root .cid-regras{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:12px;margin-top:8px}
+#dash-root .cid-regras div{border:1px solid var(--color-border-line);border-top:4px solid var(--st);border-radius:8px;padding:10px 12px}
+#dash-root .cid-regras b{display:block;font-size:14px;margin-bottom:4px}
+#dash-root .cid-regras b::before{content:"✓ ";color:var(--st)}
+#dash-root .cid-regras .st-warn b::before{content:"! "}
+#dash-root .cid-regras .st-bad b::before{content:"✕ "}
+#dash-root .cid-regras p{margin:0;font-size:13px;line-height:1.45;color:var(--color-fg-muted)}
+@media (max-width:640px){
+  #dash-root .cid-barra .v{min-width:0}
+  #dash-root .ind-row{grid-template-columns:1fr auto}
+  #dash-root .ind-row .ind-trilho{grid-column:1 / -1;grid-row:2}
+}
 </style>
 </head>
 <body>
+
+
 <div id="dash-root">
 
 
@@ -327,12 +447,14 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
   <nav class="tabs" role="tablist">
     <button data-go="geral" aria-selected="true">Visão geral</button>
-    <button data-go="alertas" aria-selected="false">Alertas</button>
     <button data-go="dotacoes" aria-selected="false">Dotações</button>
     <button data-go="empenhos" aria-selected="false">Empenhos</button>
+    <button data-go="requisicoes" aria-selected="false">Requisições</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
-    <button data-go="semana" aria-selected="false">Dia e semana</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
+    <button data-go="receitas" aria-selected="false">Receitas</button>
+    <button data-go="indicadores" aria-selected="false">Indicadores LRF</button>
+    <button data-go="cidadao" aria-selected="false">Para o cidadão</button>
   </nav>
 
   <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
@@ -344,9 +466,9 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <!-- ============ VISÃO GERAL ============ -->
   <section class="tab" data-tab="geral">
     <div class="alert" id="alertas-resumo">
-      <button data-goto="alertas" data-faixa="ate30"><div class="lbl">Sem liquidar há até 30 dias</div><div class="num" data-source="alertas_resumo" data-field="d10" data-row="0">—</div></button>
-      <button data-goto="alertas" data-faixa="31a90"><div class="lbl">Sem liquidar há 31 a 90 dias</div><div class="num mid" data-source="alertas_resumo" data-field="d20" data-row="0">—</div></button>
-      <button data-goto="alertas" data-faixa="mais90"><div class="lbl">Sem liquidar há mais de 90 dias</div><div class="num late" data-source="alertas_resumo" data-field="d30" data-row="0">—</div></button>
+      <button class="sem-link" data-faixa="ate30"><div class="lbl">Sem liquidar há até 30 dias</div><div class="num" data-source="alertas_resumo" data-field="d10" data-row="0">—</div></button>
+      <button class="sem-link" data-faixa="31a90"><div class="lbl">Sem liquidar há 31 a 90 dias</div><div class="num mid" data-source="alertas_resumo" data-field="d20" data-row="0">—</div></button>
+      <button class="sem-link" data-faixa="mais90"><div class="lbl">Sem liquidar há mais de 90 dias</div><div class="num late" data-source="alertas_resumo" data-field="d30" data-row="0">—</div></button>
       <button data-goto="dotacoes"><div class="lbl">Dotações que não fecham o mês</div><div class="num late" data-source="alertas_resumo" data-field="dot_mes" data-row="0">—</div></button>
     </div>
     <section class="tiles">
@@ -393,8 +515,14 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     </section>
   </section>
 
-  <!-- ============ ALERTAS ============ -->
+  <!-- ============ ALERTAS (fora do menu) ============ -->
   <section class="tab" data-tab="alertas" hidden>
+    <div class="card" id="limite">
+      <h2>Limite de dispensa por objeto</h2>
+      <p class="note">Soma no ano dos empenhos sem licitação ou por dispensa, por tipo de objeto (subelemento), comparada com os limites do art. 75 da Lei 14.133 atualizados pelo Decreto 12.807/2025: <b>R$ 130.984,20</b> para obras, serviços de engenharia e manutenção de veículos (inciso I) e <b>R$ 65.492,11</b> para outras compras e serviços (inciso II). Ficam de fora energia, água, tarifas bancárias, custas judiciais, correios, anuidades, pagamentos a consórcios e outros órgãos públicos, e processos de dispensa acima do limite (emergência e outros incisos do art. 75). É um sinal de atenção, não um parecer: adesões a ata, convênios e contratações emergenciais também aparecem como "sem licitação" ou "dispensa" no portal.</p>
+      <div class="tools"><input id="lim-busca" type="search" placeholder="Buscar objeto, secretaria, fornecedor…"><label><input id="lim-80" type="checkbox" checked> só 80% do limite ou mais</label></div>
+      <div class="tblwrap"><table id="t-lim"><thead><tr><th>Objeto</th><th class="r">Limite</th><th class="r">Empenhado no ano</th><th style="min-width:9rem">% do limite</th><th class="r hide-sm">Empenhos</th><th class="hide-sm">Principais fornecedores</th></tr></thead><tbody></tbody></table></div>
+    </div>
     <div class="card" id="parados">
       <h2>Empenhos sem nenhuma liquidação</h2>
       <p class="note">Empenhos ordinários abertos sem nenhuma liquidação, comparados com o tempo médio de liquidação do mesmo tipo de despesa. Globais e estimativos ficam de fora (são liquidados aos poucos).</p>
@@ -409,14 +537,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <th data-field="empenho">Empenho</th><th data-field="data">Data</th><th data-field="fornecedor">Fornecedor / produto</th><th data-field="secretaria" class="hide-sm">Secretaria</th>
         <th data-field="valor" class="r">Valor</th><th data-field="dias" class="r">Dias</th><th data-field="media_tipo" class="r hide-sm">Normal do tipo</th>
       </tr></thead><tbody></tbody></table></div>
-    </div>
-    <div class="card" id="precos-alto">
-      <h2>Preços acima do padrão</h2>
-      <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Só compara o mesmo produto: mesmo código do catálogo federal (CATMAT) ou mesmo nome, com a mesma unidade e a mesma embalagem, para não comparar galão de 5 L com refil de 800 ml. Os itens mais antigos estão sendo relidos no portal e entram aos poucos. Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
-      <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
-        <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
-      <p class="note" id="pa-total"></p>
-      <div class="tblwrap"><table id="t-pa"><thead><tr><th>Produto</th><th>Data</th><th>Empenho</th><th class="hide-sm">Fornecedor</th><th class="r">Preço pago</th><th class="r">Mediana do ano</th><th class="r">Acima</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="card" id="tempo">
       <h2>Tempo médio até a primeira liquidação</h2>
@@ -497,6 +617,126 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     </div>
   </section>
 
+  <!-- ============ REQUISIÇÕES ============ -->
+  <section class="tab" data-tab="requisicoes" hidden>
+    <div class="card" id="req-card">
+      <h2>Requisições de compra</h2>
+      <p class="note">Cada requisição da planilha de compras ligada ao empenho do portal, na ordem: requisição de compra, requisição de empenho, empenho, liquidação e pagamento. A etapa em vermelho é onde ela está parada. Os dados vêm da planilha interna (memorando, situação, telefone e e-mail do fornecedor) e só aparecem com a senha dos servidores.</p>
+      <form id="req-trava" class="req-trava" autocomplete="on">
+        <label for="req-senha">Senha dos servidores</label>
+        <input id="req-senha" name="senha" type="password" autocomplete="current-password" placeholder="Digite a senha">
+        <button type="submit" class="btn2" id="req-abrir">🔒 Ver dados</button>
+        <p class="note" id="req-msg">A senha fica guardada só nesta aba do navegador, até você fechá-la.</p>
+      </form>
+      <div id="req-aberto" hidden>
+        <div class="req-resumo" id="req-resumo"></div>
+        <div class="tools">
+          <input id="req-busca" type="search" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor">
+          <select id="req-parada"><option value="">Todas as etapas</option></select>
+          <select id="req-sec"><option value="">Todas as secretarias</option></select>
+          <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="ate30">Enviadas há até 30 dias</option><option value="31a90">Enviadas há 31 a 90 dias</option><option value="mais90">Enviadas há mais de 90 dias</option></select>
+          <select id="req-ordem"><option value="rec">Mais recentes primeiro</option><option value="atraso">Maior atraso primeiro</option></select>
+          <button type="button" class="btn2" id="req-fechar">Fechar dados</button>
+        </div>
+        <p class="note" id="req-total"></p>
+        <div class="tblwrap"><table id="t-req"><thead><tr>
+          <th>Requisição</th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r">Atraso</th>
+        </tr></thead><tbody></tbody></table></div>
+        <p class="note">Busca: digite o número da requisição de compra ou do empenho; para memorando, escreva "memorando 34" e escolha a secretaria ao lado. Toque numa linha para ver telefone, e-mail, situação na planilha e observações. "Atraso": dias desde o ENVIADO na planilha (0 no dia do envio). A requisição de empenho vem do campo "Requisição Nº" do empenho no portal. Se a planilha ganhar a coluna "REQUISIÇÃO DE EMPENHO", a requisição de compra se liga ao empenho mesmo sem o número do empenho na planilha. Planilha lida em <span id="req-atual">—</span>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RECEITAS ============ -->
+  <section class="tab" data-tab="receitas" hidden>
+    <section class="tiles" id="rec-tiles"></section>
+    <div class="card">
+      <div class="linha-total"><h2>Arrecadação por mês</h2><div class="rec-leg"><span class="k26"></span>2026 <span class="k25"></span>2025</div></div>
+      <p class="note" id="rec-mes-nota"></p>
+      <div class="rec-meses" id="rec-meses" role="img" aria-label="Arrecadação por mês, 2026 comparado com 2025"></div>
+    </div>
+    <section class="rec-col">
+      <div class="card">
+        <h2>Receitas próprias do município</h2>
+        <p class="note">Impostos, taxas e contribuições que a prefeitura arrecada. Previsto para 2026 (previsão atualizada) e arrecadado até agora.</p>
+        <div class="tblwrap"><table class="rec-tab" id="rec-proprias"><thead><tr><th>Receita</th><th class="r">Previsto</th><th class="r">Arrecadado</th><th>% do previsto</th><th class="r hide-sm">x 2025</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div class="card">
+        <h2>Transferências e receitas de capital</h2>
+        <p class="note">Dinheiro que vem da União e do Estado. O FUNDEB aparece pelo valor recebido; a parte do município que vai para o fundo é descontada no total.</p>
+        <div class="tblwrap"><table class="rec-tab" id="rec-transf"><thead><tr><th>Receita</th><th class="r">Previsto</th><th class="r">Arrecadado</th><th>% do previsto</th><th class="r hide-sm">x 2025</th></tr></thead><tbody></tbody></table></div>
+      </div>
+    </section>
+    <div class="card">
+      <div class="linha-total"><h2>Dívida ativa</h2></div>
+      <p class="note">Tributos e taxas que contribuintes deixaram de pagar e a prefeitura inscreveu para cobrar. Os nomes não aparecem aqui, só os totais.</p>
+      <div class="da-num" id="da-num"></div>
+      <section class="grid">
+        <div>
+          <h3 class="da-h3">Recebido de dívida ativa, por tributo</h3>
+          <div class="tblwrap"><table class="rec-tab" id="da-rec"><thead><tr><th>Tributo</th><th class="r" id="da-h1">Ano atual</th><th class="r" id="da-h2">Ano anterior</th><th class="r">Variação</th></tr></thead><tbody></tbody></table></div>
+        </div>
+        <div>
+          <h3 class="da-h3">Quanto falta receber, pelo ano em que foi inscrita</h3>
+          <div class="cid-barras" id="da-idade"></div>
+          <h3 class="da-h3">Pelo tamanho da dívida</h3>
+          <div class="tblwrap"><table class="rec-tab" id="da-faixas"><thead><tr><th>Valor devido</th><th class="r">Contribuintes</th><th class="r">Total</th></tr></thead><tbody></tbody></table></div>
+        </div>
+      </section>
+    </div>
+    <div class="card">
+      <p class="note" id="rec-fonte"></p>
+    </div>
+  </section>
+
+  <!-- ============ INDICADORES LRF ============ -->
+  <section class="tab" data-tab="indicadores" hidden>
+    <section class="tiles" id="ind-tiles"></section>
+    <div class="card">
+      <h2>Limites da Constituição e da LRF</h2>
+      <p class="note">A barra mostra onde o município está. Nos mínimos (saúde e educação) precisa passar da marca; nos máximos (pessoal e dívida) precisa ficar abaixo.</p>
+      <div class="ind-lista" id="ind-medidores"></div>
+    </div>
+    <section class="grid">
+      <div class="card">
+        <h2>Gasto com pessoal da Prefeitura</h2>
+        <p class="note" id="ind-pes-nota"></p>
+        <div class="ind-hist" id="ind-pes-hist" role="img" aria-label="Gasto com pessoal sobre a receita corrente líquida ao longo do ano"></div>
+      </div>
+      <div class="card">
+        <h2>Dívida da prefeitura</h2>
+        <p class="note" id="ind-div-nota"></p>
+        <div class="tblwrap"><table class="rec-tab" id="ind-div"><tbody></tbody></table></div>
+      </div>
+    </section>
+    <div class="card"><p class="note" id="ind-fonte"></p></div>
+  </section>
+
+  <!-- ============ CIDADÃO ============ -->
+  <section class="tab" data-tab="cidadao" hidden>
+    <div class="card cid-topo">
+      <h2>As contas de Leópolis em 2026, em poucas palavras</h2>
+      <p id="cid-resumo"></p>
+    </div>
+    <section class="grid">
+      <div class="card">
+        <h2>De onde vem o dinheiro</h2>
+        <p class="note" id="cid-vem-nota"></p>
+        <div class="cid-barras" id="cid-vem"></div>
+      </div>
+      <div class="card">
+        <h2>Para onde vai</h2>
+        <p class="note" id="cid-vai-nota"></p>
+        <div class="cid-barras" id="cid-vai"></div>
+      </div>
+    </section>
+    <div class="card">
+      <h2>As regras estão sendo cumpridas?</h2>
+      <div class="cid-regras" id="cid-regras"></div>
+    </div>
+    <div class="card"><p class="note" id="cid-fonte"></p></div>
+  </section>
+
   <!-- ============ PRODUTOS ============ -->
   <section class="tab" data-tab="produtos" hidden>
     <div class="card" id="produtos">
@@ -535,7 +775,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 
 
 
-  <!-- ============ DIA E SEMANA ============ -->
+  <!-- ============ DIA E SEMANA (fora do menu) ============ -->
   <section class="tab" data-tab="semana" hidden>
     <section class="tiles">
       <div class="card tile"><div class="lbl">Último dia com empenho · <span data-source="semana" data-field="dia" data-row="0">—</span></div><div class="num" data-source="semana" data-field="emp_dia" data-row="0">—</div><div class="sub"><span data-source="semana" data-field="emp_dia_qtd" data-row="0">—</span> empenhos</div></div>
@@ -567,11 +807,13 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
         <div id="semlic-chart" data-source="sem_licitacao" style="min-height:200px"></div>
       </div>
     </section>
-    <div class="card" id="limite">
-      <h2>Limite de dispensa por objeto</h2>
-      <p class="note">Soma no ano dos empenhos sem licitação ou por dispensa, por tipo de objeto (subelemento), comparada com os limites do art. 75 da Lei 14.133 atualizados pelo Decreto 12.807/2025: <b>R$ 130.984,20</b> para obras, serviços de engenharia e manutenção de veículos (inciso I) e <b>R$ 65.492,11</b> para outras compras e serviços (inciso II). Ficam de fora energia, água, tarifas bancárias, custas judiciais, correios, anuidades, pagamentos a consórcios e outros órgãos públicos, e processos de dispensa acima do limite (emergência e outros incisos do art. 75). É um sinal de atenção, não um parecer: adesões a ata, convênios e contratações emergenciais também aparecem como "sem licitação" ou "dispensa" no portal.</p>
-      <div class="tools"><input id="lim-busca" type="search" placeholder="Buscar objeto, secretaria, fornecedor…"><label><input id="lim-80" type="checkbox" checked> só 80% do limite ou mais</label></div>
-      <div class="tblwrap"><table id="t-lim"><thead><tr><th>Objeto</th><th class="r">Limite</th><th class="r">Empenhado no ano</th><th style="min-width:9rem">% do limite</th><th class="r hide-sm">Empenhos</th><th class="hide-sm">Principais fornecedores</th></tr></thead><tbody></tbody></table></div>
+    <div class="card" id="precos-alto">
+      <h2>Preços acima do padrão</h2>
+      <p class="note">Itens empenhados com preço unitário acima da mediana do que a Prefeitura pagou pelo mesmo produto em 2026 (só produtos comprados pelo menos 3 vezes). Só compara o mesmo produto: mesmo código do catálogo federal (CATMAT) ou mesmo nome, com a mesma unidade e a mesma embalagem, para não comparar galão de 5 L com refil de 800 ml. Os itens mais antigos estão sendo relidos no portal e entram aos poucos. Pode ser erro de digitação, unidade diferente (caixa x unidade) ou preço desalinhado com a licitação.</p>
+      <div class="tools"><select id="pa-lim"><option value="20">20% ou mais acima</option><option value="50">50% ou mais acima</option><option value="100">o dobro ou mais</option></select>
+        <select id="pa-per"><option value="">Todos os períodos</option><option value="ate30">Até 30 dias</option><option value="31a90">31 a 90 dias</option><option value="mais90">Acima de 90 dias</option></select><input id="pa-busca" type="search" placeholder="Buscar produto, fornecedor…"></div>
+      <p class="note" id="pa-total"></p>
+      <div class="tblwrap"><table id="t-pa"><thead><tr><th>Produto</th><th>Data</th><th>Empenho</th><th class="hide-sm">Fornecedor</th><th class="r">Preço pago</th><th class="r">Mediana do ano</th><th class="r">Acima</th></tr></thead><tbody></tbody></table></div>
     </div>
     <div class="card" id="consumo-lic">
       <h2>Consumo por licitação</h2>
@@ -826,7 +1068,7 @@ function drawTable() {
   const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 500; }
   const lim = window.__empLim || 500;
   rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
-    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
+    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); reqBadge(c0, r.empenho); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); { const pc = pillCell(tr, r.situacao, sitCls(r.situacao)); if (r.estornos) { const x = document.createElement('div'); x.className = 'sub2 est'; x.textContent = r.estornos; pc.appendChild(x); } }
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
@@ -982,7 +1224,7 @@ const notasPorEmp = () => { const d = dash.data('notas'); if (d.status !== 'ok')
 const notasPorLiq = () => { const d = dash.data('notas'); if (d.status !== 'ok') return {}; if (window.__npl && window.__npl.src === d.data) return window.__npl.m;
   const m = {}; d.data.forEach(r => { (m[r.liquidacao] = m[r.liquidacao] || []).push(r); }); window.__npl = { src: d.data, m }; return m; };
 const docTxt = (r) => `${r.tipo}${r.numero ? ' nº ' + r.numero : ''}${r.serie && !/outras/i.test(r.serie) ? ' série ' + r.serie : ''}`;
-function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lista'); box.replaceChildren(); document.getElementById('nf-tit').textContent = titulo;
+function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lista'); box.replaceChildren(); { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = false; } document.getElementById('nf-tit').textContent = titulo;
   lista.forEach(r => { const it = document.createElement('div'); it.className = 'nf-item';
     const h = document.createElement('div'); h.className = 'nf-cab'; h.textContent = `${docTxt(r)} · ${brl2.format(N(r.valor))}`;
     const sub = document.createElement('div'); sub.className = 'sub2'; sub.textContent = `${r.fornecedor} · emitida em ${br(r.data_documento)} · liquidação ${r.liquidacao} de ${br(r.data_liquidacao)}${r.empenho ? ' · empenho ' + r.empenho : ''}`;
@@ -1064,6 +1306,345 @@ dash.onData(() => {
   drawTable(); drawAlertas(); drawTempo(); drawDot(); drawProd(); drawLiq(); drawLimite(); drawConsumo(); drawPrecos();
 });
 
+
+// ---------- Requisições (planilha interna, criptografada com a senha dos servidores) ----------
+const REQ_ARQ = '../data/planilha.enc.json';
+var REQ = { linhas: null, porEmp: {}, atualizado: '', filtro: '' };
+const b64u8 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+async function abrirPlanilha(senha) {
+  const r = await fetch(REQ_ARQ + '?v=' + Date.now()); if (!r.ok) throw new Error('arquivo');
+  const p = await r.json();
+  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
+  const chave = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64u8(p.sal), iterations: p.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
+  try { return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64u8(p.iv) }, chave, b64u8(p.dados)))); }
+  catch (e) { throw new Error('senha'); }
+}
+const dmy = (s) => { const m = String(s || '').match(/^(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
+const fone = (t) => { const d = String(t || '').replace(/\D/g, ''); if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`; if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`; return t || ''; };
+const ETAPAS = ['Aguardando requisição de empenho', 'Aguardando empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada', 'Empenho anulado', 'Empenho não achado no portal'];
+const etapaCor = { 'Concluída': 'ok', 'Cancelada': 'neu', 'Empenho anulado': 'neu', 'Liquidação parcial': 'mid', 'Pagamento parcial': 'mid', 'Aguardando pagamento': 'mid' };
+function trilha(l, empMap, temRE, reMap) {
+  if (!l.e && l.re && reMap[semZeros(l.re)] && reMap[semZeros(l.re)].length === 1) l = { ...l, e: semZeros(reMap[semZeros(l.re)][0].empenho), _peloRE: true };
+  const e = l.e ? empMap[l.e] : null, P = [];
+  const reNum = l.re || (e && e.requisicao_empenho) || '';
+  const cancel = /CANCELAD/i.test(`${l.et || ''} ${l.st || ''}`) && !(e && N(e.liquidado) > 0);
+  P.push({ n: 'Req. compra', v: l.r, s: 'ok', d: dmy(l.d) });
+  P.push({ n: 'Req. empenho', v: reNum || (temRE && !l.e ? 'aguardando' : l.e ? 'sem número' : '—'), s: reNum ? 'ok' : (temRE && !l.e ? 'aqui' : l.e ? 'pula' : 'esp') });
+  let parada = '', desde = dmy(l.d);
+  if (cancel) { P.push({ n: 'Empenho', v: l.e || '—', s: 'canc' }, { n: 'Liquidação', v: '—', s: 'canc' }, { n: 'Pagamento', v: '—', s: 'canc' }); return { P, parada: 'Cancelada', desde, emp: e }; }
+  if (P[1].s === 'aqui') parada = 'Aguardando requisição de empenho';
+  if (!l.e) { P.push({ n: 'Empenho', v: 'aguardando', s: parada ? 'esp' : 'aqui' }, { n: 'Liquidação', v: '—', s: 'esp' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: parada || 'Aguardando empenho', desde, emp: e }; }
+  if (!e) { P.push({ n: 'Empenho', v: `${l.e} (não achado)`, s: 'aqui' }, { n: 'Liquidação', v: '—', s: 'esp' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Empenho não achado no portal', desde, emp: e }; }
+  if (e.situacao === 'Anulado') { P.push({ n: 'Empenho', v: `${e.empenho} anulado`, s: 'canc' }, { n: 'Liquidação', v: '—', s: 'canc' }, { n: 'Pagamento', v: '—', s: 'canc' }); return { P, parada: 'Empenho anulado', desde: e.data, emp: e }; }
+  P.push({ n: 'Empenho', v: `${e.empenho} · ${br(e.data)}`, s: 'ok' }); desde = e.data;
+  const val = N(e.valor), liq = N(e.liquidado), pag = N(e.pago), falta = N(e.falta_liquidar);
+  if (liq <= 0.004) { P.push({ n: 'Liquidação', v: `falta ${brl.format(val)}`, s: 'aqui' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Aguardando liquidação', desde, emp: e }; }
+  const liqParc = falta > 0.004;
+  P.push({ n: 'Liquidação', v: liqParc ? `${brl.format(liq)} de ${brl.format(val)}` : `${brl.format(liq)}${e.primeira_liquidacao ? ' · ' + br(e.primeira_liquidacao) : ''}`, s: liqParc ? 'parc' : 'ok' });
+  if (e.primeira_liquidacao) desde = e.primeira_liquidacao;
+  const pagTudo = pag >= liq - 0.004;
+  P.push({ n: 'Pagamento', v: pag > 0.004 ? `${brl.format(pag)}${e.ultimo_pagamento ? ' · ' + br(e.ultimo_pagamento) : ''}` : 'a pagar', s: pag <= 0.004 ? 'esp' : (pagTudo && !liqParc ? 'ok' : 'parc') });
+  if (liqParc) { P[3].s += ' aqui'; parada = 'Liquidação parcial'; }
+  else if (pag <= 0.004) { P[4].s = 'aqui'; parada = 'Aguardando pagamento'; }
+  else if (!pagTudo) { P[4].s = 'parc aqui'; parada = 'Pagamento parcial'; }
+  else parada = 'Concluída';
+  if (pag > 0.004 && e.ultimo_pagamento) desde = e.ultimo_pagamento;
+  return { P, parada, desde, emp: e };
+}
+// atraso da requisição de compra: dias desde a data dela até hoje (em aberto) ou até o último pagamento (concluída)
+function atrasoReq(l, t) {
+  if (t.parada === 'Cancelada' || t.parada === 'Empenho anulado') return { aberta: false, atraso: null, desdeTxt: '' };
+  const envReal = /^\d{4}-\d\d-\d\d$/.test(l.env || '') ? l.env : '', ini = envReal || dmy(l.d);
+  if (!ini) return { aberta: false, atraso: null, desdeTxt: '' };
+  const fim = t.parada === 'Concluída' ? (t.emp && t.emp.ultimo_pagamento) : '';
+  if (t.parada === 'Concluída') return { aberta: false, atraso: fim ? Math.max(0, Math.round((new Date(fim + 'T12:00:00') - new Date(ini + 'T12:00:00')) / 864e5)) : null, desdeTxt: 'levou até o pagamento' };
+  if (!l.env) return { aberta: false, atraso: null, naoEnviada: true, desdeTxt: dmy(l.d) ? (dias(dmy(l.d)) === 1 ? 'requisição há 1 dia' : `requisição há ${dias(dmy(l.d))} dias`) : '' };
+  return { aberta: true, atraso: dias(ini), desdeTxt: envReal ? `desde o envio em ${br(envReal).slice(0, 5)}` : 'desde a requisição (enviada antes do controle)' };
+}
+function prepararReq() {
+  const d = dash.data('emp'); if (!REQ.linhas || d.status !== 'ok') return null;
+  const empMap = {}, reMap = {}; d.data.forEach(r => { empMap[semZeros(r.empenho)] = r; if (r.requisicao_empenho) (reMap[semZeros(r.requisicao_empenho)] = reMap[semZeros(r.requisicao_empenho)] || []).push(r); });
+  const temRE = REQ.linhas.some(l => l.re);
+  return REQ.linhas.map(l => { const t = trilha({ ...l, e: l.e ? semZeros(l.e) : '' }, empMap, temRE, reMap); return { ...l, ...t, eLig: t.emp ? semZeros(t.emp.empenho) : (l.e ? semZeros(l.e) : ''), reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null, ...atrasoReq(l, t) }; });
+}
+function drawReq() {
+  const lista = prepararReq(); const tb = document.querySelector('#t-req tbody'); if (!lista) return; tb.replaceChildren();
+  const sec = document.getElementById('req-sec'), par = document.getElementById('req-parada');
+  const secs = [...new Set(lista.map(l => secGrupo(l.s)).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  fillSelect(sec, secs); fillSelect(par, ETAPAS.filter(x => lista.some(l => l.parada === x)));
+  // resumo por etapa (clicar filtra)
+  const box = document.getElementById('req-resumo'); box.replaceChildren();
+  const ordem = ['Aguardando requisição de empenho', 'Aguardando empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada'];
+  const corP = { ok: 'var(--color-ok)', mid: 'var(--color-warn)', neu: 'var(--color-fg-muted)' };
+  { const fxSel = document.getElementById('req-atraso'), n = lista.filter(l => l.naoEnviada).length;
+    if (n) { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(fxSel.value === 'naoenv')); b.style.setProperty('--p', 'var(--color-fg-muted)');
+      const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = 'Aguardando envio'; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(n);
+      b.append(lb, nm); b.addEventListener('click', () => { fxSel.value = fxSel.value === 'naoenv' ? '' : 'naoenv'; drawReq(); }); box.appendChild(b); } }
+  ordem.filter(x => lista.some(l => l.parada === x)).forEach(x => { const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(par.value === x));
+    b.style.setProperty('--p', corP[etapaCor[x]] || 'var(--color-bad)');
+    const lb = document.createElement('span'); lb.className = 'lbl'; lb.textContent = x; const nm = document.createElement('span'); nm.className = 'num'; nm.textContent = intF.format(lista.filter(l => l.parada === x).length);
+    b.append(lb, nm); b.addEventListener('click', () => { par.value = par.value === x ? '' : x; drawReq(); }); box.appendChild(b); });
+  // busca: número → requisição de compra, de empenho ou empenho; "memorando 34" (ou "memo 34") → só o memorando; texto → fornecedor
+  const q = nz(document.getElementById('req-busca').value.trim()), mm = q.match(/^mem\w*\.?\s*n?[ºo°.]*\s*(\d+)(\/\d{2,4})?$/), memo = mm ? semZeros(mm[1]) : '';
+  const num = !mm && /^\d+(\/\d{2,4})?$/.test(q) ? semZeros(q.split('/')[0]) : '';
+  const motivo = (l) => { if (!num) return ''; if (semZeros(l.r) === num) return ''; if (l.eLig && l.eLig === num) return 'achada pelo empenho ' + l.eLig; if (l.reNum && semZeros(l.reNum) === num) return 'achada pela requisição de empenho ' + l.reNum; return null; };
+  const fx = document.getElementById('req-atraso').value, ordemReq = document.getElementById('req-ordem').value;
+  const rows = lista.filter(l => (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : l.aberta && naFaixa(fx, l.atraso)))
+    && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : nz(l.f).includes(q))))
+    .sort((a, b) => ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0));
+  document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
+  rows.slice(0, 600).forEach(l => {
+    const tr = document.createElement('tr'); tr.className = 'lin'; tr.tabIndex = 0; tr.setAttribute('aria-expanded', 'false');
+    { const c = td(tr, l.r); c.style.fontWeight = '600'; const s = document.createElement('div'); s.className = 'sub2'; s.textContent = [l.d, l.m ? 'memo ' + l.m : ''].filter(Boolean).join(' · '); c.appendChild(s);
+      if (num && l._mot) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = l._mot; c.appendChild(m); } }
+    fornCell(tr, l.f || '—', l.s || '');
+    { const c = document.createElement('td'); const ol = document.createElement('ol'); ol.className = 'trilha';
+      l.P.forEach(p => { const li = document.createElement('li'); li.className = p.s; const b = document.createElement('b'); b.textContent = p.n; const sp = document.createElement('span'); sp.textContent = p.v; li.append(b, sp);
+        if (p.n === 'Liquidação' && l.eLig) { const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const w = document.createElement('div'); w.className = 'req-nf'; const sp = document.createElement('span'); sp.className = 'nf-bt nf-info'; sp.textContent = nfs.length > 1 ? `Nota (${nfs.length})` : 'Nota'; sp.title = 'Tem nota fiscal nesta liquidação'; w.appendChild(sp); li.appendChild(w); } }
+        ol.appendChild(li); });
+      c.appendChild(ol); tr.appendChild(c); }
+    { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et && l.parada !== 'Concluída') { const x = document.createElement('div'); x.className = 'sub2 req-et'; x.textContent = l.et; pc.appendChild(x); } }
+    if (l.naoEnviada) { const c = pillCell(tr, 'a enviar', 'neu'); c.className = 'r'; }
+    else td(tr, l.aberta ? (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`) : '—', 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
+    const abrir = () => { const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
+      tr.setAttribute('aria-expanded', 'true'); const dt = document.createElement('tr'); dt.className = 'det'; const c = document.createElement('td'); c.colSpan = 5; dt.appendChild(c);
+      const dl = document.createElement('dl'); dl.className = 'req-det';
+      const item = (rot, val, copiar) => { if (!val) return; const w = document.createElement('div'); const a = document.createElement('dt'); a.textContent = rot; const b = document.createElement('dd'); b.textContent = val;
+        if (copiar) { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'copiar'; bt.textContent = 'Copiar';
+          bt.addEventListener('click', (ev) => { ev.stopPropagation(); const ok = () => { bt.textContent = 'Copiado'; setTimeout(() => { bt.textContent = 'Copiar'; }, 1500); };
+            try { navigator.clipboard.writeText(val).then(ok, () => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(b); s.removeAllRanges(); s.addRange(rg); }); } catch (e) {} }); b.appendChild(bt); }
+        w.append(a, b); dl.appendChild(w); };
+      item('Fornecedor', [l.c ? 'cód. ' + l.c : '', l.f].filter(Boolean).join(' · '));
+      item('Telefone', fone(l.t), true); item('E-mail', l.em, true);
+      item('Secretaria', l.s); item('Memorando', l.m);
+      // situação de hoje no portal, numa frase (a observação da planilha pode estar desatualizada)
+      const hoje = situacaoPortal(l);
+      if (hoje) item('No portal hoje', hoje.txt);
+      const ac = document.createElement('div'); ac.className = 'req-acoes';
+      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
+        const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); } }
+      dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
+    tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });
+    tb.appendChild(tr); });
+  if (rows.length > 600) emptyRow(tb, 5, `Mostrando 600 de ${intF.format(rows.length)}. Use a busca ou os filtros para achar as demais.`);
+  if (!rows.length) emptyRow(tb, 5, 'Nenhuma requisição com esse filtro.');
+}
+// secretarias da planilha vêm escritas de vários jeitos ("SECRETARIA DE SAUDE", "28 SECRETARIA DE SAUDE - FUNDO MUNICIPAL..."): agrupa pelo nome
+const SEC_GRUPOS = [[/SAUDE/, 'Saúde'], [/EDUCA/, 'Educação'], [/ASSIST|BEM ESTAR/, 'Assistência e Bem-Estar Social'], [/AGRICULT|MEIO AMBIENTE/, 'Agricultura e Meio Ambiente'],
+  [/ESPORTE|LAZER/, 'Esporte e Lazer'], [/PLANEJAMENTO|INFRA/, 'Planejamento e Infraestrutura'], [/DESENVOLVIMENTO/, 'Desenvolvimento'], [/ADMINISTRA/, 'Administração'], [/GABINETE/, 'Gabinete'], [/CULTURA/, 'Cultura']];
+function secGrupo(s) { const t = String(s || '').toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); if (!t) return ''; const g = SEC_GRUPOS.find(([re]) => re.test(t)); return g ? g[1] : String(s).trim(); }
+const memosDe = (m) => String(m || '').replace(/\/\s*\d{2,4}/g, ' ').match(/\d+/g)?.map(semZeros) || [];
+function situacaoPortal(l) { const e = l.emp; if (!e) return null;
+  if (e.situacao === 'Anulado') return { txt: 'Empenho anulado' };
+  const anul = N(e.anulado), falta = N(e.falta_liquidar), lnp = N(e.liquidado_nao_pago), p = [`Empenhado ${brl.format(N(e.valor) + anul)}`];
+  if (anul > 0.004) p.push(`Estorno de empenho ${brl.format(anul)}`);
+  p.push(`Liquidado ${brl.format(N(e.liquidado))}`, `Pago ${brl.format(N(e.pago))}`);
+  if (falta > 0.004) p.push(`Falta liquidar ${brl.format(falta)}`);
+  if (lnp > 0.004) p.push(`Liquidado a pagar ${brl.format(lnp)}`);
+  p.push(`Saldo do empenho ${brl.format(N(e.saldo_a_pagar))}`);
+  return { txt: p.join(' · ') };
+}
+function abrirItens(emp, e) {
+  const d = dash.data('itens'), its = d.status === 'ok' ? d.data.filter(r => semZeros(r.empenho) === emp) : [];
+  const box = document.getElementById('nf-lista'); box.replaceChildren();
+  document.getElementById('nf-tit').textContent = `Itens do empenho ${emp}`;
+  { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = true; }
+  if (e) { const p = document.createElement('p'); p.className = 'note'; p.textContent = [e.fornecedor, br(e.data), e.licitacao].filter(Boolean).join(' · '); box.appendChild(p); }
+  if (!its.length) { const p = document.createElement('p'); p.textContent = 'O portal não traz itens para este empenho.'; box.appendChild(p); }
+  else { const w = document.createElement('div'); w.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'req-itens';
+    t.innerHTML = '<thead><tr><th>Produto</th><th class="r">Qtd.</th><th class="r">Valor unit.</th><th class="r">Total</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="3">Total dos itens</td><td class="r"></td></tr></tfoot>';
+    const tb = t.querySelector('tbody'); let soma = 0;
+    its.forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, [r.marca && r.marca !== '-' ? 'Marca: ' + r.marca : '', r.embalagem, r.unidade ? 'Unidade: ' + r.unidade : '', r.codigo ? 'CATMAT ' + r.codigo : ''].filter(Boolean).join(' · '));
+      td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl.format(N(r.valor_unitario)), 'r'); td(tr, brl.format(N(r.valor_total)), 'r'); soma += N(r.valor_total); tb.appendChild(tr); });
+    t.querySelector('tfoot td.r').textContent = brl.format(soma); w.appendChild(t); box.appendChild(w); }
+  document.getElementById('nf-modal').hidden = false;
+}
+function reqBadge(cell, emp) { if (!REQ || !REQ.porEmp) return; const l = REQ.ligadas ? REQ.ligadas[semZeros(emp)] : REQ.porEmp[semZeros(emp)]; if (!l) return; const s = document.createElement('div'); s.className = 'req-badge'; s.textContent = 'Req. ' + l.map(x => x.r).join(', '); s.title = 'Requisição de compra ligada pela planilha'; cell.appendChild(s); }
+function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; lig.forEach(x => { if (x.eLig && x.emp) (REQ.ligadas[x.eLig] = REQ.ligadas[x.eLig] || []).push(x); }); }
+function mostrarReq(dados) {
+  REQ.linhas = dados.linhas || []; REQ.atualizado = dados.atualizado || ''; REQ.porEmp = {};
+  REQ.linhas.forEach(l => { if (l.e) { const k = semZeros(l.e); (REQ.porEmp[k] = REQ.porEmp[k] || []).push(l); } });
+  document.getElementById('req-trava').hidden = true; document.getElementById('req-aberto').hidden = false; document.getElementById('req-atual').textContent = REQ.atualizado || '—';
+  ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable();
+}
+async function tentarSenha(senha, silencioso) {
+  const msg = document.getElementById('req-msg'), bt = document.getElementById('req-abrir');
+  if (!senha) { msg.textContent = 'Digite a senha dos servidores.'; msg.className = 'note erro'; return; }
+  bt.disabled = true; if (!silencioso) { msg.textContent = 'Abrindo…'; msg.className = 'note'; }
+  try { const dados = await abrirPlanilha(senha); try { sessionStorage.setItem('req-senha', senha); } catch (e) {} mostrarReq(dados); }
+  catch (e) { try { sessionStorage.removeItem('req-senha'); } catch (x) {}
+    if (!silencioso) { msg.className = 'note erro'; msg.textContent = e.message === 'senha' ? 'Senha incorreta. Confira e tente de novo.' : e.message === 'arquivo' ? 'Os dados da planilha ainda não foram publicados.' : 'Este navegador não conseguiu abrir os dados. Tente atualizar a página.'; } }
+  finally { bt.disabled = false; }
+}
+document.getElementById('req-trava').addEventListener('submit', (ev) => { ev.preventDefault(); tentarSenha(document.getElementById('req-senha').value); });
+document.getElementById('req-fechar').addEventListener('click', () => { REQ.linhas = null; REQ.porEmp = {}; try { sessionStorage.removeItem('req-senha'); } catch (e) {}
+  document.getElementById('req-senha').value = ''; document.getElementById('req-trava').hidden = false; document.getElementById('req-aberto').hidden = true;
+  document.getElementById('req-msg').className = 'note'; document.getElementById('req-msg').textContent = 'Dados fechados.'; if (typeof drawTable === 'function') drawTable(); });
+document.getElementById('req-busca').addEventListener('input', drawReq);
+['req-parada', 'req-sec', 'req-atraso', 'req-ordem'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
+dash.onData(() => { if (REQ.linhas) { ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
+{ let s = ''; try { s = sessionStorage.getItem('req-senha') || ''; } catch (e) {} if (s) tentarSenha(s, true); }
+const REC_ARQ = '../data/receitas.json';
+// ---------- Receitas: Anexo 10 e arrecadação por mês, do portal ----------
+(function () {
+  const pct = (a, b) => b ? a / b * 100 : 0, pctF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  function tile(box, lbl, num, sub) { const c = document.createElement('div'); c.className = 'card tile';
+    c.innerHTML = '<div class="lbl"></div><div class="num"></div><div class="sub"></div>'; c.children[0].textContent = lbl; c.children[1].textContent = num; c.children[2].textContent = sub || ''; box.appendChild(c); }
+  function tabela(id, lista, ref25) {
+    const tb = document.querySelector(`#${id} tbody`); tb.replaceChildren(); let sp = 0, sa = 0, s25 = 0;
+    lista.sort((a, b) => b.arr - a.arr).forEach(x => { const tr = document.createElement('tr'); sp += x.prev; sa += x.arr;
+      td(tr, x.nome); td(tr, brl.format(x.prev), 'r'); td(tr, brl.format(x.arr), 'r');
+      const c = document.createElement('td'); const p = pct(x.arr, x.prev); c.innerHTML = '<div class="rec-pct"><i><b></b></i><span></span></div>';
+      const bar = c.querySelector('b'); bar.style.width = Math.min(100, p) + '%'; if (p > 100) bar.className = 'acima'; c.querySelector('span').textContent = x.prev ? pctF.format(p) + '%' : '—'; tr.appendChild(c);
+      const a25 = (ref25.find(y => y.nome === x.nome) || {}).arr || 0; s25 += a25;
+      const v = a25 ? pct(x.arr - a25, a25) : null; td(tr, v == null ? '—' : (v >= 0 ? '+' : '') + pctF.format(v) + '%', 'r hide-sm rec-var ' + (v == null ? '' : v >= 0 ? 'up' : 'down'));
+      tb.appendChild(tr); });
+    const tf = document.createElement('tfoot'); const tr = document.createElement('tr'); td(tr, 'Total'); td(tr, brl.format(sp), 'r'); td(tr, brl.format(sa), 'r');
+    td(tr, pctF.format(pct(sa, sp)) + '% do previsto'); const v = pct(sa - s25, s25); td(tr, (v >= 0 ? '+' : '') + pctF.format(v) + '%', 'r hide-sm rec-var ' + (v >= 0 ? 'up' : 'down'));
+    tf.appendChild(tr); document.querySelector(`#${id} tfoot`)?.remove(); document.getElementById(id).appendChild(tf);
+  }
+  fetch(REC_ARQ + '?v=' + Date.now()).then(r => r.json()).then(d => {
+    const prev = d.grupos26.reduce((s, x) => s + x[2], 0), arr = d.grupos26.reduce((s, x) => s + x[3], 0);
+    const n = d.meses26.length, ate9_26 = d.meses26.slice(0, 9).reduce((s, x) => s + x[1], 0), ate9_25 = d.meses25.slice(0, 9).reduce((s, x) => s + x[1], 0);
+    const prop = d.cat26.filter(x => x.tipo === 'proprio').reduce((s, x) => s + x.arr, 0);
+    const box = document.getElementById('rec-tiles'); box.replaceChildren();
+    tile(box, 'Receita prevista para 2026', brlC.format(prev), brl.format(prev) + ' · previsão atualizada, já sem a parte do FUNDEB');
+    tile(box, `Arrecadado até ${d.gerado}`, brlC.format(arr), `${brl.format(arr)} · ${pctF.format(pct(arr, prev))}% do previsto para o ano`);
+    tile(box, 'Janeiro a setembro, comparado com 2025', (ate9_26 >= ate9_25 ? '+' : '') + pctF.format(pct(ate9_26 - ate9_25, ate9_25)) + '%', `${brl.format(ate9_26)} em 2026 x ${brl.format(ate9_25)} em 2025`);
+    tile(box, 'Receitas próprias', brlC.format(prop), `${pctF.format(pct(prop, arr))}% do que entrou; o restante vem de transferências`);
+    // barras por mês
+    const el = document.getElementById('rec-meses'); el.replaceChildren(); const max = Math.max(...d.meses26.map(x => x[1]), ...d.meses25.map(x => x[1]));
+    MES.forEach((m, i) => { const a = (d.meses26[i] || [])[1], b = (d.meses25[i] || [])[1]; const col = document.createElement('div'); col.className = 'rec-mes';
+      const bs = document.createElement('div'); bs.className = 'rec-barras';
+      [[a, 'b26', '2026'], [b, 'b25', '2025']].forEach(([v, cl, ano]) => { const x = document.createElement('div'); x.className = cl; x.style.height = v ? (v / max * 100) + '%' : '0'; if (v) x.title = `${m}/${ano}: ${brl.format(v)}`; bs.appendChild(x); });
+      const s = document.createElement('small'); s.textContent = m; col.append(bs, s);
+      hoverable(col, ev => showTip(ev, MES[i], [a ? `2026: ${brl.format(a)}` : '2026: —', b ? `2025: ${brl.format(b)}` : '2025: —'])); el.appendChild(col); });
+    document.getElementById('rec-mes-nota').textContent = `Outubro de 2026 vai só até ${d.gerado}. Maior mês de 2026: ${d.meses26.reduce((a, x) => x[1] > a[1] ? x : a)[0].toLowerCase()} (${brl.format(Math.max(...d.meses26.map(x => x[1])))}). Em 2025, dezembro concentrou ${brl.format(d.meses25[11][1])}.`;
+    tabela('rec-proprias', d.cat26.filter(x => x.tipo === 'proprio'), d.cat25);
+    tabela('rec-transf', d.cat26.filter(x => x.tipo !== 'proprio'), d.cat25);
+  }).catch(e => { console.error(e); });
+})();
+
+// ---------- Indicadores LRF, dívida ativa e painel cidadão ----------
+(function () {
+  const IND_ARQ = '../data/indicadores.json';
+  const pf = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
+  const p1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const nf = new Intl.NumberFormat('pt-BR');
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  function tile(box, lbl, num, sub, cor) { const c = el('div', 'card tile'); if (cor) c.style.setProperty('--k', cor);
+    c.append(el('div', 'lbl', lbl), el('div', 'num', num), el('div', 'sub', sub || '')); box.appendChild(c); }
+  // situação de um indicador: tipo 'min' (precisa passar) ou 'max' (precisa ficar abaixo)
+  function situacao(m) {
+    if (m.tipo === 'min') return m.v >= m.lim ? 'st-ok' : 'st-bad';
+    if (m.v >= m.lim) return 'st-bad';
+    if (m.alerta != null && m.v >= m.alerta) return 'st-warn';
+    return 'st-ok';
+  }
+  function medidor(box, m) {
+    const st = situacao(m); const row = el('div', 'ind-row');
+    const nome = el('div', 'nome', m.nome); nome.appendChild(el('small', null, m.sub));
+    const tr = el('div', 'ind-trilho ' + st); const b = el('b'); b.style.width = Math.min(100, m.v / m.escala * 100) + '%'; tr.appendChild(b);
+    (m.marcas || []).forEach(([v, t, baixo]) => { const i = el('i'); const pos = v / m.escala * 100; i.style.left = pos + '%'; if (pos > 85) i.className = 'fim'; if (pos < 8) i.className = 'ini'; if (baixo) { i.className = 'baixo'; row.classList.add('com-baixo'); } i.appendChild(el('span', null, t)); tr.appendChild(i); });
+    const val = el('div', 'val ' + st, pf.format(m.v) + '%'); val.appendChild(el('small', null, m.rodape || ''));
+    row.append(nome, tr, val);
+    hoverable(row, ev => showTip(ev, m.nome, m.tip)); box.appendChild(row); return st;
+  }
+  function barras(box, lista, total, cores) {
+    box.replaceChildren(); const max = Math.max(...lista.map(x => x[1]));
+    lista.forEach(([nome, v, extra], i) => { const r = el('div', 'cid-barra'); if (cores) r.style.setProperty('--k', cores[i % cores.length]);
+      const t = el('div', 't'); const b = el('b'); b.style.width = (v / max * 100) + '%'; t.appendChild(b);
+      const vv = el('div', 'v', brl.format(v)); if (total) vv.appendChild(el('small', null, p1.format(v / total * 100) + '%'));
+      r.append(el('div', null, nome), t, vv); if (extra) hoverable(r, ev => showTip(ev, nome, extra)); box.appendChild(r); });
+  }
+
+  Promise.all([fetch(IND_ARQ + '?v=' + Date.now()).then(r => r.json()), fetch(REC_ARQ + '?v=' + Date.now()).then(r => r.json())]).then(([d, rec]) => {
+    const S = d.saude, E = d.educacao, P = d.pessoal, D = d.divida, DA = d.divida_ativa;
+    // ---------- aba Indicadores ----------
+    const tb = $('ind-tiles'); tb.replaceChildren();
+    tile(tb, 'Saúde (mínimo 15%)', pf.format(S.pct) + '%', `${brl.format(S.aplicado)} aplicados com recursos próprios, jan–ago`, 'var(--color-ok)');
+    tile(tb, 'Educação (mínimo 25%)', pf.format(E.pct) + '%', `${brl.format(E.aplicado)} aplicados em ensino, jan–ago`, 'var(--color-ok)');
+    tile(tb, 'Pessoal da Prefeitura (máx. 54%)', pf.format(P.executivo.pct) + '%', `alerta em ${pf.format(P.executivo.alerta)}%; faltam ${pf.format(P.executivo.alerta - P.executivo.pct)} pontos`, P.executivo.pct >= P.executivo.max ? 'var(--color-bad)' : P.executivo.pct >= P.executivo.alerta ? 'var(--color-warn)' : 'var(--color-ok)');
+    tile(tb, 'Dívida consolidada (máx. 120%)', pf.format(D.pct_dc) + '%', `${brl.format(D.dc)}; o caixa cobre a dívida`, 'var(--color-ok)');
+    const md = $('ind-medidores'); md.replaceChildren();
+    const ms = [
+      { nome: 'Saúde', sub: 'recursos próprios aplicados em saúde · ' + S.periodo, tipo: 'min', v: S.pct, lim: 15, escala: 30, marcas: [[15, 'mínimo 15%']], rodape: 'mín. 15%',
+        tip: [`Aplicado (empenhado): ${brl.format(S.aplicado)}`, `Mínimo exigido: ${brl.format(S.minimo)}`, `Base (impostos e transferências): ${brl.format(S.base)}`, `Pelo liquidado: ${pf.format(S.pct_liq)}%`] },
+      { nome: 'Educação', sub: 'manutenção e desenvolvimento do ensino · ' + E.periodo, tipo: 'min', v: E.pct, lim: 25, escala: 35, marcas: [[25, 'mínimo 25%']], rodape: 'mín. 25%',
+        tip: [`Aplicado: ${brl.format(E.aplicado)}`, `Mínimo exigido: ${brl.format(E.exigido)}`, `Base (receita de impostos): ${brl.format(E.base)}`] },
+      { nome: 'FUNDEB nos salários', sub: 'parte do FUNDEB paga aos profissionais da educação', tipo: 'min', v: E.fundeb70.pct, lim: 70, escala: 100, marcas: [[70, 'mínimo 70%']], rodape: 'mín. 70%',
+        tip: [`Aplicado: ${brl.format(E.fundeb70.aplicado)}`, `Mínimo exigido: ${brl.format(E.fundeb70.exigido)}`] },
+      { nome: 'Pessoal da Prefeitura', sub: 'sobre a receita corrente líquida · últimos 12 meses', tipo: 'max', v: P.executivo.pct, lim: P.executivo.max, alerta: P.executivo.alerta, escala: 60,
+        marcas: [[P.executivo.alerta, 'alerta ' + pf.format(P.executivo.alerta) + '%', 1], [P.executivo.max, 'máx. 54%']], rodape: 'máx. 54%',
+        tip: [`Despesa com pessoal: ${brl.format(P.executivo.valor)}`, `Receita corrente líquida ajustada: ${brl.format(P.rcl_ajustada)}`, `Limite prudencial: ${pf.format(P.executivo.prudencial)}%`] },
+      { nome: 'Pessoal da Câmara', sub: 'sobre a receita corrente líquida · últimos 12 meses', tipo: 'max', v: P.camara.pct, lim: P.camara.max, escala: 10, marcas: [[6, 'máx. 6%']], rodape: 'máx. 6%',
+        tip: [`Despesa com pessoal: ${brl.format(P.camara.valor)}`] },
+      { nome: 'Dívida consolidada', sub: 'sobre a receita corrente líquida · ' + D.periodo, tipo: 'max', v: D.pct_dc, lim: D.limite_pct, escala: 120, marcas: [[120, 'máx. 120%']], rodape: 'máx. 120%',
+        tip: [`Dívida consolidada: ${brl.format(D.dc)}`, `Caixa disponível: ${brl.format(D.caixa)}`, `Dívida líquida: ${brl.format(D.dcl)} (negativa = caixa maior que a dívida)`] }];
+    const sts = ms.map(m => medidor(md, m));
+    // histórico do pessoal
+    const h = $('ind-pes-hist'); h.replaceChildren(); const top = 60;
+    const linha = (v, t, cls) => { const l = el('div', 'linha ' + (cls || '')); l.style.bottom = (v / top * 100) + '%'; l.appendChild(el('em', null, t)); h.appendChild(l); };
+    P.historico.forEach(([m, v]) => { const c = el('div', 'col'); const b = el('b'); b.style.background = v >= P.executivo.max ? 'var(--color-bad)' : v >= P.executivo.alerta ? 'var(--color-warn)' : 'var(--color-ok)'; b.style.height = (v / top * 100) + '%'; b.appendChild(el('span', null, pf.format(v) + '%')); c.append(b, el('small', null, m)); h.appendChild(c); });
+    linha(P.executivo.alerta, 'alerta ' + pf.format(P.executivo.alerta) + '%'); linha(P.executivo.max, 'máximo 54%', 'max');
+    const h0 = P.historico[0], h1 = P.historico[P.historico.length - 1];
+    $('ind-pes-nota').textContent = `Subiu de ${pf.format(h0[1])}% (${h0[0]}) para ${pf.format(h1[1])}% (${h1[0]}). Continua abaixo do limite de alerta (${pf.format(P.executivo.alerta)}%), a ${pf.format(P.executivo.alerta - h1[1])} pontos dele. Verde: abaixo do alerta; amarelo: entre o alerta e o máximo; vermelho: acima do máximo.`;
+    // dívida
+    $('ind-div-nota').textContent = `A dívida é de ${brl.format(D.dc)}, ${pf.format(D.pct_dc)}% da receita corrente líquida. O dinheiro em caixa (${brl.format(D.caixa)}) é maior que a dívida, por isso a dívida líquida fica negativa.`;
+    const dt = $('ind-div').tBodies[0]; dt.replaceChildren();
+    D.composicao.forEach(([n, v]) => { const tr = document.createElement('tr'); td(tr, n); td(tr, brl.format(v), 'r'); dt.appendChild(tr); });
+    [['Total da dívida consolidada', D.dc], ['(−) Caixa disponível', D.caixa], ['Dívida líquida', D.dcl]].forEach(([n, v]) => { const tr = document.createElement('tr'); tr.style.fontWeight = '600'; td(tr, n); td(tr, brl.format(v), 'r'); dt.appendChild(tr); });
+    $('ind-fonte').textContent = `Fonte: ${d.fonte} Saúde e educação: ${S.periodo}. Pessoal: ${P.periodo}. Dívida: ${D.periodo}. Os percentuais são os publicados nos demonstrativos do portal; a Câmara foi obtida pela diferença entre o consolidado e a Prefeitura.`;
+
+    // ---------- dívida ativa (aba Receitas) ----------
+    const R26 = DA.recebido.atual, R25 = DA.recebido.anterior, t26 = DA.recebido_total.atual, t25 = DA.recebido_total.anterior, ES = DA.estoque;
+    $('da-h1').textContent = DA.periodo_atual || 'Ano atual'; $('da-h2').textContent = DA.periodo_anterior || 'Ano anterior';
+    const dn = $('da-num'); dn.replaceChildren();
+    [[brl.format(ES.total), `falta receber, de ${nf.format(ES.contribuintes)} contribuintes`, 'var(--serie0)'],
+     [brl.format(t26), `recebido em 2026 até outubro (${t26 >= t25 ? '+' : ''}${p1.format((t26 - t25) / t25 * 100)}% sobre 2025)`, 'var(--color-ok)'],
+     [p1.format(t26 / ES.total * 100) + '%', 'do total devido foi recebido no ano', 'var(--color-warn)'],
+     [p1.format(ES.maiores2 / ES.total * 100) + '%', `do valor está com os 2 maiores devedores (${brl.format(ES.maiores2)})`, 'var(--color-bad)']]
+      .forEach(([b, s, k]) => { const x = el('div'); x.style.setProperty('--k', k); x.append(el('b', null, b), el('small', null, s)); dn.appendChild(x); });
+    const dr = $('da-rec').tBodies[0]; dr.replaceChildren(); $('da-rec').tFoot?.remove();
+    Object.keys(R26).map(g => [g, R26[g][1], (R25[g] || [0, 0])[1]]).sort((a, b) => b[1] - a[1]).forEach(([g, a, b]) => {
+      const tr = document.createElement('tr'); td(tr, g === 'Outras' ? 'Outras (multas, serviços)' : g === 'COSIP' ? 'Iluminação pública (COSIP)' : g); td(tr, brl.format(a), 'r'); td(tr, brl.format(b), 'r');
+      const v = b ? (a - b) / b * 100 : null; td(tr, v == null ? '—' : (v >= 0 ? '+' : '') + p1.format(v) + '%', 'r rec-var ' + (v == null ? '' : v >= 0 ? 'up' : 'down')); dr.appendChild(tr); });
+    const tf = document.createElement('tfoot'); const tr = document.createElement('tr'); td(tr, 'Total'); td(tr, brl.format(t26), 'r'); td(tr, brl.format(t25), 'r');
+    td(tr, (t26 >= t25 ? '+' : '') + p1.format((t26 - t25) / t25 * 100) + '%', 'r rec-var ' + (t26 >= t25 ? 'up' : 'down')); tf.appendChild(tr); $('da-rec').appendChild(tf);
+    barras($('da-idade'), ES.idade, ES.total);
+    const df = $('da-faixas').tBodies[0]; df.replaceChildren();
+    ES.faixas.forEach(([n, q, v]) => { const tr = document.createElement('tr'); td(tr, n); td(tr, nf.format(q), 'r'); td(tr, brl.format(v), 'r'); df.appendChild(tr); });
+    $('rec-fonte').textContent = 'Fonte: ' + rec.fonte + ' A coluna "x 2025" compara com janeiro a outubro de 2025. Dívida ativa: recebimentos pelo Anexo 10 (contas de dívida ativa, principal mais multas e juros) e saldo a receber pela consulta "Inscritos em Dívida Ativa" do portal, em 21/10/2026.';
+
+    // ---------- aba Cidadão ----------
+    const soma = f => rec.cat26.filter(f).reduce((s, x) => s + x.arr, 0);
+    const uniao = ['FPM (Fundo de Participação dos Municípios)', 'ITR', 'Outras transferências da União', 'FNDE (salário-educação, PNAE, PNATE)', 'SUS (União)', 'Outras transferências correntes'];
+    const estado = ['ICMS (cota-parte)', 'IPVA (cota-parte)', 'IPI-Exportação', 'Outras transferências do Estado'];
+    const vem = [['Governo federal (FPM, ITR e outros)', soma(x => uniao.includes(x.nome)), ['FPM, ITR, SUS, FNDE e outros repasses da União']],
+      ['Governo do Estado (ICMS, IPVA)', soma(x => estado.includes(x.nome)), ['ICMS, IPVA e outros repasses do Paraná']],
+      ['Convênios e obras', soma(x => x.tipo === 'capital'), ['Transferências de capital e venda de bens']],
+      ['Impostos e taxas do município', soma(x => x.tipo === 'proprio'), ['IPTU, ISS, ITBI, taxas, iluminação pública, rendimentos']],
+      ['FUNDEB (educação)', soma(x => x.nome === 'FUNDEB'), ['Fundo da educação básica. O município também deposita no fundo uma parte dos seus impostos, descontada no total.']]];
+    const totVem = vem.reduce((s, x) => s + x[1], 0);
+    barras($('cid-vem'), vem.sort((a, b) => b[1] - a[1]), totVem, ['var(--serie0)']);
+    const arr = rec.grupos26.reduce((s, x) => s + x[3], 0), F = d.funcoes;
+    $('cid-vem-nota').textContent = `Até ${rec.gerado} entraram ${brl.format(arr)}. De cada R$ 100, cerca de R$ ${Math.round(soma(x => x.tipo === 'proprio') / totVem * 100)} vêm de impostos e taxas pagos em Leópolis; o resto vem de repasses do governo federal e do Estado. Os valores abaixo são brutos: ${brl.format(-rec.grupos26.find(x => x[0] === 'GDED')[3])} dos impostos são depositados no FUNDEB e descontados do total.`;
+    const top8 = F.itens.slice(0, 8), resto = F.itens.slice(8).reduce((s, x) => s + x[1], 0);
+    barras($('cid-vai'), [...top8, ['Outras áreas', resto]], F.total_emp, ['var(--serie1)']);
+    const sa = F.itens.find(x => x[0] === 'Saúde')[1], ed = F.itens.find(x => x[0] === 'Educação')[1];
+    $('cid-vai-nota').textContent = `Até ${F.periodo.replace('até ', '')} a prefeitura comprometeu (empenhou) ${brl.format(F.total_emp)}. De cada R$ 100, R$ ${Math.round(sa / F.total_emp * 100)} foram para saúde e R$ ${Math.round(ed / F.total_emp * 100)} para educação.`;
+    $('cid-resumo').textContent = `Até ${rec.gerado}, a prefeitura recebeu ${brl.format(arr)} (${p1.format(arr / rec.grupos26.reduce((s, x) => s + x[2], 0) * 100)}% do previsto para o ano) e já comprometeu ${brl.format(F.total_emp)} com serviços, salários, compras e obras. Saúde e educação recebem mais da metade do que é gasto. Os limites da lei estão sendo cumpridos.`;
+    const rg = $('cid-regras'); rg.replaceChildren();
+    [[sts[0], 'Saúde', `A lei manda aplicar pelo menos 15% dos impostos em saúde. Leópolis aplicou ${pf.format(S.pct)}%.`],
+     [sts[1], 'Educação', `O mínimo é 25% dos impostos no ensino. Leópolis aplicou ${pf.format(E.pct)}%.`],
+     [sts[3], 'Salários', `A Prefeitura pode gastar até 54% da receita com pessoal e recebe alerta a partir de ${pf.format(P.executivo.alerta)}%. Está em ${pf.format(P.executivo.pct)}%, abaixo do alerta.`],
+     [sts[5], 'Dívidas', `A dívida é de ${brl.format(D.dc)} e o dinheiro em caixa é maior que ela. O limite é 120% da receita; Leópolis está em ${pf.format(D.pct_dc)}%.`]]
+      .forEach(([st, t, p]) => { const x = el('div', st); x.append(el('b', null, t), el('p', null, p)); rg.appendChild(x); });
+    $('cid-fonte').textContent = `Fonte: Portal da Transparência de Leópolis. Receitas até ${rec.gerado}; gastos por área até ${F.periodo.replace('até ', '')} (valores empenhados); limites conforme os últimos demonstrativos fechados (saúde e educação até agosto, pessoal até setembro, dívida até agosto).`;
+  }).catch(e => { console.error(e); });
+})();
 </script>
 </body>
 </html>

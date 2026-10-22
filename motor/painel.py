@@ -158,6 +158,16 @@ def principal(forcar=False, arquivo_coleta=None):
     agora = datetime.now().strftime('%d/%m/%Y %H:%M')
     rodar([py, os.path.join(ferr, 'atualizar_dados.py'), saida, SITE, agora])
     rodar([py, os.path.join(ferr, 'gerar_planilha.py'), saida, os.path.join(SITE, 'interno', 'planilha', 'painel_empenhos.xlsx')])
+    # receitas, indicadores da LRF e dívida ativa (relatórios do portal): no máximo a cada 3 horas
+    ult_fin = estado.get('financas', '')
+    if forcar or not ult_fin or (datetime.now() - datetime.fromisoformat(ult_fin)).total_seconds() > 3 * 3600 \
+            or not os.path.exists(os.path.join(SITE, 'data', 'indicadores.json')):
+        try:
+            import financas
+            financas.gerar(os.path.join(SITE, 'data'), avisar=log)
+            estado['financas'] = datetime.now().isoformat(timespec='seconds')
+        except Exception as e:
+            log(f'Aviso: receitas/indicadores não atualizados nesta rodada ({e}); ficam os da rodada anterior.')
     if sexta_pendente:
         pdf = os.path.join(SITE, 'interno', 'resumos', f'resumo_{hoje.isoformat()}.pdf')
         rodar([py, os.path.join(ferr, 'resumo_semanal.py'), saida, pdf])

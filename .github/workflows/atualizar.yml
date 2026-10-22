@@ -48,7 +48,7 @@ jobs:
             gunzip -c motor/semente/master.json.gz > motor/estado/master.json
             cp motor/semente/alertas.json motor/semente/reler.txt motor/semente/ultima_coleta.txt motor/estado/
           fi
-          cp motor/painel.py motor/coleta.py motor/build.py motor/estado/
+          cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
       - name: Coleta no portal e recalcula
         run: python motor/estado/painel.py ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
       - name: Guarda o estado para a próxima vez

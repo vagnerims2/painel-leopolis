@@ -15,9 +15,18 @@ M = json.load(open(master_p, encoding='utf-8')) if os.path.exists(master_p) else
 N = json.load(open(coleta_p, encoding='utf-8'))
 
 # ---------- merge ----------
+# requisição de empenho dos empenhos lidos antes de o robô guardar esse campo (levantada no portal em 21/10/2026)
+_sem_req = {}
+for _p in (os.path.join(os.path.dirname(os.path.abspath(master_p)), '..', 'semente', 'requisicao_empenho.csv'),
+           os.path.join(os.path.dirname(os.path.abspath(__file__)), 'semente', 'requisicao_empenho.csv')):
+    if os.path.exists(_p):
+        _sem_req = {r['empenho']: r['requisicao_empenho'] for r in csv.DictReader(open(_p, encoding='utf-8'))}; break
+for _n, _e in M['empenhos'].items():
+    if 'req' not in _e and _n in _sem_req: _e['req'] = _sem_req[_n]
 for e in N['empenhos']:
     old = M['empenhos'].get(e['n'])
     if old and not e['items'] and old.get('items'): e['items'] = old['items']
+    if old and not e.get('req') and old.get('req'): e['req'] = old['req']
     e['col'] = N['gerado'][:10]  # data em que o relatório deste empenho foi lido
     M['empenhos'][e['n']] = e
 for l in N['liquidacoes']:
@@ -157,7 +166,7 @@ for n, e in E.items():
     rows[n] = dict(empenho=n, data=e['d'], tipo=e['tipo'], fornecedor=re.sub(r'^[\d.]+\s+', '', e['forn']), secretaria=sec(e['sec']),
         licitacao=licit(e['lic']), modalidade=modal(e['lic']), contrato=e.get('contrato', ''), natureza='.'.join(e['el'].split('.')[:4]), subelemento=codigo_de(e),
         tipo_despesa=e['eld'], dotacao=e.get('dot', ''), fonte=fonte_de(e), valor=round(e['v'], 2), anulado=round(anul, 2), liquidado=round(liquidado, 2), pago=round(pago, 2),
-        primeira_liquidacao=d1, ultimo_pagamento=dp, produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])),
+        primeira_liquidacao=d1, ultimo_pagamento=dp, requisicao_empenho=e.get('req', ''), produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])),
         _anul_movs=round(anul, 2), _est=_estornos(e, pag_e[n]))
 
 # reconcilia com o saldo a pagar oficial (fornecedor + data): anulações posteriores
@@ -197,7 +206,7 @@ for r in rows.values():
 
 cols = ['empenho', 'data', 'tipo', 'fornecedor', 'secretaria', 'licitacao', 'modalidade', 'contrato', 'natureza', 'subelemento', 'tipo_despesa', 'dotacao', 'fonte',
         'valor', 'anulado', 'liquidado', 'pago', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'primeira_liquidacao', 'dias_ate_liquidar',
-        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos', 'estornos', 'valor_estornado']
+        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos', 'estornos', 'valor_estornado', 'requisicao_empenho']
 R = sorted(rows.values(), key=lambda r: (r['data'], int(r['empenho'])), reverse=True)
 def wcsv(name, rs, cs):
     with open(os.path.join(out, name), 'w', newline='', encoding='utf-8') as f:
