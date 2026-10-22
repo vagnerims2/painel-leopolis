@@ -114,7 +114,7 @@ def principal(forcar=False, arquivo_coleta=None):
         ultima = date(hoje.year, 1, 1)
     desde = max(date(hoje.year, 1, 1), ultima - timedelta(days=3)).isoformat()
     log(f'Novidade no portal. Coletando desde {desde}…')
-    det_agora = []; pag_agora = []
+    det_agora = []; pag_agora = []; reler_agora = []
     if arquivo_coleta:
         res = ler_json(arquivo_coleta, None)
     else:
@@ -131,6 +131,12 @@ def principal(forcar=False, arquivo_coleta=None):
             extra = [x.strip() for x in open(P('reler.txt'), encoding='utf-8') if x.strip()]
         except OSError:
             extra = []
+        # dias de empenhos cujos itens não bateram com o valor (o portal devolveu itens de outro empenho): relê até 2 vezes
+        ri = estado.get('reler_itens', {})
+        reler_agora = [d for d, t in sorted(ri.items(), reverse=True) if t < 2][:10]
+        if reler_agora:
+            log(f'Relendo {len(reler_agora)} dias com itens que não batem com o valor do empenho.')
+            extra += reler_agora
         # releitura gradual dos dias antigos para pegar unidade, descrição completa e código CATMAT dos itens
         # (DET_POR_RODADA dias por atualização, dos mais recentes para os mais antigos)
         tentados = set(estado.get('det_dias', []))
@@ -158,6 +164,12 @@ def principal(forcar=False, arquivo_coleta=None):
     saida = P('saida')
     out = rodar([py, P('build.py'), P('master.json'), P('coleta_ultima.json'), saida, P('itens_requisicoes.csv')]).strip()
     resumo = json.loads(out[out.index('{'):])
+    if not arquivo_coleta:
+        _ri = estado.get('reler_itens', {})
+        _tentou = set(reler_agora)
+        estado['reler_itens'] = {d: _ri.get(d, 0) + (1 if d in _tentou else 0) for d in resumo.get('reler_itens', [])}
+        if resumo.get('itens_suspeitos'):
+            log(f"{resumo['itens_suspeitos']} empenhos com itens que não batem com o valor: ficam fora dos relatórios de produto até a releitura acertar.")
     dif = abs(resumo['saldo_calculado'] - resumo['saldo_portal'])
     if resumo['saldo_portal'] and dif / resumo['saldo_portal'] > 0.01:
         log(f"Atenção: saldo calculado {resumo['saldo_calculado']:.2f} difere do portal {resumo['saldo_portal']:.2f}. Publicando mesmo assim.")

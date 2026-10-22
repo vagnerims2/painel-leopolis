@@ -352,6 +352,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
 @media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
 #dash-root #t-req tbody tr.lin{cursor:pointer}
+#dash-root #t-liq tr.estorno td{color:var(--color-fg-muted);font-style:italic}
 /* Requisições: azul ao passar o mouse na requisição e na requisição aberta; a parte aberta (dados e itens) não muda de cor */
 #dash-root #t-req tr.det:hover,#dash-root #t-req tr.det tr:hover,#dash-root #t-req tr.det tr:hover td{background:transparent}
 #dash-root #t-req tbody tr.lin:hover td,#dash-root #t-req tbody tr.lin:active td,#dash-root #t-req tbody tr.lin[aria-expanded=true] td{background:color-mix(in srgb,var(--c1,#3D85D8) 12%,transparent)}
@@ -1308,7 +1309,7 @@ const lBusca = document.getElementById('l-busca'), lNp = document.getElementById
 function drawLiq() { const d = dash.data('liquidacoes'), tb = document.querySelector('#t-liq tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const q = nz(lBusca.value.trim());
   const rows = d.data.filter(r => (!lNp.checked || r.pago === 'Não') && (!q || (ehNumero(q) ? [r.liquidacao, String(r.empenho).split(' ')[0]].some(v => semZeros(v) === semZeros(q)) || (String(r.documento).match(/\d+/g) || []).some(v => semZeros(v) === semZeros(q)) : nz([r.fornecedor, r.documento].join(' ')).includes(q))));
   rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.liquidacao; td(tr, r.liquidacao).style.fontWeight = '600'; td(tr, br(r.data)); td(tr, r.empenho);
-    fornCell(tr, r.fornecedor, r.tipo_despesa); botaoNF(td(tr, r.documento, 'hide-sm'), notasPorLiq()[r.liquidacao], `Notas fiscais da liquidação ${r.liquidacao}`); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : 'A pagar', r.pago === 'Sim' ? 'ok' : 'mid'); tb.appendChild(tr); });
+    fornCell(tr, r.fornecedor, r.tipo_despesa); botaoNF(td(tr, r.documento, 'hide-sm'), notasPorLiq()[r.liquidacao], `Notas fiscais da liquidação ${r.liquidacao}`); td(tr, brl2.format(N(r.valor)), 'r'); pillCell(tr, r.pago === 'Sim' ? 'Paga' : r.pago === 'Estornada' ? 'Estornada' : 'A pagar', r.pago === 'Sim' ? 'ok' : r.pago === 'Estornada' ? 'neu' : 'mid'); if (N(r.valor) < 0) tr.classList.add('estorno'); tb.appendChild(tr); });
   if (!rows.length) emptyRow(tb, 7, 'Nenhuma liquidação com esse filtro.'); }
 lBusca.addEventListener('input', drawLiq); lNp.addEventListener('change', drawLiq);
 
@@ -2071,7 +2072,7 @@ const REC_ARQ = '../data/receitas.json';
       const meses = []; for (let m = ini; m <= fim;) { meses.push(m); const [a, b] = m.split('-').map(Number); m = b === 12 ? `${a + 1}-01` : `${a}-${String(b + 1).padStart(2, '0')}`; }
       const tTot = porG.reduce((a, x) => a + soma(x.per, 'valor'), 0);
       const tb0 = $('rl-ftiles'); tb0.replaceChildren();
-      porG.forEach(x => tile(tb0, x.g.nome, brl.format(soma(x.per, 'valor')), `${x.per.length} pagamentos`));
+      porG.forEach(x => { const ne = x.per.filter(r => r.estorno === 'Sim').length, np = x.per.length - ne; tile(tb0, x.g.nome, brl.format(soma(x.per, 'valor')), `${np} pagamentos` + (ne ? ` · ${ne} ${ne === 1 ? 'estorno descontado' : 'estornos descontados'}` : '')); });
       if (porG.length > 1) tile(tb0, 'Total do período', brl.format(tTot), `${meses.length} ${meses.length === 1 ? 'mês' : 'meses'}`);
       tile(tb0, 'Média por mês', brl.format(tTot / meses.length), porG.length > 1 ? 'todos os fornecedores' : '');
       // mês a mês
@@ -2098,7 +2099,7 @@ const REC_ARQ = '../data/receitas.json';
       const tb3 = $('rl-fpags').tBodies[0]; tb3.replaceChildren();
       porG.flatMap(x => x.per.map(r => ({ ...r, gn: x.g.nome }))).sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0).forEach(r => { const tr = document.createElement('tr'); td(tr, br(r.data));
         td(tr, r.empenho + (r.ano_empenho && r.ano_empenho !== String(r.data).slice(0, 4) ? '/' + r.ano_empenho : '')); td(tr, r.gn); td(tr, r.secretaria, 'hide-sm');
-        td(tr, String(r.historico || '').replace(/^Pagamento\s+/i, '').replace(/\s*Justificati.*$/i, '').slice(0, 140), 'hide-sm'); const v = td(tr, brl.format(N(r.valor)), 'r'); if (N(r.valor) < 0) v.classList.add('late'); tb3.appendChild(tr); });
+        td(tr, (r.estorno === 'Sim' ? `Estorno do pagamento ${r.estorna_pagamento || ''} · ` : '') + String(r.historico || '').replace(/^Pagamento\s+/i, '').replace(/\s*Justificati.*$/i, '').slice(0, 140), 'hide-sm'); const v = td(tr, brl.format(N(r.valor)), 'r'); if (N(r.valor) < 0) v.classList.add('late'); tb3.appendChild(tr); });
     }
 
     // ---------------- produtos

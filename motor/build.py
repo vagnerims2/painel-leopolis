@@ -149,6 +149,14 @@ def _estornos(e, pags):
 def _fmt_est(lst):
     br = lambda v: f"R$ {v:,.2f}".replace(',', 'X').replace('.', ',').replace('X', '.')
     return '; '.join(f"{nome} {br(v)}" + (f" em {'/'.join(reversed(d.split('-')))}" if d else '') for nome, v, d in sorted(lst, key=lambda x: x[2] or '9'))
+# itens que não batem com o valor do empenho (o portal às vezes devolve a página de itens de outro empenho):
+# saem dos relatórios de produto e o dia do empenho é relido nas próximas rodadas
+def _itens_ok(e):
+    its = e.get('items') or []
+    if not its: return True
+    s, v = sum(float(i.get('vt') or 0) for i in its), float(e.get('v') or 0)
+    return abs(s - v) <= max(0.05, 0.005 * v)
+itens_suspeitos = {n for n, e in E.items() if not _itens_ok(e)}
 rows = {}
 for n, e in E.items():
     anul = sum(abs(m['v']) for m in e['movs'] if re.match(r'Estorno de Empenho|Anula', m['k'], re.I))
@@ -162,7 +170,7 @@ for n, e in E.items():
     pago = max(0.0, pago_bruto - est_pag)
     d1 = min((d for d, _ in liqs.values()), default='')
     dp = max((p['d'] for p in pag_e[n]), default='')
-    prods = list(dict.fromkeys(i['p'] for i in e['items']))
+    prods = [] if n in itens_suspeitos else list(dict.fromkeys(i['p'] for i in e['items']))
     rows[n] = dict(empenho=n, data=e['d'], tipo=e['tipo'], fornecedor=re.sub(r'^[\d.]+\s+', '', e['forn']), secretaria=sec(e['sec']),
         licitacao=licit(e['lic']), modalidade=modal(e['lic']), contrato=e.get('contrato', ''), natureza='.'.join(e['el'].split('.')[:4]), subelemento=codigo_de(e),
         tipo_despesa=e['eld'], dotacao=e.get('dot', ''), fonte=fonte_de(e), valor=round(e['v'], 2), anulado=round(anul, 2), liquidado=round(liquidado, 2), pago=round(pago, 2),
@@ -253,6 +261,7 @@ if req_p and os.path.exists(req_p):
 itens = []
 for n, e in E.items():
     r = rows[n]
+    if n in itens_suspeitos: continue
     for k, i in enumerate(e['items']):
         q_liq = ''
         for x in req.get(n, []):
@@ -281,8 +290,24 @@ for p in P.values():
         valor=v, estorno='Sim' if p.get('est') else '', fornecedor=(r['fornecedor'] if r else re.sub(r'^[\d./-]+\s+', '', p.get('forn', ''))),
         secretaria=(r['secretaria'] if r else sec(p.get('sec', ''))), fonte=p.get('fcod', ''), elemento=p.get('el', ''),
         historico=((r['produtos'] if r else p.get('hist', '')) or '')[:220]))
+# estornos de pagamento: a nota de estorno não vem no relatório de pagamentos do dia, mas aparece no relatório do
+# empenho. Entra como linha negativa na data do estorno, ligada ao pagamento estornado (mesmo valor, data anterior).
+estornos_pag = 0
+for n, e in E.items():
+    if any(p.get('est') for p in pag_e[n]): continue
+    usados = set()
+    for m in sorted((m for m in e['movs'] if re.match(r'Estorno de Pagamento', m['k'], re.I)), key=lambda m: m['d']):
+        v = abs(m['v'])
+        orig = max((p for p in pag_e[n] if not p.get('est') and p['n'] not in usados and abs(p['v'] - v) < 0.01 and p['d'] <= m['d']),
+                   key=lambda p: (p['d'], int(p['n'])), default=None)
+        if orig: usados.add(orig['n'])
+        r = rows[n]
+        pags.append(dict(pagamento='', data=m['d'], empenho=n, ano_empenho=str(ANO_ATUAL), liquidacao=(orig or {}).get('l', ''), valor=-round(v, 2), estorno='Sim',
+            estorna_pagamento=(orig or {}).get('n', ''), fornecedor=r['fornecedor'], secretaria=r['secretaria'], fonte=(orig or {}).get('fcod', ''),
+            elemento=(orig or {}).get('el', ''), historico=(r['produtos'] or '')[:220]))
+        estornos_pag += 1
 pags.sort(key=lambda x: (x['data'], int(x['pagamento'] or 0)), reverse=True)
-wcsv('pagamentos.csv', pags, ['pagamento', 'data', 'empenho', 'ano_empenho', 'liquidacao', 'valor', 'estorno', 'fornecedor', 'secretaria', 'fonte', 'elemento', 'historico'])
+wcsv('pagamentos.csv', pags, ['pagamento', 'data', 'empenho', 'ano_empenho', 'liquidacao', 'valor', 'estorno', 'estorna_pagamento', 'fornecedor', 'secretaria', 'fonte', 'elemento', 'historico'])
 
 # ---------- movimento diário ----------
 mov = []
@@ -300,6 +325,24 @@ for l in sorted(L.values(), key=lambda x: (x['d'], int(x['n'])), reverse=True):
     lr.append(dict(liquidacao=l['n'], data=l['d'], empenho=(l['e'] + ' (restos a pagar)') if rp else l['e'], fornecedor=r.get('fornecedor', '') or ('Empenho de exercício anterior' if rp else ''), secretaria=r.get('secretaria', ''), tipo_despesa=r.get('tipo_despesa', ''),
         fonte=fonte_nome.get(l.get('fcod', ''), l.get('fdesc', '')), valor=round(l['v'], 2), documento=l.get('nf', ''), vencimento=l.get('venc', ''),
         pago='Sim' if any(p['l'] == l['n'] and not p.get('est') for p in pag_e[l['e']]) else 'Não'))
+# estornos de liquidação (vêm só no relatório do empenho): linha negativa na data do estorno; a liquidação estornada
+# (mesmo valor, data anterior) fica marcada como "Estornada" em vez de "A pagar"
+estornos_liq = 0
+por_n = {x['liquidacao']: x for x in lr}
+for n, e in E.items():
+    usados = set()
+    for m in sorted((m for m in e['movs'] if re.match(r'Estorno de Liquida', m['k'], re.I)), key=lambda m: m['d']):
+        if m['d'] < lim: continue
+        v = abs(m['v'])
+        orig = max((l for l in liq_e[n] if l['n'] not in usados and abs(l['v'] - v) < 0.01 and l['d'] <= m['d']), key=lambda l: (l['d'], int(l['n'])), default=None)
+        if orig:
+            usados.add(orig['n'])
+            if orig['n'] in por_n: por_n[orig['n']]['pago'] = 'Estornada'
+        r = rows.get(n, {})
+        lr.append(dict(liquidacao=(orig or {}).get('n', ''), data=m['d'], empenho=n, fornecedor=r.get('fornecedor', ''), secretaria=r.get('secretaria', ''), tipo_despesa=r.get('tipo_despesa', ''),
+            fonte=fonte_nome.get((orig or {}).get('fcod', ''), (orig or {}).get('fdesc', '')), valor=-round(v, 2), documento='Estorno da liquidação', vencimento='', pago='Estornada'))
+        estornos_liq += 1
+lr.sort(key=lambda x: (x['data'], int(x['liquidacao'] or 0)), reverse=True)
 wcsv('liquidacoes.csv', lr, ['liquidacao', 'data', 'empenho', 'fornecedor', 'secretaria', 'tipo_despesa', 'fonte', 'valor', 'documento', 'vencimento', 'pago'])
 
 # ---------- saldo por fonte (oficial) ----------
@@ -369,7 +412,8 @@ json.dump(dict(novos_parados=sorted(novos_parados, key=lambda x: -x['dias']), no
 # ---------- resumo ----------
 tot_saldo_portal = sum(s['v'] for s in M['saldo'])
 calc_saldo = sum(r['saldo_a_pagar'] for r in R)
-resumo = dict(liquidacoes_religadas=liq_relink, nomes_corrigidos=nomes_corrigidos, gerado=N['gerado'], empenhos=len(R), itens=len(itens), liquidacoes_recentes=len(lr), dotacoes=len(drows),
+resumo = dict(estornos_pagamento=estornos_pag, estornos_liquidacao=estornos_liq, itens_suspeitos=len(itens_suspeitos),
+    reler_itens=sorted({E[n]['d'] for n in itens_suspeitos if E[n].get('d')}), liquidacoes_religadas=liq_relink, nomes_corrigidos=nomes_corrigidos, gerado=N['gerado'], empenhos=len(R), itens=len(itens), liquidacoes_recentes=len(lr), dotacoes=len(drows),
     saldo_portal=round(tot_saldo_portal, 2), saldo_calculado=round(calc_saldo, 2), grupos_divergentes=len(diverg),
     empenhado_ano=round(sum(m['empenhado_liquido'] for m in mov), 2), empenhos_valor=round(sum(r['valor'] - r['anulado'] for r in R), 2),
     alertas_parados=len(parados), alertas_novos=len(novos_parados), dotacoes_nao_fecham_mes=len(dot_mes), dotacoes_novas=len(novas_dot))
