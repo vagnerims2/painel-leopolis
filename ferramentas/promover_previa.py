@@ -56,5 +56,17 @@ sp = re.sub(r'<p class="foot">.*?</p>', '<p class="foot">Fonte: Portal da Transp
 sp = rep(sp, "{ const h = location.hash.slice(1); if (", "{ const h = ['alertas', 'dotacoes', 'semana', 'requisicoes'].includes(location.hash.slice(1)) ? '' : location.hash.slice(1); if (")
 chk = sp.lower().replace('equiplano.com.br', '')
 assert 'equiplano' not in chk and 'planilha.json' not in sp, 'conteúdo interno na versão pública'
-open(f'{repo}/index.html', 'w', encoding='utf-8').write(sp)
+# link público desativado a pedido (22/10/2026): no lugar do painel fica um aviso. Para religar: PUBLICO_ATIVO = True
+PUBLICO_ATIVO = False
+AVISO = '''<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Despesas do Município — Leópolis</title>
+<style>:root{color-scheme:light dark}body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f5f4ef;color:#1f1e1b;font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:16px;box-sizing:border-box}
+main{max-width:34rem;background:#fff;border-radius:12px;padding:28px;box-shadow:0 4px 18px rgba(0,0,0,.08)}h1{font-size:1.25rem;margin:0 0 8px}a{color:#255f85}
+@media (prefers-color-scheme:dark){body{background:#1c1b19;color:#ecebe7}main{background:#262522}a{color:#6fa8d6}}</style></head>
+<body><main><h1>Painel temporariamente indisponível</h1>
+<p>Este painel da Prefeitura Municipal de Leópolis está fora do ar por enquanto.</p>
+<p>As informações oficiais de receitas e despesas continuam no <a href="https://leopolispr.equiplano.com.br:7300/transparencia/" rel="noopener">Portal da Transparência do Município</a>.</p></main></body></html>
+'''
+open(f'{repo}/index.html', 'w', encoding='utf-8').write(sp if PUBLICO_ATIVO else AVISO)
 print('ok', len(si), len(sp))
