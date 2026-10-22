@@ -338,7 +338,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .trilha li.parc.aqui b{color:var(--color-warn)}
 #dash-root .trilha li.esp,#dash-root .trilha li.pula{opacity:.55;border-style:dashed}
 #dash-root .trilha li.canc{--p:var(--color-fg-muted);text-decoration:line-through}
-#dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;white-space:nowrap}#dash-root #t-req td:nth-child(4) .pill{font-size:11px;padding:1px 7px}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
+#dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
+@media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
 #dash-root #t-req tbody tr.lin{cursor:pointer}
 #dash-root #t-req tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}
 #dash-root .req-det{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr));gap:10px 18px}
@@ -1230,7 +1231,7 @@ function drawReq() {
         ol.appendChild(li); });
       c.appendChild(ol); tr.appendChild(c); }
     { const pc = pillCell(tr, l.parada, etapaCor[l.parada] || 'late'); if (l.et && l.parada !== 'Concluída') { const x = document.createElement('div'); x.className = 'sub2 req-et'; x.textContent = l.et; pc.appendChild(x); } }
-    if (l.naoEnviada) { const c = pillCell(tr, 'aguardando envio', 'neu'); c.className = 'r'; }
+    if (l.naoEnviada) { const c = pillCell(tr, 'a enviar', 'neu'); c.className = 'r'; }
     else td(tr, l.aberta ? (l.atraso === 1 ? '1 dia' : `${l.atraso} dias`) : '—', 'r' + (l.aberta ? (l.atraso > 90 ? ' late' : l.atraso > 30 ? ' mid' : '') : ''));
     const abrir = () => { const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
       tr.setAttribute('aria-expanded', 'true'); const dt = document.createElement('tr'); dt.className = 'det'; const c = document.createElement('td'); c.colSpan = 5; dt.appendChild(c);
