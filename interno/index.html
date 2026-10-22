@@ -641,7 +641,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <div id="req-aberto" hidden>
         <div class="req-resumo" id="req-resumo"></div>
         <div class="tools">
-          <input id="req-busca" type="search" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor">
+          <input id="req-busca" type="search" list="req-forn-lista" autocomplete="off" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor"><datalist id="req-forn-lista"></datalist>
           <select id="req-parada"><option value="">Todas as etapas</option></select>
           <select id="req-sec"><option value="">Todas as secretarias</option></select>
           <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="ate30">Enviadas há até 30 dias</option><option value="31a90">Enviadas há 31 a 90 dias</option><option value="mais90">Enviadas há mais de 90 dias</option></select>
@@ -1422,9 +1422,15 @@ function drawReq() {
   const q = nz(document.getElementById('req-busca').value.trim()), mm = q.match(/^mem\w*\.?\s*n?[ºo°.]*\s*(\d+)(\/\d{2,4})?$/), memo = mm ? semZeros(mm[1]) : '';
   const num = !mm && /^\d+(\/\d{2,4})?$/.test(q) ? semZeros(q.split('/')[0]) : '';
   const motivo = (l) => { if (!num) return ''; if (semZeros(l.r) === num) return ''; if (l.eLig && l.eLig === num) return 'achada pelo empenho ' + l.eLig; if (l.reNum && semZeros(l.reNum) === num) return 'achada pela requisição de empenho ' + l.reNum; return null; };
+  const palavras = q.split(/\s+/).filter(Boolean);
+  // sugestões de fornecedor enquanto digita (nomes da planilha e do portal, sem repetir)
+  { const dl = document.getElementById('req-forn-lista');
+    if (dl && dl.dataset.n !== String(lista.length)) { dl.dataset.n = String(lista.length); dl.replaceChildren();
+      const nomes = new Map(); lista.forEach(l => [l.f, l.emp && l.emp.fornecedor].forEach(f => { f = String(f || '').replace(/^[\d.\s/-]+/, '').trim(); if (f.length > 2) { const k = nz(f); if (!nomes.has(k)) nomes.set(k, f); } }));
+      [...nomes.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => { const o = document.createElement('option'); o.value = f; dl.appendChild(o); }); } }
   const fx = document.getElementById('req-atraso').value, ordemReq = document.getElementById('req-ordem').value;
   const rows = lista.filter(l => (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : l.aberta && naFaixa(fx, l.atraso)))
-    && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : nz(l.f).includes(q))))
+    && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : palavras.every(w => nz([l.f, l.emp && l.emp.fornecedor].filter(Boolean).join(' ')).includes(w)))))
     .sort((a, b) => ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0));
   document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
   rows.slice(0, 600).forEach(l => {
