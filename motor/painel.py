@@ -21,6 +21,7 @@ SEM_GIT = os.environ.get('PAINEL_SEM_GIT') == '1'   # no GitHub: a automação f
 WORKFLOW_API = 'https://api.github.com/repos/vagnerims2/painel-leopolis/actions/workflows/atualizar.yml/runs?status=success&per_page=1'
 LOG = os.path.join(PASTA, 'painel.log')
 TRAVA = os.path.join(PASTA, 'painel.trava')
+DET_POR_RODADA = 25   # dias relidos por atualização para detalhar os itens (unidade, descrição, CATMAT)
 ESTADO = os.path.join(PASTA, 'estado.json')
 P = lambda *a: os.path.join(PASTA, *a)
 
@@ -94,7 +95,14 @@ def principal(forcar=False, arquivo_coleta=None):
     assin = 'teste' if arquivo_coleta else coleta.assinatura()[0]
     hoje = date.today()
     sexta_pendente = hoje.weekday() == 4 and datetime.now().hour >= 17 and estado.get('resumo_semanal') != hoje.isoformat()
-    if not forcar and assin == estado.get('assinatura') and not sexta_pendente:
+    # ainda há dias para reler e detalhar os itens? então roda mesmo sem novidade no portal
+    det_pendente = False
+    if not arquivo_coleta:
+        _m = ler_json(P('master.json'), {})
+        _t = set(estado.get('det_dias', []))
+        det_pendente = any(not e.get('det') and e.get('d') and e['d'] not in _t for e in _m.get('empenhos', {}).values())
+        del _m
+    if not forcar and assin == estado.get('assinatura') and not sexta_pendente and not det_pendente:
         log('Sem lançamento novo no portal.')
         return
 
@@ -105,6 +113,7 @@ def principal(forcar=False, arquivo_coleta=None):
         ultima = date(hoje.year, 1, 1)
     desde = max(date(hoje.year, 1, 1), ultima - timedelta(days=3)).isoformat()
     log(f'Novidade no portal. Coletando desde {desde}…')
+    det_agora = []
     if arquivo_coleta:
         res = ler_json(arquivo_coleta, None)
     else:
@@ -126,6 +135,14 @@ def principal(forcar=False, arquivo_coleta=None):
         if faltam:
             log(f'Requisição de empenho: {len(faltam)} dias ainda sem ela; relendo {min(REQ_POR_RODADA, len(faltam))} nesta rodada.')
             extra = list(extra) + faltam[:REQ_POR_RODADA]
+        # releitura gradual dos dias antigos para pegar unidade, descrição completa e código CATMAT dos itens
+        # (DET_POR_RODADA dias por atualização, dos mais recentes para os mais antigos)
+        tentados = set(estado.get('det_dias', []))
+        pend = sorted({e['d'] for e in mestre.get('empenhos', {}).values() if not e.get('det') and e.get('d') and e['d'] not in tentados}, reverse=True)
+        det_agora = pend[:DET_POR_RODADA]
+        if det_agora:
+            log(f'Relendo {len(det_agora)} dias para detalhar os itens (faltam {len(pend) - len(det_agora)}).')
+            extra += det_agora
         res = coleta.coletar(desde, desde, avisar=log, mov_anterior=mestre.get('mov'), emp_conhecido=conhecido if conhecido else None,
                              saldo_anterior=mestre.get('saldo'), emp_por_liq_dia=por_liq, dias_extra=extra,
                              docs_desde=None if len(mestre.get('docs') or {}) > 1000 else f'{hoje.year}-01-01')
@@ -176,6 +193,9 @@ def principal(forcar=False, arquivo_coleta=None):
         os.remove(P('reler.txt'))
     with open(P('ultima_coleta.txt'), 'w', encoding='utf-8') as f:
         f.write(hoje.isoformat())
+    if not arquivo_coleta and det_agora:
+        falhos = {x.split()[0] for x in res.get('erros', []) if x}
+        estado['det_dias'] = sorted(set(estado.get('det_dias', [])) | (set(det_agora) - falhos))
     estado.update(assinatura=assin, ultima_atualizacao=datetime.now().isoformat(timespec='seconds'))
     with open(ESTADO, 'w', encoding='utf-8') as f:
         json.dump(estado, f, ensure_ascii=False, indent=1)

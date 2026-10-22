@@ -131,19 +131,42 @@ def pdf_texto(url, com_posicao=False):
 
 
 # ---------- leitores dos relatórios ----------
+_RE_COD = re.compile(r'(?:CATMA[TR]|CATSER|C[OÓ]DIGO\s*BR|CODIGOBR|C[OÓ]D\.?\s*BR)(?:\\[tn]|[^\w])*(\d{4,9})', re.I)
+
+def codigo_produto(*textos):
+    """código do catálogo federal (CATMAT/CATSER ou "CODIGOBR") que o portal traz na descrição do item"""
+    for t in textos:
+        m = _RE_COD.search(t or '')
+        if m:
+            return m.group(1).lstrip('0') or m.group(1)
+    return ''
+
 def itens_pos(b):
-    """itens do empenho com o nome completo do produto (o nome pode ocupar várias linhas: x = 40, fonte 8)"""
+    """itens do empenho com o nome completo do produto (o nome pode ocupar várias linhas: x = 40, fonte 8),
+    a descrição completa (linhas em fonte 7 logo abaixo), a unidade de medida (coluna UM, x ~ 335)
+    e o código CATMAT/CODIGOBR quando o portal informa"""
     b = [{**k, 't': k['t'].strip()} for k in b if k['t'].strip()]
     itens, nome, i = [], [], 0
+    def novo(p, m, vu, q, vt):
+        itens.append({'p': p, 'm': m, 'vu': vu, 'q': q, 'vt': vt, 'u': '', 'c': '', 'cod': '', 'det': 1})
     while i < len(b):
         k = b[i]
         if k['x'] == 40 and k['f'] == 8 and not is_num(k['t']):
             nome.append(k['t']); i += 1; continue
         if nome and 150 < k['x'] < 330 and not is_num(k['t']) and i + 3 < len(b) and is_num(b[i + 1]['t']) and is_num(b[i + 2]['t']) and is_num(b[i + 3]['t']):
-            itens.append({'p': ' '.join(nome), 'm': k['t'], 'vu': num(b[i + 1]['t']), 'q': num(b[i + 2]['t']), 'vt': num(b[i + 3]['t'])}); i += 4; nome = []; continue
+            novo(' '.join(nome), k['t'], num(b[i + 1]['t']), num(b[i + 2]['t']), num(b[i + 3]['t'])); i += 4; nome = []; continue
         if nome and is_num(k['t']) and i + 2 < len(b) and is_num(b[i + 1]['t']) and is_num(b[i + 2]['t']):
-            itens.append({'p': ' '.join(nome), 'm': '', 'vu': num(k['t']), 'q': num(b[i + 1]['t']), 'vt': num(b[i + 2]['t'])}); i += 3; nome = []; continue
+            novo(' '.join(nome), '', num(k['t']), num(b[i + 1]['t']), num(b[i + 2]['t'])); i += 3; nome = []; continue
+        if itens and not nome:
+            u = itens[-1]
+            if k['x'] == 40 and k['f'] < 8 and not u['u']:          # descrição completa do item
+                u['c'] = (u['c'] + ' ' + k['t'].replace('\\t', ' ')).strip(); i += 1; continue
+            if 320 < k['x'] < 350 and k['f'] == 8 and not u['u'] and len(k['t']) <= 8 and not is_num(k['t']) and k['t'] != 'UM':
+                u['u'] = k['t'].upper(); i += 1; continue
         nome = []; i += 1
+    for it in itens:
+        it['c'] = re.sub(r'\s+', ' ', it['c'])[:400]
+        it['cod'] = codigo_produto(it['c'], it['p'])
     return itens
 
 def _idx(tk, v):
@@ -208,7 +231,7 @@ def ler_empenhos(T):
         e = {'n': nE, 'd': iso(at(iE + 3)), 'tipo': at(iE + 2), 'lic': lic, 'contrato': contrato, 'forn': at(iF + 1) if iF >= 0 else '',
              'sec': at(iUn - 1) if iUn > 0 else '', 'unid': (at(iUn) + ' ' + at(iUn + 1)) if iUn > 0 else '', 'prog': at(iUn + 3) if iUn > 0 else '',
              'el': at(iEl) if iEl >= 0 else '', 'eld': at(iEl + 1) if iEl >= 0 else '', 'dot': at(iDot) if iDot > 0 else '', 'fdesc': at(iDot + 1) if iDot > 0 else '',
-             'sant': g('Saldo anterior'), 'v': g('Valor empenhado'), 'sat': g('Saldo atual'), 'movs': movs, 'items': itens, 'hist': hist,
+             'sant': g('Saldo anterior'), 'v': g('Valor empenhado'), 'sat': g('Saldo atual'), 'movs': movs, 'items': itens, 'hist': hist, 'det': 1,
              'req': str(int(at(iE + 4))) if re.match(r'^\d{1,7}$', at(iE + 4)) else ''}  # Requisição Nº = requisição de empenho
         if nE not in out:
             out[nE] = e

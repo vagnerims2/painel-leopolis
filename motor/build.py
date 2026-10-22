@@ -206,6 +206,37 @@ def wcsv(name, rs, cs):
 wcsv('empenhos.csv', R, cols)
 
 # ---------- itens ----------
+_RE_MED = re.compile(r'(\d+(?:[.,]\d+)?)\s*(ML|LITROS?|LTS?|L|KG|GRAMAS?|GRS?|G|MG|MCG)\b')
+_RE_QTD = re.compile(r'\b(?:C/|COM|CONTENDO|CX\.?\s*(?:C/|COM)?)\s*(\d{1,5})\s*(UN|UND|UNID|UNIDADES|FOLHAS|FLS|ROLOS|PARES|PCS?|PECAS|SACHES?|ENVELOPES|COMPRIMIDOS|CAPSULAS|TIRAS|FRASCOS)\b')
+def medidas(*textos):
+    """medidas de embalagem citadas no nome/descrição (5 L, 800 ml, 500 g, caixa c/ 100): o mesmo produto em embalagens
+    diferentes não pode ser comparado pelo preço unitário"""
+    t = re.sub(r'\s+', ' ', norm(' '.join(x or '' for x in textos)))
+    m = {}
+    for n, u in _RE_MED.findall(t):
+        try:
+            v = float(n.replace('.', '').replace(',', '.')) if re.match(r'^\d{1,3}(\.\d{3})+$', n) else float(n.replace(',', '.'))
+        except ValueError:
+            continue
+        u = {'LITRO': 'L', 'LITROS': 'L', 'LT': 'L', 'LTS': 'L', 'GRAMA': 'G', 'GRAMAS': 'G', 'GR': 'G', 'GRS': 'G'}.get(u, u)
+        if u == 'L': v, u = v * 1000, 'ML'
+        if u == 'KG': v, u = v * 1000, 'G'
+        if v > 0: m[f'{v:g}{u}'] = (v, u)
+    for n, u in _RE_QTD.findall(t):
+        if int(n) > 1: m[f'X{int(n)}'] = (int(n), 'X')
+    rot = []
+    for k, (v, u) in sorted(m.items(), key=lambda kv: (kv[1][1], kv[1][0])):
+        if u == 'ML': rot.append(f'{v / 1000:g} L'.replace('.', ',') if v >= 1000 else f'{v:g} ml')
+        elif u == 'G': rot.append(f'{v / 1000:g} kg'.replace('.', ',') if v >= 1000 else f'{v:g} g')
+        elif u == 'X': rot.append(f'c/ {v:g}')
+        else: rot.append(f'{v:g} {u.lower()}')
+    return ' '.join(sorted(m)), ' · '.join(rot)
+_RE_EMB = re.compile(r'\b(GAL[AÃ]O|REFIL|FRASCO|BOMBONA|BALDE|LATA|PACOTE|PCT|CAIXA|CX|FARDO|SACO|ROLO|POTE|TUBO|AMPOLA|BISNAGA|GARRAFA|SACHE|ENVELOPE|BOLSA|EMBALAGEM)\b[^,;]{0,25}?\d+(?:[.,]\d+)?\s*(?:ML|LITROS?|LTS?|L|KG|GRAMAS?|GRS?|G|UN|UNIDADES|FOLHAS)?\b', re.I)
+def rotulo_embalagem(nome, desc):
+    """rótulo curto da embalagem para mostrar na tela: medidas do nome do produto ou de trechos como 'GALÃO 5 L'"""
+    trechos = [nome or ''] + [x.group(0) for x in _RE_EMB.finditer(norm(desc or ''))]
+    return medidas(*trechos)[1]
+
 req = defaultdict(list)
 if req_p and os.path.exists(req_p):
     for x in csv.DictReader(open(req_p, encoding='utf-8')):
@@ -219,8 +250,16 @@ for n, e in E.items():
         for x in req.get(n, []):
             a, b = norm(x['produto']), norm(i['p'])
             if a[:18] == b[:18] or a.startswith(b) or b.startswith(a): q_liq = x['qtd_liquidada']; break
+        # chave de comparação de preço: código do catálogo (ou o nome) + unidade + medidas da embalagem.
+        # Itens ainda não relidos com a descrição completa ficam sem chave (não entram na comparação).
+        cmp_, emb = '', ''
+        if i.get('det'):
+            mk = medidas(i['p'], i.get('c', ''))[0]; emb = rotulo_embalagem(i['p'], i.get('c', ''))
+            base = ('COD ' + i['cod']) if i.get('cod') else re.sub(r'[^A-Z0-9]+', ' ', norm(i['p'])).strip()
+            cmp_ = f"{base}|{norm(i.get('u', ''))}|{mk}"
         itens.append(dict(chave=f"{n}-{k+1}", empenho=n, data=e['d'], fornecedor=r['fornecedor'], secretaria=r['secretaria'], licitacao=r['licitacao'],
-            produto=i['p'], marca=i['m'], quantidade=i['q'], valor_unitario=round(i['vu'], 4), valor_total=round(i['vt'], 2), qtd_liquidada_equiplano=q_liq, situacao=r['situacao']))
+            produto=i['p'], marca=i['m'], quantidade=i['q'], valor_unitario=round(i['vu'], 4), valor_total=round(i['vt'], 2), qtd_liquidada_equiplano=q_liq, situacao=r['situacao'],
+            unidade=i.get('u', ''), codigo=i.get('cod', ''), embalagem=emb, comparar=cmp_, descricao=(i.get('c') or '')[:160]))
 itens.sort(key=lambda x: (x['data'], int(x['empenho'])), reverse=True)
 wcsv('itens.csv', itens, list(itens[0].keys()) if itens else ['chave'])
 
