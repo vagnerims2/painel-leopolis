@@ -470,7 +470,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
     <div class="linha-total"><h2 id="nf-tit">Notas fiscais</h2><button type="button" class="btn2" id="nf-fechar">Fechar</button></div>
     <div id="nf-lista"></div>
-    <p class="note">A nota abre aqui mesmo, numa janela de visualização, sem baixar; de lá dá para imprimir ou baixar o PDF anexado pela prefeitura no Portal da Transparência. A consulta da NF-e é feita no site da Receita (pode pedir para confirmar que você não é um robô). Para o XML completo, use a chave de acesso no seu sistema ou no portal da NF-e.</p>
+    <p class="note">A nota abre numa janela de visualização, sem baixar; lá em cima ficam os botões de imprimir e de baixar o PDF anexado pela prefeitura no Portal da Transparência. A consulta da NF-e é feita no site da Receita (pode pedir para confirmar que você não é um robô). Para o XML completo, use a chave de acesso no seu sistema ou no portal da NF-e.</p>
   </div></div>
 
   <!-- ============ VISÃO GERAL ============ -->
@@ -1253,26 +1253,14 @@ function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lis
 // visualização da nota numa janela flutuante, sem baixar (o portal só entrega o PDF como download;
 // a pré-visualização usa o visualizador público do Google Docs, que lê o mesmo arquivo do portal)
 function verNota(r) {
-  let m = document.getElementById('nfv-modal');
-  if (!m) {
-    m = document.createElement('div'); m.id = 'nfv-modal'; m.className = 'nfv-fundo'; m.hidden = true;
-    m.innerHTML = '<div class="nfv-caixa" role="dialog" aria-modal="true" aria-labelledby="nfv-tit"><div class="nfv-topo"><b id="nfv-tit"></b><div class="nfv-bts">'
-      + '<button type="button" class="btn2" id="nfv-recarregar">Recarregar</button><a class="btn2" id="nfv-imprimir" target="_blank" rel="noopener">Imprimir</a>'
-      + '<a class="btn2" id="nfv-baixar" target="_blank" rel="noopener">Baixar PDF</a><button type="button" class="btn2 pri" id="nfv-fechar">Fechar</button></div></div>'
-      + '<div class="nfv-area"><p class="note" id="nfv-msg">Carregando a nota… Se não aparecer em alguns segundos, toque em Recarregar.</p><iframe id="nfv-frame" title="Nota fiscal"></iframe></div></div>';
-    document.getElementById('dash-root').appendChild(m);
-    const fechar = () => { m.hidden = true; document.getElementById('nfv-frame').src = 'about:blank'; };
-    document.getElementById('nfv-fechar').addEventListener('click', fechar);
-    m.addEventListener('click', (e) => { if (e.target === m) fechar(); });
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !m.hidden) { e.stopImmediatePropagation(); fechar(); } }, true);
-    document.getElementById('nfv-recarregar').addEventListener('click', () => { const f = document.getElementById('nfv-frame'); const u = f.dataset.u; f.src = 'about:blank'; setTimeout(() => { f.src = u; }, 150); });
-  }
-  const url = PORTAL_DOC + r.id, g = 'https://docs.google.com/gview?embedded=1&url=' + encodeURIComponent(url);
-  document.getElementById('nfv-tit').textContent = `${docTxt(r)} · ${r.fornecedor || ''}`;
-  document.getElementById('nfv-imprimir').href = 'https://docs.google.com/gview?url=' + encodeURIComponent(url);
-  document.getElementById('nfv-baixar').href = url;
-  const f = document.getElementById('nfv-frame'); f.dataset.u = g; f.src = g;
-  m.hidden = false;
+  // abre a nota no visualizador do Google Docs numa janela à parte (no celular, numa aba nova):
+  // mostra a nota inteira sem baixar, com os botões de imprimir e baixar do próprio visualizador.
+  // (dentro de um quadro na página alguns computadores bloqueiam o visualizador; em janela própria funciona)
+  const url = 'https://docs.google.com/gview?url=' + encodeURIComponent(PORTAL_DOC + r.id);
+  const w = Math.min(1000, screen.availWidth - 40), h = Math.min(1100, screen.availHeight - 60);
+  const celular = window.matchMedia('(max-width: 820px)').matches;
+  const jan = celular ? window.open(url, '_blank') : window.open(url, 'nota-fiscal', `popup=yes,width=${w},height=${h},left=${Math.max(0, (screen.availWidth - w) / 2)},top=20`);
+  if (jan) { try { jan.opener = null; jan.focus(); } catch (e) {} } else { const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); }
 }
 document.getElementById('nf-fechar').addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; });
 document.getElementById('nf-modal').addEventListener('click', (e) => { if (e.target.id === 'nf-modal') e.target.hidden = true; });
