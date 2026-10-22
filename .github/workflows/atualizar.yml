@@ -9,6 +9,10 @@ on:
         description: 'Atualizar mesmo sem novidade no portal'
         type: boolean
         default: false
+      relatorio:
+        description: 'Enviar agora o relatório de requisições em atraso (e-mail)'
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths: ['motor/**', '.github/workflows/atualizar.yml']
@@ -51,6 +55,20 @@ jobs:
           cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
       - name: Coleta no portal e recalcula
         run: python motor/estado/painel.py ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
+      - name: Relatório semanal de requisições em atraso (segunda-feira, primeira rodada a partir das 7h)
+        if: success()
+        env:
+          PAINEL_SENHA: ${{ secrets.PAINEL_SENHA }}
+          GMAIL_USUARIO: ${{ secrets.GMAIL_USUARIO }}
+          GMAIL_SENHA_APP: ${{ secrets.GMAIL_SENHA_APP }}
+          RELATORIO_PARA: ${{ secrets.RELATORIO_PARA }}
+        run: |
+          semana=$(date +%G-%V); marca=motor/estado/relatorio_atraso.txt
+          if [ "${{ github.event.inputs.relatorio }}" = "true" ] || { [ "$(date +%u)" = 1 ] && [ "$(date +%H)" -ge 7 ] && [ "$(cat $marca 2>/dev/null)" != "$semana" ]; }; then
+            if python ferramentas/relatorio_atraso.py . /tmp/relatorio --enviar; then echo "$semana" > $marca; else echo "Relatório não enviado (veja a mensagem acima)."; fi
+          else
+            echo "Não é hora do relatório semanal."
+          fi
       - name: Guarda o estado para a próxima vez
         if: success()
         uses: actions/cache/save@v4

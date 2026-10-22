@@ -882,7 +882,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 <script>
 
 const N = (x) => Number(x) || 0;
-const dias = (d) => Math.floor((Date.now() - new Date(d + 'T12:00:00')) / 864e5);
+const dias = (d) => { const h = new Date(); h.setHours(12, 0, 0, 0); return Math.round((h - new Date(d + 'T12:00:00')) / 864e5); };  // dias de calendário
 
 dash.calc('info', {
   title: 'Data dos dados', description: 'Último dia com movimento no portal.', inputs: ['movimento', 'empenhos'],
