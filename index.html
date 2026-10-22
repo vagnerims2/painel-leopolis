@@ -305,6 +305,16 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .nf-acoes .btn2{text-decoration:none;display:inline-block}
 #dash-root .nf-acoes .btn2.pri{background:#1F4E8C;color:#fff;border-color:#1F4E8C}
 @media print{#dash-root .nf-bt,#dash-root .nf-modal{display:none!important}}
+#dash-root .nfv-fundo{position:fixed;inset:0;background:rgba(15,23,42,.55);display:flex;align-items:center;justify-content:center;z-index:60;padding:12px}
+#dash-root .nfv-fundo[hidden]{display:none}
+#dash-root .nfv-caixa{background:#fff;color:#1f1e1b;border-radius:12px;width:min(980px,100%);height:min(94vh,1200px);display:flex;flex-direction:column;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+#dash-root .nfv-topo{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-bottom:1px solid #e3e0d8}
+#dash-root .nfv-topo b{font-size:15px}
+#dash-root .nfv-bts{display:flex;flex-wrap:wrap;gap:6px}
+#dash-root .nfv-area{position:relative;flex:1;background:#eceae4}
+#dash-root .nfv-area iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent}
+#dash-root .nfv-area .note{position:absolute;left:0;right:0;top:40%;text-align:center;padding:0 16px}
+@media print{#dash-root .nfv-fundo{display:none!important}}
 
 #dash-root .vis-sel{display:inline-flex;width:max-content;justify-self:start;align-self:start;gap:0;margin:0 0 10px;border:1px solid #b9cbe6;border-radius:10px;overflow:hidden;background:#fff}
 #dash-root .vis-sel button{font:inherit;font-size:14px;font-weight:600;padding:8px 18px;border:0;background:#fff;color:#1F4E8C;cursor:pointer}
@@ -463,7 +473,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
     <div class="linha-total"><h2 id="nf-tit">Notas fiscais</h2><button type="button" class="btn2" id="nf-fechar">Fechar</button></div>
     <div id="nf-lista"></div>
-    <p class="note">O arquivo é o anexado pela prefeitura no Portal da Transparência; o navegador baixa e abre o PDF. A consulta da NF-e é feita no site da Receita (pode pedir para confirmar que você não é um robô). Para o XML completo, use a chave de acesso no seu sistema ou no portal da NF-e.</p>
+    <p class="note">A nota abre aqui mesmo, numa janela de visualização, sem baixar; de lá dá para imprimir ou baixar o PDF anexado pela prefeitura no Portal da Transparência. A consulta da NF-e é feita no site da Receita (pode pedir para confirmar que você não é um robô). Para o XML completo, use a chave de acesso no seu sistema ou no portal da NF-e.</p>
   </div></div>
 
   <!-- ============ VISÃO GERAL ============ -->
@@ -1233,7 +1243,7 @@ function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lis
     const sub = document.createElement('div'); sub.className = 'sub2'; sub.textContent = `${r.fornecedor} · emitida em ${br(r.data_documento)} · liquidação ${r.liquidacao} de ${br(r.data_liquidacao)}${r.empenho ? ' · empenho ' + r.empenho : ''}`;
     const ac = document.createElement('div'); ac.className = 'nf-acoes';
     const bt = (txt, href, cls) => { const a = document.createElement('a'); a.className = 'btn2 ' + (cls || ''); a.textContent = txt; a.href = href; a.target = '_blank'; a.rel = 'noopener'; ac.appendChild(a); return a; };
-    if (r.id) bt('Baixar / ver a nota (PDF)', PORTAL_DOC + r.id, 'pri');
+    if (r.id) { const v = document.createElement('button'); v.type = 'button'; v.className = 'btn2 pri'; v.textContent = 'Ver a nota fiscal'; v.addEventListener('click', () => verNota(r)); ac.appendChild(v); }
     if (r.link && /^https?:\/\//.test(r.link)) bt('Consultar a nota no site emissor', r.link);
     if (r.chave) { bt('Consultar NF-e na Receita', RECEITA_NFE + r.chave);
       const cp = document.createElement('button'); cp.type = 'button'; cp.className = 'btn2'; cp.textContent = 'Copiar chave de acesso';
@@ -1243,6 +1253,30 @@ function abrirNotas(lista, titulo) { const box = document.getElementById('nf-lis
     box.appendChild(it); });
   if (!lista.length) { const p = document.createElement('p'); p.className = 'note'; p.textContent = 'Nenhum documento fiscal encontrado no portal para este lançamento.'; box.appendChild(p); }
   document.getElementById('nf-modal').hidden = false; }
+// visualização da nota numa janela flutuante, sem baixar (o portal só entrega o PDF como download;
+// a pré-visualização usa o visualizador público do Google Docs, que lê o mesmo arquivo do portal)
+function verNota(r) {
+  let m = document.getElementById('nfv-modal');
+  if (!m) {
+    m = document.createElement('div'); m.id = 'nfv-modal'; m.className = 'nfv-fundo'; m.hidden = true;
+    m.innerHTML = '<div class="nfv-caixa" role="dialog" aria-modal="true" aria-labelledby="nfv-tit"><div class="nfv-topo"><b id="nfv-tit"></b><div class="nfv-bts">'
+      + '<button type="button" class="btn2" id="nfv-recarregar">Recarregar</button><a class="btn2" id="nfv-imprimir" target="_blank" rel="noopener">Imprimir</a>'
+      + '<a class="btn2" id="nfv-baixar" target="_blank" rel="noopener">Baixar PDF</a><button type="button" class="btn2 pri" id="nfv-fechar">Fechar</button></div></div>'
+      + '<div class="nfv-area"><p class="note" id="nfv-msg">Carregando a nota… Se não aparecer em alguns segundos, toque em Recarregar.</p><iframe id="nfv-frame" title="Nota fiscal"></iframe></div></div>';
+    document.getElementById('dash-root').appendChild(m);
+    const fechar = () => { m.hidden = true; document.getElementById('nfv-frame').src = 'about:blank'; };
+    document.getElementById('nfv-fechar').addEventListener('click', fechar);
+    m.addEventListener('click', (e) => { if (e.target === m) fechar(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !m.hidden) { e.stopImmediatePropagation(); fechar(); } }, true);
+    document.getElementById('nfv-recarregar').addEventListener('click', () => { const f = document.getElementById('nfv-frame'); const u = f.dataset.u; f.src = 'about:blank'; setTimeout(() => { f.src = u; }, 150); });
+  }
+  const url = PORTAL_DOC + r.id, g = 'https://docs.google.com/gview?embedded=1&url=' + encodeURIComponent(url);
+  document.getElementById('nfv-tit').textContent = `${docTxt(r)} · ${r.fornecedor || ''}`;
+  document.getElementById('nfv-imprimir').href = 'https://docs.google.com/gview?url=' + encodeURIComponent(url);
+  document.getElementById('nfv-baixar').href = url;
+  const f = document.getElementById('nfv-frame'); f.dataset.u = g; f.src = g;
+  m.hidden = false;
+}
 document.getElementById('nf-fechar').addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; });
 document.getElementById('nf-modal').addEventListener('click', (e) => { if (e.target.id === 'nf-modal') e.target.hidden = true; });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') document.getElementById('nf-modal').hidden = true; });
