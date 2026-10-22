@@ -445,6 +445,59 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   #dash-root .ind-row{grid-template-columns:1fr auto}
   #dash-root .ind-row .ind-trilho{grid-column:1 / -1;grid-row:2}
 }
+/* ---------- Relatórios (CISNOP e Santa Casa) ---------- */
+#dash-root .tabs button[data-go=relatorios]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h9l5 5v15H6V2zm2 9v9h2v-9H8zm4 3v6h2v-6h-2zm4-5v11h2V9h-2z'/%3E%3C/svg%3E")}
+#dash-root .rl-tools{flex-wrap:wrap;align-items:center}
+#dash-root .rl-tools label{display:flex;align-items:center;gap:6px;font-size:13px}
+#dash-root .rl-h3{font-size:14px;font-weight:600;margin:18px 0 8px}
+#dash-root .rl-tiles{margin-top:10px}
+#dash-root .rl-leg{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:12px;color:var(--color-fg-muted);margin-bottom:6px}
+#dash-root .rl-leg span{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:-8px}
+#dash-root .rl-leg .k1{background:var(--serie0)} #dash-root .rl-leg .k2{background:var(--serie2)} #dash-root .rl-leg .k3{background:color-mix(in srgb,var(--serie0) 12%,transparent);border:1px solid color-mix(in srgb,var(--serie0) 35%,transparent)}
+#dash-root .rl-graf{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;align-items:end;height:220px;border-bottom:1px solid var(--color-border-line);margin-bottom:20px}
+#dash-root .rl-graf .m{position:relative;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;border-radius:4px 4px 0 0}
+#dash-root .rl-graf .m.sel{background:color-mix(in srgb,var(--serie0) 9%,transparent)}
+#dash-root .rl-graf .m b{display:block;width:62%;max-width:44px}
+#dash-root .rl-graf .m .gb{display:flex;align-items:flex-end;justify-content:center;gap:2px;height:100%;width:100%}
+#dash-root .rl-graf .m .bw{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;flex:1 1 0;max-width:30px;min-width:0}
+#dash-root .rl-graf .m .bw b{width:100%;max-width:none;border-radius:3px 3px 0 0;min-height:1px}
+#dash-root .rl-graf .m .bw i{font-style:normal;font-size:9.5px;font-weight:600;writing-mode:vertical-rl;transform:rotate(180deg);margin-bottom:3px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#dash-root .rl-sec{display:flex;flex-direction:column;gap:10px;margin:6px 0 14px}
+#dash-root .rl-sec .sr{display:grid;grid-template-columns:minmax(8rem,16rem) 1fr;gap:10px;align-items:center}
+#dash-root .rl-sec .sn{font-size:12.5px;line-height:1.25}
+#dash-root .rl-sec .sb{display:flex;flex-direction:column;gap:3px}
+#dash-root .rl-sec .sl{display:flex;align-items:center;gap:6px}
+#dash-root .rl-sec .sl b{height:12px;border-radius:0 3px 3px 0;flex:0 0 auto}
+#dash-root .rl-sec .sl span{font-size:11.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+@media (max-width:640px){#dash-root .rl-sec .sr{grid-template-columns:1fr}#dash-root .rl-graf .m .bw i{font-size:8px}}
+#dash-root .rl-graf .m b.c{background:var(--serie0)} #dash-root .rl-graf .m b.s{background:var(--serie2);border-radius:3px 3px 0 0}
+#dash-root .rl-graf .m i{font-style:normal;font-size:10.5px;font-weight:600;font-variant-numeric:tabular-nums;margin-bottom:3px;white-space:nowrap}
+#dash-root .rl-graf .m small{position:absolute;bottom:-18px;font-size:11px;color:var(--color-fg-muted)}
+#dash-root #rl-pags td:nth-child(5){max-width:26rem;font-size:12px;color:var(--color-fg-muted)}
+@media (max-width:640px){#dash-root .rl-graf .m i{font-size:8px;writing-mode:vertical-rl;transform:rotate(180deg)}#dash-root .rl-graf{gap:2px}}
+@media print{#dash-root .rl-tools,#dash-root #rl-imprimir{display:none!important}#dash-root .rl-graf{height:180px}#dash-root .tab[data-tab=relatorios] .tiles{grid-template-columns:repeat(4,1fr)}}
+#dash-root .rl-escolha{margin-bottom:12px}
+#dash-root #rp-busca{flex:1 1 22rem;min-width:0}
+#dash-root .rp-var{display:flex;flex-wrap:wrap;gap:6px 10px;margin:4px 0 6px}
+#dash-root .rp-var label{display:flex;gap:6px;align-items:center;font-size:12.5px;border:1px solid var(--color-border-line);border-radius:8px;padding:4px 8px;background:var(--color-panel,#fff)}
+#dash-root .rp-var .aviso{flex-basis:100%;font-size:12.5px;color:var(--color-warn)}
+#dash-root #rp-graf .m b{background:var(--serie1);border-radius:3px 3px 0 0}
+@media print{#dash-root .rl-escolha,#dash-root #rp-imprimir,#dash-root .rp-var input{display:none!important}#dash-root .rp-var label{border:0;padding:0}}
+#dash-root .rp-var .grp{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;flex-basis:100%}
+#dash-root .rp-var .grp b{font-size:12.5px}
+#dash-root .rl-campo{position:relative;flex:1 1 100%;min-width:0}
+#dash-root #rl-busca{width:100%;box-sizing:border-box;font-size:16px}
+#dash-root .rl-sug{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;margin:0;padding:4px 0;list-style:none;background:var(--color-panel,#fff);border:1px solid var(--color-border-line);border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.15);max-height:min(50vh,320px);overflow:auto}
+#dash-root .rl-sug[hidden]{display:none}
+#dash-root .rl-sug li{padding:10px 14px;font-size:14px;cursor:pointer;line-height:1.3}
+#dash-root .rl-sug li small{display:block;font-size:11.5px;color:var(--color-fg-muted)}
+#dash-root .rl-sug li[aria-selected=true],#dash-root .rl-sug li:hover{background:color-mix(in srgb,var(--serie0) 10%,transparent)}
+@media print{#dash-root .rl-sug{display:none!important}}
+#dash-root .rl-leg span{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:-8px}
+  #rl-forn .tile .num, #rl-prod .tile .num, #rr-tiles .tile .num { font-size: clamp(1.05rem, 2vw, 1.5rem); overflow-wrap: anywhere; }
+#dash-root #rr-card{margin-bottom:16px}
+#dash-root .tab[data-tab=receitas].rr-so>:not(#rr-card){display:none!important}
+@media print{body.imprimir-rr #dash-root .tab[data-tab=receitas]>:not(#rr-card){display:none!important}body.imprimir-rr #dash-root #rr-card .rl-tools,body.imprimir-rr #dash-root #rr-imprimir{display:none!important}}
 </style>
 </head>
 <body>
@@ -470,6 +523,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <button data-go="receitas" aria-selected="false">Receitas</button>
     <button data-go="indicadores" aria-selected="false">Indicadores LRF</button>
     <button data-go="cidadao" aria-selected="false">Para o cidadão</button>
+    <button data-go="relatorios" aria-selected="false">Relatórios</button>
   </nav>
 
   <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
@@ -665,6 +719,29 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <!-- ============ RECEITAS ============ -->
   <section class="tab" data-tab="receitas" hidden>
     <section class="tiles" id="rec-tiles"></section>
+    <div class="card rl-card" id="rr-card">
+      <div class="linha-total"><h2 id="rr-tit">Relatório de receita por período</h2><button type="button" class="btn2 pri" id="rr-imprimir">Imprimir relatório</button></div>
+      <div class="tools rl-tools">
+        <div class="rl-campo"><input id="rr-busca" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" placeholder="Ex.: IPTU · ISS, ITBI · FPM, ICMS"><ul class="rl-sug" id="rr-sug" role="listbox" hidden></ul></div>
+        <label>De <select id="rr-ini"></select></label>
+        <label>até <select id="rr-fim"></select></label>
+        <button type="button" class="btn2" data-rr="3">Último trimestre</button>
+        <button type="button" class="btn2" data-rr="4">Último quadrimestre</button>
+        <button type="button" class="btn2" data-rr="ano">Ano todo</button>
+      </div>
+      <p class="note" id="rr-sub">Digite uma ou mais receitas, separadas por vírgula (até 5), e escolha o período.</p>
+      <div id="rr-corpo" hidden>
+        <section class="tiles rl-tiles" id="rr-tiles"></section>
+        <h3 class="rl-h3">Mês a mês</h3>
+        <div class="tblwrap"><table class="rec-tab" id="rr-meses"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+        <h3 class="rl-h3">Detalhe: receita do ano, dívida ativa, multas e juros</h3>
+        <div class="tblwrap"><table class="rec-tab" id="rr-det"><thead><tr><th>Receita</th><th class="r">Do ano</th><th class="r">Multas e juros</th><th class="r">Dívida ativa</th><th class="r">Multas e juros da dívida</th><th class="r">Total</th><th class="r" id="rr-hant">Ano anterior</th><th class="r">Variação</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+        <h3 class="rl-h3" id="rr-graf-tit">Arrecadação por mês</h3>
+        <div class="rl-leg" id="rr-leg"></div>
+        <div class="rl-graf" id="rr-graf" role="img" aria-label="Arrecadação por mês"></div>
+        <p class="note" id="rr-fonte"></p>
+      </div>
+    </div>
     <div class="card">
       <div class="linha-total"><h2>Arrecadação por mês</h2><div class="rec-leg"><span class="k26"></span>2026 <span class="k25"></span>2025</div></div>
       <p class="note" id="rec-mes-nota"></p>
@@ -750,6 +827,55 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <div class="cid-regras" id="cid-regras"></div>
     </div>
     <div class="card"><p class="note" id="cid-fonte"></p></div>
+  </section>
+
+  <!-- ============ RELATÓRIOS ============ -->
+  <section class="tab" data-tab="relatorios" hidden>
+    <div class="card rl-card">
+      <div class="linha-total"><h2 id="rl-tit">Relatório</h2><button type="button" class="btn2 pri" id="rl-imprimir">Imprimir relatório</button></div>
+      <div class="tools rl-tools">
+        <div class="rl-campo"><input id="rl-busca" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" placeholder="Ex.: etanol, diesel · cisnop, santa casa"><ul class="rl-sug" id="rl-sug" role="listbox" hidden></ul></div>
+        <label>De <select id="rl-ini"></select></label>
+        <label>até <select id="rl-fim"></select></label>
+        <button type="button" class="btn2" data-rl="3">Último trimestre</button>
+        <button type="button" class="btn2" data-rl="4">Último quadrimestre</button>
+        <button type="button" class="btn2" data-rl="ano">Ano todo</button>
+        <label>Secretaria <select id="rl-sec"><option value="">Todas</option></select></label>
+        <label>Produtos pelo <select id="rl-base"><option value="liq">Liquidado (nota recebida)</option><option value="pago">Pago</option><option value="emp">Empenhado</option></select></label>
+        <label><input type="checkbox" id="rl-cons"> incluir nos produtos os repasses a consórcios</label>
+      </div>
+      <p class="note" id="rl-sub">Digite um ou mais produtos ou fornecedores, separados por vírgula. Fornecedor mostra o que foi pago (pela data do pagamento); produto mostra o que foi comprado (quantidade e preço empenhado).</p>
+      <div class="rp-var" id="rl-var"></div>
+      <div id="rl-forn" hidden>
+        <h3 class="rl-h3" id="rl-ftit">Pagamentos aos fornecedores (pela data do pagamento)</h3>
+        <section class="tiles rl-tiles" id="rl-ftiles"></section>
+        <div class="tblwrap"><table class="rec-tab" id="rl-fmeses"><thead></thead><tbody></tbody><tfoot></tfoot></table></div>
+        <div id="rl-tipos-box" hidden><h3 class="rl-h3">CISNOP por tipo de despesa</h3>
+          <div class="tblwrap"><table class="rec-tab" id="rl-tipos"><thead></thead><tbody></tbody></table></div></div>
+        <h3 class="rl-h3">Por secretaria</h3>
+        <div class="rl-leg" id="rl-fsleg"></div>
+        <div class="rl-sec" id="rl-fsgraf" role="img" aria-label="Pagamentos por secretaria"></div>
+        <h3 class="rl-h3" id="rl-fgraf-tit">Evolução no ano</h3>
+        <div class="rl-leg" id="rl-fleg"></div>
+        <div class="rl-graf" id="rl-fgraf" role="img" aria-label="Pagamentos por mês no ano"></div>
+        <h3 class="rl-h3">Pagamentos do período</h3>
+        <div class="tblwrap"><table class="rec-tab" id="rl-fpags"><thead><tr><th>Data</th><th>Empenho</th><th>Fornecedor</th><th class="hide-sm">Secretaria</th><th class="hide-sm">Histórico</th><th class="r">Valor</th></tr></thead><tbody></tbody></table></div>
+      </div>
+      <div id="rl-prod" hidden>
+        <h3 class="rl-h3">Produtos comprados no período (preço empenhado)</h3>
+        <div class="tblwrap"><table class="rec-tab" id="rl-presumo"><thead><tr><th>Produto</th><th>Unidade</th><th class="r">Compras</th><th class="r">Quantidade</th><th class="r">Valor</th><th class="r">Menor</th><th class="r">Médio</th><th class="r">Maior</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
+        <h3 class="rl-h3">Preço por licitação</h3>
+        <div class="tblwrap"><table class="rec-tab" id="rl-plic"><thead><tr><th>Produto</th><th>Licitação</th><th>Fornecedor</th><th class="r">Compras</th><th class="r">Quantidade</th><th class="r">Menor</th><th class="r">Médio</th><th class="r">Maior</th></tr></thead><tbody></tbody></table></div>
+        <h3 class="rl-h3">Por secretaria</h3>
+        <div class="rl-leg" id="rl-sleg"></div>
+        <div class="rl-sec" id="rl-sgraf" role="img" aria-label="Valor comprado por secretaria"></div>
+        <div class="tblwrap"><table class="rec-tab" id="rl-psec"><thead><tr><th>Produto</th><th>Secretaria</th><th class="r">Compras</th><th class="r">Quantidade</th><th class="r">Valor</th><th class="r">Preço médio</th></tr></thead><tbody></tbody></table></div>
+        <h3 class="rl-h3" id="rl-pgraf-tit">Valor comprado por mês</h3>
+        <div class="rl-leg" id="rl-pleg"></div>
+        <div class="rl-graf" id="rl-pgraf" role="img" aria-label="Valor comprado por mês"></div>
+      </div>
+      <p class="note" id="rl-fonte"></p>
+    </div>
   </section>
 
   <!-- ============ PRODUTOS ============ -->
@@ -874,7 +1000,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   };
   const v = Date.now();
   fetch('../data/atualizado.txt?v=' + v).then(r => r.ok ? r.text() : '').then(t => { const el = document.getElementById('atualizado'); if (el && t.trim()) el.textContent = 'Última atualização: ' + t.trim() + '.'; }).catch(() => {});
-  const OPCIONAIS = ['notas'];
+  const OPCIONAIS = ['notas', 'pagamentos'];
   Promise.all(FONTES.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
     .concat(OPCIONAIS.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
@@ -1517,6 +1643,95 @@ document.getElementById('req-busca').addEventListener('input', drawReq);
 ['req-parada', 'req-sec', 'req-atraso', 'req-ordem'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
 dash.onData(() => { if (REQ.linhas) { ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
 /* sem senha: abre direto */ fetch('../data/planilha.json?v=' + Date.now()).then(r => r.json()).then(mostrarReq).catch(e => { document.getElementById('req-msg').textContent = 'Não consegui carregar os dados da planilha.'; });
+// ---------- Receitas: relatório de uma ou mais receitas (IPTU, ISS…) por período, do Anexo 10 do portal ----------
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const MESN = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const MESA = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const CORES = ['var(--serie0)', 'var(--serie2)', 'var(--serie1)', '#8e6bbf', '#c0507a'];
+  const nz = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+  const pctF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const APEL = { issqn: 'iss', 'imposto predial': 'iptu', 'iluminacao': 'cosip', 'cota parte': 'icms', fundo: 'fundeb' };
+  let D = null, CATS = [], MESES = [], pronto = false;
+  const anoMes = (k) => [Number(k.slice(0, 4)), Number(k.slice(5, 7))];
+  const chave = (a, m) => `${a}-${String(m).padStart(2, '0')}`;
+  // valor do mês = acumulado do mês − acumulado do mês anterior (o portal sempre soma desde janeiro)
+  function doMes(k, cat) { const ac = D.acum[k]; if (!ac) return null; const [a, m] = anoMes(k); const cur = ac[cat] || [0, 0, 0, 0];
+    if (m === 1) return cur.slice(); const ant = D.acum[chave(a, m - 1)]; if (!ant) return null; const pv = ant[cat] || [0, 0, 0, 0]; return cur.map((v, i) => v - pv[i]); }
+  const somaV = (xs) => xs.reduce((a, v) => a.map((x, i) => x + v[i]), [0, 0, 0, 0]);
+  const tot = (v) => v[0] + v[1] + v[2] + v[3];
+  function casa(q, nome) { const n = nz(nome), w = nz(APEL[q] || q); if (!w) return false; return n === w || n.split(/[^a-z0-9]+/).some(p => p.startsWith(w)) || n.includes(w); }
+  function termos() { return $('rr-busca').value.split(/[,;]/).map(t => t.trim()).filter(Boolean).slice(0, 5); }
+  function grupos() { return termos().map((t, k) => { const cs = CATS.filter(c => casa(nz(t), c)); return { t, cs, nome: cs.length === 1 ? cs[0] : t.toUpperCase(), cor: CORES[k] }; }).filter(g => g.cs.length); }
+  function preparar() {
+    CATS = [...new Set(Object.values(D.acum).flatMap(o => Object.keys(o)))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    MESES = Object.keys(D.acum).filter(k => !(D.faltam || []).includes(k)).sort();
+    const atual = chave(D.ano, D.mes);
+    [$('rr-ini'), $('rr-fim')].forEach(s => { s.replaceChildren(); MESES.forEach(m => { const o = document.createElement('option'); o.value = m; const [a, mm] = anoMes(m); o.textContent = `${MESN[mm - 1]}/${a}` + (m === atual ? ' (em andamento)' : ''); s.appendChild(o); }); });
+    periodo(3); pronto = true; }
+  function periodo(n) { const fech = MESES.filter(m => m < chave(D.ano, D.mes)); if (!fech.length) return; const fim = fech[fech.length - 1];
+    $('rr-fim').value = fim; $('rr-ini').value = n === 'ano' ? (fech.find(m => m.slice(0, 4) === fim.slice(0, 4)) || fech[0]) : fech[Math.max(0, fech.length - n)]; }
+  // sugestões (mesmo jeito do campo de Relatórios)
+  function sugerir() { const ul = $('rr-sug'), v = $('rr-busca').value, partes = v.split(','), q = nz(partes[partes.length - 1]); ul.replaceChildren();
+    const lista = q ? CATS.filter(c => casa(q, c)) : CATS; if (!lista.length || document.activeElement !== $('rr-busca')) { ul.hidden = true; return; }
+    lista.slice(0, 12).forEach(c => { const li = document.createElement('li'); li.setAttribute('role', 'option'); li.textContent = c;
+      li.addEventListener('pointerdown', ev => { ev.preventDefault(); partes[partes.length - 1] = ' ' + c; $('rr-busca').value = partes.join(',').replace(/^\s+/, '') + ', '; ul.hidden = true; desenhar(); $('rr-busca').focus(); sugerir(); }); ul.appendChild(li); });
+    ul.hidden = false; }
+  function desenhar() {
+    if (!D) return; if (!pronto) preparar();
+    const gs = grupos(), ini = $('rr-ini').value, fim = $('rr-fim').value < ini ? ini : $('rr-fim').value;
+    // com receita na busca, a aba mostra só o relatório; com a busca vazia, volta o restante da aba
+    $('rr-card').closest('.tab').classList.toggle('rr-so', gs.length > 0);
+    if (!gs.length) { $('rr-corpo').hidden = true; $('rr-tit').textContent = 'Relatório de receita por período';
+      $('rr-sub').textContent = termos().length ? 'Nenhuma receita encontrada com esse nome. Toque no campo para ver a lista.' : 'Digite uma ou mais receitas, separadas por vírgula (até 5), e escolha o período.'; return; }
+    const meses = MESES.filter(m => m >= ini && m <= fim);
+    const antK = (m) => { const [a, mm] = anoMes(m); return chave(a - 1, mm); };
+    const val = (g, m) => { const vs = g.cs.map(c => doMes(m, c)); return vs.some(v => v == null) ? null : somaV(vs); };
+    const temAnt = meses.every(m => g0ok(antK(m))); function g0ok(k) { return !!D.acum[k]; }
+    const nomeMes = (m) => { const [a, mm] = anoMes(m); return `${MESN[mm - 1].toLowerCase()} de ${a}`; };
+    $('rr-tit').textContent = 'Relatório de receita: ' + gs.map(g => g.nome).join(', ');
+    $('rr-sub').textContent = `Período: ${nomeMes(ini)} a ${nomeMes(fim)} · valor arrecadado em cada mês, já com multas, juros e dívida ativa da mesma receita` + (temAnt ? ` · comparado com o mesmo período de ${Number(ini.slice(0, 4)) - 1}.` : '.');
+    $('rr-corpo').hidden = false;
+    const porG = gs.map(g => { const ms = meses.map(m => val(g, m) || [0, 0, 0, 0]), an = meses.map(m => val(g, antK(m)) || [0, 0, 0, 0]); return { ...g, ms, s: somaV(ms), a: somaV(an), an }; });
+    const T = somaV(porG.map(x => x.s)), TA = somaV(porG.map(x => x.a));
+    const varF = (a, b) => b ? (a >= b ? '+' : '') + pctF.format((a - b) / b * 100) + '%' : '—';
+    // cartões
+    const box = $('rr-tiles'); box.replaceChildren();
+    [['Arrecadado no período', brl.format(tot(T)), `${meses.length} ${meses.length === 1 ? 'mês' : 'meses'} · média ${brl.format(tot(T) / meses.length)} por mês`],
+     ['Receita do ano', brl.format(T[0] + T[1]), 'lançada no exercício, com multas e juros'],
+     ['Dívida ativa', brl.format(T[2] + T[3]), 'débitos de anos anteriores cobrados no período'],
+     ...(temAnt ? [['Mesmo período do ano anterior', brl.format(tot(TA)), `variação de ${varF(tot(T), tot(TA))}`]] : [])]
+      .forEach(([l, n, sub]) => { const c = document.createElement('div'); c.className = 'card tile'; c.innerHTML = '<div class="lbl"></div><div class="num"></div><div class="sub"></div>'; c.children[0].textContent = l; c.children[1].textContent = n; c.children[2].textContent = sub; box.appendChild(c); });
+    // mês a mês
+    { const th = $('rr-meses').tHead; th.replaceChildren(); const h = document.createElement('tr');
+      ['Mês', ...porG.map(x => x.nome), ...(porG.length > 1 ? ['Total'] : []), ...(temAnt ? ['Ano anterior', 'Variação'] : [])].forEach((t, i) => { const c = document.createElement('th'); c.textContent = t; if (i) c.className = 'r'; h.appendChild(c); }); th.appendChild(h);
+      const tb = $('rr-meses').tBodies[0]; tb.replaceChildren();
+      meses.forEach((m, j) => { const tr = document.createElement('tr'); const [a, mm] = anoMes(m); td(tr, `${MESN[mm - 1]}/${a}` + (m === chave(D.ano, D.mes) ? ' (em andamento)' : ''));
+        let st = 0, sa = 0; porG.forEach(x => { const v = tot(x.ms[j]); st += v; sa += tot(x.an[j]); td(tr, brl.format(v), 'r'); });
+        if (porG.length > 1) { const c = td(tr, brl.format(st), 'r'); c.style.fontWeight = '600'; }
+        if (temAnt) { td(tr, brl.format(sa), 'r'); td(tr, varF(st, sa), 'r rec-var ' + (st >= sa ? 'up' : 'down')); } tb.appendChild(tr); });
+      const tf = $('rr-meses').tFoot; tf.replaceChildren(); const tr = document.createElement('tr'); td(tr, 'Total'); porG.forEach(x => td(tr, brl.format(tot(x.s)), 'r'));
+      if (porG.length > 1) td(tr, brl.format(tot(T)), 'r'); if (temAnt) { td(tr, brl.format(tot(TA)), 'r'); td(tr, varF(tot(T), tot(TA)), 'r rec-var ' + (tot(T) >= tot(TA) ? 'up' : 'down')); } tf.appendChild(tr); }
+    // detalhe
+    { $('rr-hant').textContent = temAnt ? `Mesmo período ${Number(ini.slice(0, 4)) - 1}` : 'Ano anterior';
+      const tb = $('rr-det').tBodies[0]; tb.replaceChildren();
+      const linha = (alvo, nome, v, a, forte) => { const tr = document.createElement('tr'); td(tr, nome); v.forEach(x => td(alvo === 'f' ? tr : tr, brl.format(x), 'r')); const c = td(tr, brl.format(tot(v)), 'r'); c.style.fontWeight = '600';
+        td(tr, temAnt ? brl.format(tot(a)) : '—', 'r'); td(tr, temAnt ? varF(tot(v), tot(a)) : '—', 'r rec-var ' + (!temAnt ? '' : tot(v) >= tot(a) ? 'up' : 'down')); return tr; };
+      porG.forEach(x => { if (x.cs.length > 1) x.cs.forEach(c => { const v = somaV(meses.map(m => doMes(m, c) || [0, 0, 0, 0])), a = somaV(meses.map(m => doMes(antK(m), c) || [0, 0, 0, 0])); if (tot(v) || tot(a)) tb.appendChild(linha('b', c, v, a)); });
+        else tb.appendChild(linha('b', x.nome, x.s, x.a)); });
+      const tf = $('rr-det').tFoot; tf.replaceChildren(); tf.appendChild(linha('f', 'Total', T, TA)); }
+    // gráfico do ano do fim do período
+    { const ano = Number(fim.slice(0, 4)); $('rr-graf-tit').textContent = `Arrecadação por mês em ${ano}`;
+      window.rlGrafico($('rr-graf'), $('rr-leg'), ano, porG.map(x => ({ nome: x.nome, cor: x.cor, vals: MESA.map((_, i) => { const v = val(x, chave(ano, i + 1)); return v ? tot(v) : 0; }) })), ini, fim, (v) => brlC.format(v)); }
+    $('rr-fonte').textContent = D.fonte + ' O valor de cada mês é a diferença entre o acumulado até o mês e o acumulado até o mês anterior. Valores brutos, antes da dedução para o FUNDEB.' + ((D.faltam || []).length ? ` Ainda faltam ${D.faltam.length} meses, que o robô busca nas próximas atualizações.` : '');
+  }
+  fetch('../data/receitas_mensal.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) { $('rr-sub').textContent = 'A receita por mês ainda está sendo buscada no portal pelo robô.'; return; } D = d; desenhar(); }).catch(() => {});
+  let t; $('rr-busca').addEventListener('input', () => { sugerir(); clearTimeout(t); t = setTimeout(desenhar, 250); });
+  $('rr-busca').addEventListener('focus', sugerir); $('rr-busca').addEventListener('blur', () => setTimeout(() => { $('rr-sug').hidden = true; }, 150));
+  ['rr-ini', 'rr-fim'].forEach(id => $(id).addEventListener('change', desenhar));
+  document.querySelectorAll('[data-rr]').forEach(b => b.addEventListener('click', () => { if (!D) return; periodo(b.dataset.rr === 'ano' ? 'ano' : Number(b.dataset.rr)); desenhar(); }));
+  $('rr-imprimir').addEventListener('click', () => { document.body.classList.add('imprimir-rr'); setTimeout(() => { window.print(); document.body.classList.remove('imprimir-rr'); }, 100); });
+})();
 const REC_ARQ = '../data/receitas.json';
 // ---------- Receitas: Anexo 10 e arrecadação por mês, do portal ----------
 (function () {
@@ -1679,6 +1894,253 @@ const REC_ARQ = '../data/receitas.json';
       .forEach(([st, t, p]) => { const x = el('div', st); x.append(el('b', null, t), el('p', null, p)); rg.appendChild(x); });
     $('cid-fonte').textContent = `Fonte: Portal da Transparência de Leópolis. Receitas até ${rec.gerado}; gastos por área até ${F.periodo.replace('até ', '')} (valores empenhados); limites conforme os últimos demonstrativos fechados (saúde e educação até agosto, pessoal até setembro, dívida até agosto).`;
   }).catch(e => { console.error(e); });
+})();
+
+// ---------- Relatórios: um relatório só, para produtos e/ou fornecedores separados por vírgula ----------
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const MESN = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+  const MESA = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const CORES = ['var(--serie0)', 'var(--serie2)', 'var(--serie1)', '#8e6bbf', '#c0507a', '#6d8b3a', '#3f8fb0', '#b0753f'];
+  const qF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
+  const nz0 = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
+  const mesDe = (d) => String(d).slice(0, 7);
+  const nomeMes = (m) => `${MESN[Number(m.slice(5)) - 1]}/${m.slice(0, 4)}`;
+  const rotMes = (m) => `${MESA[Number(m.slice(5)) - 1]}/${m.slice(2, 4)}`;
+  const PARADAS = new Set(['de', 'da', 'do', 'das', 'dos', 'e', 'p', 'para', 'com', 'c']);
+  // fornecedores com apelido (como a gente fala no dia a dia)
+  const APELIDOS = [{ re: /^(c?i?s+i?nop|sinop|sisnop|cisnop|consorcio de saude)$/, forn: /CISNOP/, nome: 'CISNOP' },
+                    { re: /^(santa casa|casa de misericordia|hospital santa casa)$/, forn: /SANTA CASA|CASA DE MISERICORDIA/, nome: 'Santa Casa' }];
+  // nomes diferentes para o mesmo produto (o portal usa o nome da licitação)
+  const SINONIMOS = [['pasta de dente', 'pasta dental', 'creme dental', 'dentifricio'], ['escova de dente', 'escova dental'], ['agua sanitaria', 'hipoclorito'],
+    ['diesel', 'oleo diesel'], ['alcool em gel', 'alcool gel', 'alcool etilico hidratado 70']];
+  const semAc = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase();
+  // tipo da despesa do CISNOP pelo histórico: rateio entra em "Extra cota"; convênios e emendas saem um por linha, com o número; o resto mostra do que se trata
+  const capt = (t) => t.toLowerCase().replace(/(^|[\s/(-])([a-zà-ú])/g, (m, a, b) => a + b.toUpperCase()).replace(/\b(Da|De|Do|Das|Dos|E|A|Ao|Na|No)\b/g, w => w.toLowerCase());
+  const tipoCisnop = (h) => { const t = semAc(h).replace(/\s+/g, ' ');
+    const em = (t.match(/EMENDA[^0-9]{0,25}?(\d{6,})/) || [])[1];
+    const cv = (t.match(/CONVENIO\W*(?:N\W*)?(\d+(?:\/\d+)?)/) || [])[1];
+    if (cv) { const b = cv.split('/')[0], d = /DIETAS/.test(t) ? ' (dietas)' : ''; return `Convênio nº ${b}${d}` + (em ? ` · emenda ${em}` : ''); }
+    if (/CONVENIO PROVIGIA/.test(t)) return 'Convênio Provigia';
+    if (/CEDCA|CONVENIO ASSISTEN(CIA|TE) SOCIAL/.test(t)) return 'Convênio Assistência Social (CEDCA 13/2025)';
+    if (em) return `Emenda parlamentar nº ${em}`;
+    if (/EXTRA\s*-?\s*COTA/.test(t)) return 'Extra cota'; if (/SAMU/.test(t)) return 'SAMU'; if (/MENSALIDADE/.test(t)) return 'Mensalidade';
+    if (/SAUDE MENTAL/.test(t)) return 'Saúde mental'; if (/RATEIO|RATERIO/.test(t)) return 'Extra cota';
+    if (!/^PAGAMENTO |DESPESA EMPENHADA/.test(t)) return 'Outros: histórico não informado no portal';
+    const o = t.replace(/^.*?REFERENTE (?:AO?S? |AS? )?/, '').replace(/^(PAGAMENTO|CONTRIBUICAO)( (DO|AO|A))? ?(CISNOP)?\.? ?/, '').replace(/\s*(REF\b|MES DE REF|COMPETENCIA|CONTA DE|JUSTIFICATI).*$/, '').replace(/REGINAL/, 'REGIONAL').trim();
+    const cc = (t.match(/CONTA (?:DE )?CUSTEIO ([\dX-]+)(?: - FONTE (\d+))?/) || []);
+    return 'Outros: ' + (o ? capt(o.slice(0, 70)).replace(/\bAba\b/, 'ABA') : cc[1] ? `conta custeio ${cc[1]}${cc[2] ? ' (fonte ' + cc[2] + ')' : ''}` : 'sem descrição'); };
+  const TIPOS = ['Mensalidade', 'Extra cota', 'SAMU', 'Saúde mental'];
+  const ordemTipos = (cs) => { const tot = {}; cs.forEach(r => { tot[r.tipo] = (tot[r.tipo] || 0) + N(r.valor); });
+    const g = (k) => TIPOS.includes(k) ? 0 : /^Convênio/.test(k) ? 1 : /^Emenda/.test(k) ? 2 : 3;
+    return Object.keys(tot).sort((a, b) => g(a) - g(b) || (g(a) ? tot[b] - tot[a] : TIPOS.indexOf(a) - TIPOS.indexOf(b))); };
+  const consorcio = (f) => /CONSORCIO|CONSÓRCIO|CISNOP|CODENOP/i.test(f || '');
+
+  function casaProd(q, nome) {
+    const g = SINONIMOS.find(x => x.includes(q)); if (g) return g.some(x => casa1(x, nome)); return casa1(q, nome); }
+  function casa1(q, nome) {
+    const n = nz0(nome); if (n === q || n.includes(q)) return true;
+    const pal = n.split(/[^a-z0-9]+/), ws = q.split(/[^a-z0-9]+/).filter(w => w && !PARADAS.has(w));
+    return ws.length > 0 && ws.every(w => pal.some(p => p === w || p.startsWith(w) || p === w + 's' || p + 's' === w)); }
+  function casaForn(q, nome) { const a = APELIDOS.find(x => x.re.test(q)); if (a) return a.forn.test(semAc(nome));
+    const n = nz0(nome), ws = q.split(/[^a-z0-9]+/).filter(w => w && !PARADAS.has(w)); return ws.length > 0 && ws.every(w => n.includes(w)); }
+
+  let pronto = false, marcadas = null, ultima = '', SUG = [], selSug = -1;
+  function soma(rs, k) { return rs.reduce((s, r) => s + N(r[k]), 0); }
+  function preparar(itens, pags) {
+    if (pronto) return; pronto = true;
+    const meses = [...new Set([...itens.map(r => mesDe(r.data)), ...pags.map(r => mesDe(r.data))])].filter(m => /^\d{4}-\d\d$/.test(m)).sort();
+    const hoje = new Date(), atual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+    [$('rl-ini'), $('rl-fim')].forEach(s => { s.replaceChildren(); meses.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = nomeMes(m) + (m === atual ? ' (em andamento)' : ''); s.appendChild(o); }); });
+    periodo('ano');
+    const secs = [...new Set([...itens.map(r => r.secretaria), ...pags.map(r => r.secretaria)].filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    secs.forEach(x => { const o = document.createElement('option'); o.value = x; o.textContent = x; $('rl-sec').appendChild(o); });
+    const cont = {}; itens.forEach(r => { if (r.situacao !== 'Anulado') cont[r.produto] = (cont[r.produto] || 0) + 1; });
+    const fc = {}; pags.forEach(r => { if (r.fornecedor) fc[r.fornecedor] = (fc[r.fornecedor] || 0) + 1; });
+    SUG = [{ t: 'CISNOP', d: 'fornecedor · pagamentos', n: 1e9 }, { t: 'Santa Casa', d: 'fornecedor · pagamentos', n: 1e9 },
+      ...Object.keys(cont).map(p => ({ t: p, d: `produto · ${cont[p]} compras`, n: cont[p] })),
+      ...Object.keys(fc).filter(f => !/CISNOP|MISERICORDIA/i.test(f)).map(f => ({ t: f, d: `fornecedor · ${fc[f]} pagamentos`, n: fc[f] / 3 }))].map(x => ({ ...x, k: nz0(x.t) }));
+  }
+  function periodo(n) {
+    const ops = [...$('rl-fim').options]; if (!ops.length) return; const hoje = new Date();
+    const atual = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`; const fechados = ops.map(o => o.value).filter(m => m < atual);
+    if (n === 'ano') { const fim = ops[ops.length - 1].value; $('rl-fim').value = fim; $('rl-ini').value = (ops.find(o => o.value.slice(0, 4) === fim.slice(0, 4)) || ops[0]).value; return; }
+    const ms = fechados.length ? fechados : ops.map(o => o.value); $('rl-fim').value = ms[ms.length - 1]; $('rl-ini').value = ms[Math.max(0, ms.length - n)]; }
+
+  // gráfico de barras empilhadas do ano, com os meses do período destacados
+  function grafico(el, leg, ano, series, ini, fim, fmt) {
+    // barras lado a lado (uma por produto/fornecedor) em cada mês; meses do relatório destacados
+    el.replaceChildren(); leg.replaceChildren();
+    series.forEach(s => { const sp = document.createElement('span'); sp.style.background = s.cor; leg.append(sp, document.createTextNode(s.nome)); });
+    { const sp = document.createElement('span'); sp.className = 'k3'; leg.append(sp, document.createTextNode('meses do relatório')); }
+    const max = Math.max(1, ...series.flatMap(s => s.vals)), poucos = series.length <= 2;
+    el.classList.toggle('poucos', poucos);
+    MESA.forEach((mn, i) => { const m = `${ano}-${String(i + 1).padStart(2, '0')}`; const col = document.createElement('div'); col.className = 'm' + (m >= ini && m <= fim ? ' sel' : '');
+      const g = document.createElement('div'); g.className = 'gb';
+      series.forEach(s => { const w = document.createElement('div'); w.className = 'bw'; const v = s.vals[i];
+        if (poucos && v) { const t = document.createElement('i'); t.textContent = fmt(v); w.appendChild(t); }
+        const b = document.createElement('b'); b.style.background = s.cor; b.style.height = (v / max * 78) + '%'; w.appendChild(b); g.appendChild(w); });
+      col.appendChild(g); const l = document.createElement('small'); l.textContent = mn; col.appendChild(l);
+      const tot = series.reduce((a, s) => a + s.vals[i], 0);
+      hoverable(col, ev => showTip(ev, `${MESN[i]}/${ano}`, [...series.map(s => `${s.nome}: ${brl.format(s.vals[i])}`), ...(series.length > 1 ? [`Total: ${brl.format(tot)}`] : [])])); el.appendChild(col); });
+  }
+  // gráfico de barras deitadas por secretaria (uma barra por produto)
+  window.rlGrafico = grafico;
+  function graficoSec(el, leg, linhas, series, fmt) {
+    el.replaceChildren(); leg.replaceChildren();
+    series.forEach(s => { const sp = document.createElement('span'); sp.style.background = s.cor; leg.append(sp, document.createTextNode(s.nome)); });
+    const max = Math.max(1, ...linhas.flatMap(l => l.vals));
+    linhas.forEach(l => { const row = document.createElement('div'); row.className = 'sr'; const n = document.createElement('div'); n.className = 'sn'; n.textContent = l.nome; row.appendChild(n);
+      const bx = document.createElement('div'); bx.className = 'sb';
+      series.forEach((s, k) => { if (!l.vals[k]) return; const ln = document.createElement('div'); ln.className = 'sl'; const b = document.createElement('b'); b.style.background = s.cor; b.style.width = Math.max(0.6, l.vals[k] / max * 72) + '%';
+        const v = document.createElement('span'); v.textContent = brlC.format(l.vals[k]); ln.append(b, v); bx.appendChild(ln); });
+      row.appendChild(bx); hoverable(row, ev => showTip(ev, l.nome, series.map((s, k) => `${s.nome}: ${fmt(l.vals[k])}`))); el.appendChild(row); });
+  }
+  function tile(box, l, n, s) { const c = document.createElement('div'); c.className = 'card tile'; c.innerHTML = '<div class="lbl"></div><div class="num"></div><div class="sub"></div>'; c.children[0].textContent = l; c.children[1].textContent = n; c.children[2].textContent = s || ''; box.appendChild(c); }
+
+  function desenhar() {
+    const di = dash.data('itens'), dp = dash.data('pagamentos'); if (di.status !== 'ok') return;
+    const itens = di.data, pags = dp.status === 'ok' && dp.data ? dp.data : []; preparar(itens, pags);
+    const todosTermos = $('rl-busca').value.split(/[,;]+/).map(t => nz0(t)).filter(Boolean), termos = todosTermos.slice(0, 5);
+    const ini = $('rl-ini').value, fim = $('rl-fim').value < ini ? ini : $('rl-fim').value, sec = $('rl-sec').value;
+    const noPer = (d) => mesDe(d) >= ini && mesDe(d) <= fim, ano = fim.slice(0, 4), anoDe = (d) => String(d).slice(0, 4) === ano;
+    if (!termos.length) { $('rl-forn').hidden = $('rl-prod').hidden = true; $('rl-var').replaceChildren(); $('rl-tit').textContent = 'Relatório'; $('rl-fonte').textContent = '';
+      $('rl-sub').textContent = 'Digite um ou mais produtos ou fornecedores, separados por vírgula. Fornecedor mostra o que foi pago (pela data do pagamento); produto mostra o que foi comprado (quantidade e preço empenhado).'; return; }
+    // cada termo vira fornecedor (pagamentos) ou produto (itens)
+    const grupos = termos.map((q, k) => {
+      const ap = APELIDOS.find(x => x.re.test(q));
+      const nProd = ap ? 0 : itens.reduce((a, r) => a + (casaProd(q, r.produto) ? 1 : 0), 0);
+      const nForn = pags.reduce((a, r) => a + (casaForn(q, r.fornecedor) ? 1 : 0), 0);
+      const tipo = ap || (nForn && !nProd) ? 'forn' : 'prod';
+      let nome = ap ? ap.nome : q.toUpperCase();
+      if (tipo === 'forn' && !ap) { const c = {}; pags.forEach(r => { if (casaForn(q, r.fornecedor)) c[r.fornecedor] = (c[r.fornecedor] || 0) + 1; }); const top = Object.keys(c).sort((a, b) => c[b] - c[a]); if (top.length === 1) nome = top[0]; }
+      return { q, tipo, nome, cor: CORES[k % CORES.length], cisnop: ap && ap.nome === 'CISNOP' }; });
+    const gF = grupos.filter(g => g.tipo === 'forn'), gP = grupos.filter(g => g.tipo === 'prod');
+    $('rl-tit').textContent = 'Relatório: ' + grupos.map(g => g.nome).join(' · ');
+    $('rl-sub').textContent = `Período: ${nomeMes(ini).toLowerCase()} a ${nomeMes(fim).toLowerCase()}${sec ? ' · ' + sec : ' · todas as secretarias'}.` +
+      (gF.length ? ' Fornecedores: valores pagos, pela data do pagamento, já descontados os estornos.' : '') + '' +
+      (todosTermos.length > 5 ? ` Só os 5 primeiros entram no relatório (${todosTermos.slice(5).join(', ')} ficou de fora).` : '');
+
+    // ---------------- fornecedores
+    $('rl-forn').hidden = !gF.length;
+    if (gF.length) {
+      const doG = (g) => pags.filter(r => casaForn(g.q, r.fornecedor) && (!sec || r.secretaria === sec));
+      const porG = gF.map(g => ({ g, todos: doG(g) })); porG.forEach(x => { x.per = x.todos.filter(r => noPer(r.data)); });
+      const meses = []; for (let m = ini; m <= fim;) { meses.push(m); const [a, b] = m.split('-').map(Number); m = b === 12 ? `${a + 1}-01` : `${a}-${String(b + 1).padStart(2, '0')}`; }
+      const tTot = porG.reduce((a, x) => a + soma(x.per, 'valor'), 0);
+      const tb0 = $('rl-ftiles'); tb0.replaceChildren();
+      porG.forEach(x => tile(tb0, x.g.nome, brl.format(soma(x.per, 'valor')), `${x.per.length} pagamentos`));
+      if (porG.length > 1) tile(tb0, 'Total do período', brl.format(tTot), `${meses.length} ${meses.length === 1 ? 'mês' : 'meses'}`);
+      tile(tb0, 'Média por mês', brl.format(tTot / meses.length), porG.length > 1 ? 'todos os fornecedores' : '');
+      // mês a mês
+      const th = $('rl-fmeses').tHead; th.replaceChildren(); const h = document.createElement('tr');
+      ['Mês', ...porG.map(x => x.g.nome), ...(porG.length > 1 ? ['Total'] : [])].forEach((t, i) => { const c = document.createElement('th'); c.textContent = t; if (i) c.className = 'r'; h.appendChild(c); }); th.appendChild(h);
+      const tb = $('rl-fmeses').tBodies[0]; tb.replaceChildren();
+      meses.forEach(m => { const tr = document.createElement('tr'); td(tr, nomeMes(m)); let t = 0;
+        porG.forEach(x => { const v = soma(x.per.filter(r => mesDe(r.data) === m), 'valor'); t += v; td(tr, brl.format(v), 'r'); });
+        if (porG.length > 1) { const c = td(tr, brl.format(t), 'r'); c.style.fontWeight = '600'; } tb.appendChild(tr); });
+      const tf = $('rl-fmeses').tFoot; tf.replaceChildren(); { const tr = document.createElement('tr'); td(tr, 'Total'); porG.forEach(x => td(tr, brl.format(soma(x.per, 'valor')), 'r')); if (porG.length > 1) td(tr, brl.format(tTot), 'r'); tf.appendChild(tr); }
+      // CISNOP por tipo
+      const xc = porG.find(x => x.g.cisnop); $('rl-tipos-box').hidden = !xc;
+      if (xc) { const cs = xc.per.map(r => ({ ...r, tipo: tipoCisnop(r.historico) })), tipos = ordemTipos(cs);
+        const th2 = $('rl-tipos').tHead; th2.replaceChildren(); const h2 = document.createElement('tr'); ['Tipo', ...meses.map(rotMes), 'Total'].forEach((t, i) => { const c = document.createElement('th'); c.textContent = t; if (i) c.className = 'r'; h2.appendChild(c); }); th2.appendChild(h2);
+        const tb2 = $('rl-tipos').tBodies[0]; tb2.replaceChildren();
+        tipos.forEach(t => { const tr = document.createElement('tr'); td(tr, t); meses.forEach(m => td(tr, brl.format(soma(cs.filter(r => r.tipo === t && mesDe(r.data) === m), 'valor')), 'r')); const z = td(tr, brl.format(soma(cs.filter(r => r.tipo === t), 'valor')), 'r'); z.style.fontWeight = '600'; tb2.appendChild(tr); });
+        const tf2 = $('rl-tipos').tFoot || $('rl-tipos').createTFoot(); tf2.replaceChildren(); const trT = document.createElement('tr'); td(trT, 'Total'); meses.forEach(m => td(trT, brl.format(soma(cs.filter(r => mesDe(r.data) === m), 'valor')), 'r')); td(trT, brl.format(soma(cs, 'valor')), 'r'); tf2.appendChild(trT); }
+      { const secs = {}; porG.forEach((x, k) => x.per.forEach(r => { const n = r.secretaria || '—'; secs[n] = secs[n] || porG.map(() => 0); secs[n][k] += N(r.valor); }));
+        graficoSec($('rl-fsgraf'), $('rl-fsleg'), Object.entries(secs).map(([nome, vals]) => ({ nome, vals })).sort((a, b) => b.vals.reduce((x, y) => x + y, 0) - a.vals.reduce((x, y) => x + y, 0)), porG.map(x => ({ nome: x.g.nome, cor: x.g.cor })), (v) => brl.format(v)); }
+      // gráfico do ano
+      $('rl-fgraf-tit').textContent = `Valor pago por mês em ${ano}`;
+      grafico($('rl-fgraf'), $('rl-fleg'), ano, porG.map(x => ({ nome: x.g.nome, cor: x.g.cor, vals: MESA.map((_, i) => soma(x.todos.filter(r => anoDe(r.data) && Number(String(r.data).slice(5, 7)) === i + 1), 'valor')) })), ini, fim, (v) => brlC.format(v));
+      // lista
+      const tb3 = $('rl-fpags').tBodies[0]; tb3.replaceChildren();
+      porG.flatMap(x => x.per.map(r => ({ ...r, gn: x.g.nome }))).sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0).forEach(r => { const tr = document.createElement('tr'); td(tr, br(r.data));
+        td(tr, r.empenho + (r.ano_empenho && r.ano_empenho !== String(r.data).slice(0, 4) ? '/' + r.ano_empenho : '')); td(tr, r.gn); td(tr, r.secretaria, 'hide-sm');
+        td(tr, String(r.historico || '').replace(/^Pagamento\s+/i, '').replace(/\s*Justificati.*$/i, '').slice(0, 140), 'hide-sm'); const v = td(tr, brl.format(N(r.valor)), 'r'); if (N(r.valor) < 0) v.classList.add('late'); tb3.appendChild(tr); });
+    }
+
+    // ---------------- produtos
+    $('rl-prod').hidden = !gP.length; const vbox = $('rl-var'); vbox.replaceChildren();
+    if (gP.length) {
+      const chave = termos.join('|') + '|' + $('rl-cons').checked + '|' + sec;
+      const base = (g) => itens.filter(r => r.situacao !== 'Anulado' && casaProd(g.q, r.produto) && ($('rl-cons').checked || !consorcio(r.fornecedor)) && (!sec || r.secretaria === sec));
+      const variante = (r) => [r.produto, r.embalagem, r.unidade].filter(Boolean).join(' · ');
+      const dados = gP.map(g => { const todos = base(g); const vs = {}; todos.forEach(r => { const k = variante(r); vs[k] = vs[k] || { n: 0, u: r.unidade }; vs[k].n++; }); return { g, todos, vs }; });
+      if (chave !== ultima || !marcadas) { marcadas = new Set(dados.flatMap(x => Object.keys(x.vs).map(k => x.g.q + '|' + k))); ultima = chave; }
+      dados.forEach(x => { const ks = Object.keys(x.vs).sort((a, b) => x.vs[b].n - x.vs[a].n); if (ks.length < 2) return;
+        const gr = document.createElement('div'); gr.className = 'grp'; const t = document.createElement('b'); t.textContent = x.g.nome + ':'; gr.appendChild(t);
+        ks.slice(0, 30).forEach(k => { const l = document.createElement('label'); const c = document.createElement('input'); c.type = 'checkbox'; c.checked = marcadas.has(x.g.q + '|' + k);
+          c.addEventListener('change', () => { c.checked ? marcadas.add(x.g.q + '|' + k) : marcadas.delete(x.g.q + '|' + k); desenhar(); }); l.append(c, document.createTextNode(`${k} (${x.vs[k].n})`)); gr.appendChild(l); });
+        const un = new Set(ks.filter(k => marcadas.has(x.g.q + '|' + k)).map(k => x.vs[k].u || '—'));
+        if (un.size > 1) { const a = document.createElement('div'); a.className = 'aviso'; a.textContent = `Atenção: em ${x.g.nome} há unidades diferentes marcadas (${[...un].join(', ')}). Desmarque o que não for o mesmo produto.`; gr.appendChild(a); }
+        vbox.appendChild(gr); });
+      // base do relatório: empenhado (descontada a anulação), liquidado (data da 1ª liquidação) ou pago (data de cada pagamento).
+      // O portal só traz os itens na nota de empenho; quando o empenho tem vários itens e foi liquidado/pago em parte, a parte é rateada (estimada).
+      const baseRl = $('rl-base').value, emp = {}, nIt = {}, pagE = {};
+      (dash.data('empenhos').data || []).forEach(e => { emp[e.empenho] = e; });
+      itens.forEach(r => { nIt[r.empenho] = (nIt[r.empenho] || 0) + 1; });
+      pags.forEach(p => { const k = p.empenho + '/' + p.ano_empenho; (pagE[k] = pagE[k] || []).push(p); });
+      const esc = (r, f, d, est) => ({ ...r, quantidade: N(r.quantidade) * f, valor_total: N(r.valor_total) * f, data: d, est });
+      const ef = (rs) => { const out = []; rs.forEach(r => { const e = emp[r.empenho], val = e ? N(e.valor) : 0;
+        if (!e || !val) { if (baseRl === 'emp') out.push({ ...r, est: false }); return; }
+        const varios = nIt[r.empenho] > 1;
+        if (baseRl === 'emp') { const f = Math.max(0, (val - N(e.anulado)) / val); if (f > 1e-6) out.push(esc(r, f, r.data, f < 0.9999 && varios)); }
+        else if (baseRl === 'liq') { const f = Math.min(1, N(e.liquidado) / val); if (f > 1e-6) out.push(esc(r, f, e.primeira_liquidacao || r.data, f < 0.9999 && varios)); }
+        else { const parc = Math.abs(N(e.pago) / val - 1) > 1e-4; (pagE[r.empenho + '/' + String(r.data).slice(0, 4)] || []).forEach(p => { const f = N(p.valor) / val; if (Math.abs(f) > 1e-6) out.push(esc(r, f, p.data, parc && varios)); }); } });
+        return out; };
+      const nC = (xs) => new Set(xs.map(r => r.chave)).size;
+      dados.forEach(x => { x.sel = ef(x.todos.filter(r => marcadas.has(x.g.q + '|' + variante(r)))); x.per = x.sel.filter(r => noPer(r.data)); });
+      { const est = new Set(dados.flatMap(x => x.per.filter(r => r.est).map(r => r.chave))).size;
+        if (dados.length) $('rl-sub').textContent += (baseRl === 'liq' ? ' Produtos contados pelo valor liquidado (nota recebida), na data da primeira liquidação do empenho.' : baseRl === 'pago' ? ' Produtos contados pelo valor pago, na data de cada pagamento.' : ' Produtos contados pelo valor empenhado (descontadas as anulações).')
+          + (est ? ` ${est} ${est === 1 ? 'item tem' : 'itens têm'} valor estimado: o empenho tem vários itens e foi ${({ pago: 'pago', liq: 'liquidado', emp: 'anulado' })[baseRl]} só em parte, então a parte foi rateada entre os itens.` : ''); }
+      // resumo por produto
+      const tb = $('rl-presumo').tBodies[0]; tb.replaceChildren(); let vt = 0;
+      dados.forEach(x => { const r = x.per, q = soma(r, 'quantidade'), v = soma(r, 'valor_total'); vt += v; const tr = document.createElement('tr'); const c = td(tr, x.g.nome); c.style.fontWeight = '600';
+        td(tr, [...new Set(r.map(y => y.unidade).filter(Boolean))].join(', ') || '—'); td(tr, intF.format(nC(r)), 'r'); td(tr, qF.format(q), 'r'); td(tr, brl.format(v), 'r');
+        const pu = r.map(y => N(y.valor_unitario)); td(tr, r.length ? brl2.format(Math.min(...pu)) : '—', 'r'); const m = td(tr, q ? brl2.format(v / q) : '—', 'r'); m.style.fontWeight = '600'; td(tr, r.length ? brl2.format(Math.max(...pu)) : '—', 'r'); tb.appendChild(tr); });
+      const tf = $('rl-presumo').tFoot; tf.replaceChildren(); if (dados.length > 1) { const tr = document.createElement('tr'); td(tr, 'Total'); td(tr, ''); td(tr, intF.format(dados.reduce((a, x) => a + nC(x.per), 0)), 'r'); td(tr, ''); td(tr, brl.format(vt), 'r'); td(tr, ''); td(tr, ''); td(tr, ''); tf.appendChild(tr); }
+      // por licitação
+      const tl = $('rl-plic').tBodies[0]; tl.replaceChildren();
+      dados.forEach(x => { const g = {}; x.per.forEach(r => { const k = r.licitacao || 'Sem licitação'; (g[k] = g[k] || []).push(r); });
+        Object.entries(g).sort((a, b) => soma(b[1], 'valor_total') - soma(a[1], 'valor_total')).forEach(([k, xs]) => { const tr = document.createElement('tr'); td(tr, x.g.nome); td(tr, k); td(tr, [...new Set(xs.map(r => r.fornecedor))].join('; '));
+          td(tr, intF.format(nC(xs)), 'r'); const q = soma(xs, 'quantidade'); td(tr, qF.format(q), 'r'); const pu = xs.map(r => N(r.valor_unitario)); td(tr, brl2.format(Math.min(...pu)), 'r');
+          const m = td(tr, q ? brl2.format(soma(xs, 'valor_total') / q) : '—', 'r'); m.style.fontWeight = '600'; td(tr, brl2.format(Math.max(...pu)), 'r'); tl.appendChild(tr); }); });
+      // por secretaria
+      const ts = $('rl-psec').tBodies[0]; ts.replaceChildren();
+      dados.forEach(x => { const g = {}; x.per.forEach(r => { const k = r.secretaria || '—'; (g[k] = g[k] || []).push(r); });
+        Object.entries(g).sort((a, b) => soma(b[1], 'quantidade') - soma(a[1], 'quantidade')).forEach(([k, xs]) => { const tr = document.createElement('tr'); td(tr, x.g.nome); td(tr, k); td(tr, intF.format(nC(xs)), 'r');
+          const q = soma(xs, 'quantidade'), v = soma(xs, 'valor_total'); td(tr, qF.format(q), 'r'); td(tr, brl.format(v), 'r'); const m = td(tr, q ? brl2.format(v / q) : '—', 'r'); m.style.fontWeight = '600'; ts.appendChild(tr); }); });
+      { const secs = {}; dados.forEach((x, k) => x.per.forEach(r => { const n = r.secretaria || '—'; secs[n] = secs[n] || dados.map(() => 0); secs[n][k] += N(r.valor_total); }));
+        graficoSec($('rl-sgraf'), $('rl-sleg'), Object.entries(secs).map(([nome, vals]) => ({ nome, vals })).sort((a, b) => b.vals.reduce((x, y) => x + y, 0) - a.vals.reduce((x, y) => x + y, 0)), dados.map(x => ({ nome: x.g.nome, cor: x.g.cor })), (v) => brl.format(v)); }
+      // gráfico (valor, porque as unidades podem ser diferentes entre produtos)
+      $('rl-pgraf-tit').textContent = `Valor ${({ liq: 'liquidado', pago: 'pago', emp: 'empenhado' })[$('rl-base').value]} por mês em ${ano}`;
+      grafico($('rl-pgraf'), $('rl-pleg'), ano, dados.map(x => ({ nome: x.g.nome, cor: x.g.cor, vals: MESA.map((_, i) => soma(x.sel.filter(r => anoDe(r.data) && Number(String(r.data).slice(5, 7)) === i + 1), 'valor_total')) })), ini, fim, (v) => brlC.format(v));
+    }
+    $('rl-fonte').textContent = 'Fonte: Portal da Transparência de Leópolis.' + (gF.length ? ' Fornecedores: notas de pagamento (inclui restos a pagar de anos anteriores pagos no período).' : '') + (gP.length ? ' Produtos: itens das notas de empenho (preço empenhado); preço médio = valor total ÷ quantidade.' : '');
+  }
+  // sugestões enquanto digita: valem para o termo depois da última vírgula
+  function sugerir() {
+    const ul = $('rl-sug'), v = $('rl-busca').value, ult = nz0(v.split(/[,;]/).pop()); ul.replaceChildren(); selSug = -1;
+    if (ult.length < 2) { ul.hidden = true; return; }
+    const ws = ult.split(/\s+/).filter(Boolean);
+    const lista = SUG.filter(x => ws.every(w => x.k.includes(w))).sort((a, b) => (b.k.startsWith(ult) - a.k.startsWith(ult)) || b.n - a.n).slice(0, 8);
+    if (!lista.length) { ul.hidden = true; return; }
+    lista.forEach(x => { const li = document.createElement('li'); li.setAttribute('role', 'option'); li.textContent = x.t; const sm = document.createElement('small'); sm.textContent = x.d; li.appendChild(sm);
+      li.addEventListener('pointerdown', (e) => { e.preventDefault(); escolher(x.t); }); ul.appendChild(li); });
+    ul.hidden = false;
+  }
+  function escolher(t) { const partes = $('rl-busca').value.split(/[,;]/); partes[partes.length - 1] = ' ' + t; $('rl-busca').value = partes.map(p => p.trim()).filter(Boolean).join(', ') + ', ';
+    $('rl-sug').hidden = true; desenhar(); $('rl-busca').focus(); }
+  let t; $('rl-busca').addEventListener('input', () => { sugerir(); clearTimeout(t); t = setTimeout(desenhar, 400); });
+  $('rl-busca').addEventListener('blur', () => setTimeout(() => { $('rl-sug').hidden = true; }, 250));
+  $('rl-busca').addEventListener('keydown', (e) => { const lis = [...$('rl-sug').children]; if ($('rl-sug').hidden || !lis.length) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); selSug = (selSug + (e.key === 'ArrowDown' ? 1 : -1) + lis.length) % lis.length; lis.forEach((l, i) => l.setAttribute('aria-selected', String(i === selSug))); }
+    else if (e.key === 'Enter' && selSug >= 0) { e.preventDefault(); escolher(lis[selSug].firstChild.textContent); }
+    else if (e.key === 'Escape') $('rl-sug').hidden = true; });
+  ['rl-ini', 'rl-fim', 'rl-sec', 'rl-cons', 'rl-base'].forEach(id => $(id).addEventListener('change', desenhar));
+  document.querySelectorAll('[data-rl]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.rl; periodo(n === 'ano' ? 'ano' : Number(n)); desenhar(); }));
+  $('rl-imprimir').addEventListener('click', () => { irPara('relatorios'); setTimeout(() => window.print(), 100); });
+  dash.onData(desenhar);
 })();
 </script>
 </body>
