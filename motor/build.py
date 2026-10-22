@@ -271,6 +271,19 @@ for n, e in E.items():
 itens.sort(key=lambda x: (x['data'], int(x['empenho'])), reverse=True)
 wcsv('itens.csv', itens, list(itens[0].keys()) if itens else ['chave'])
 
+# ---------- pagamentos (um por linha, pela data do pagamento; inclui restos a pagar) ----------
+ANO_ATUAL = max((e['d'] for e in E.values() if e.get('d')), default=str(date.today()))[:4]
+pags = []
+for p in P.values():
+    r = rows.get(p.get('e')) if p.get('ano') == str(ANO_ATUAL) else None
+    v = round(p['v'], 2) * (-1 if p.get('est') else 1)
+    pags.append(dict(pagamento=p['n'], data=p['d'], empenho=p.get('e', ''), ano_empenho=p.get('ano', ''), liquidacao=p.get('l', ''),
+        valor=v, estorno='Sim' if p.get('est') else '', fornecedor=(r['fornecedor'] if r else re.sub(r'^[\d./-]+\s+', '', p.get('forn', ''))),
+        secretaria=(r['secretaria'] if r else sec(p.get('sec', ''))), fonte=p.get('fcod', ''), elemento=p.get('el', ''),
+        historico=((r['produtos'] if r else p.get('hist', '')) or '')[:220]))
+pags.sort(key=lambda x: (x['data'], int(x['pagamento'] or 0)), reverse=True)
+wcsv('pagamentos.csv', pags, ['pagamento', 'data', 'empenho', 'ano_empenho', 'liquidacao', 'valor', 'estorno', 'fornecedor', 'secretaria', 'fonte', 'elemento', 'historico'])
+
 # ---------- movimento diário ----------
 mov = []
 for d, m in sorted(M['mov'].items()):

@@ -294,8 +294,21 @@ def ler_pagamentos(t, dia):
             continue
         out.append({'n': n, 'd': dia, 'e': str(int(nn[0].split(' / ')[0])) if nn else '', 'l': str(int(nn[1].split(' / ')[0])) if len(nn) > 1 else '',
                     'ano': nn[0].split(' / ')[1] if nn else '', 'v': num(tk[iV + 1]) if iV >= 0 and iV + 1 < len(tk) else 0,
-                    'dot': dot, 'fcod': fcod, 'el': tk[iEl] if iEl >= 0 else '', 'est': bool(re.search('ESTORNO', ' '.join(tk[:3]), re.I))})
+                    'dot': dot, 'fcod': fcod, 'el': tk[iEl] if iEl >= 0 else '', 'est': bool(re.search('ESTORNO', ' '.join(tk[:3]), re.I)),
+                    **_pag_credor(tk)})
     return out
+
+def _pag_credor(tk):
+    """fornecedor, secretaria e histórico do empenho que aparecem na nota de pagamento (servem para os restos a pagar)"""
+    iF, iH = _idx(tk, 'Fornecedor'), _idx(tk, 'Histórico Empenho')
+    forn = re.sub(r'^[\d./-]+\s+', '', tk[iF + 1]).strip() if 0 <= iF < len(tk) - 1 else ''
+    sec = tk[iH - 1] if iH > 0 else ''
+    hist = ''
+    if iH >= 0:
+        fim = next((i for i in range(iH + 1, len(tk)) if tk[i] in ('Retenções', 'Total de retenções')), len(tk))
+        hist = ' '.join(x for x in tk[iH + 1:fim] if x and x not in ('Produto', 'Marca', 'UM', 'Valor', 'Quantidade', 'Valor Total', 'Serviço')
+                        and not is_num(x) and not re.match(r'^[A-Z]{1,3}$', x))[:220]
+    return {'forn': forn, 'sec': sec, 'hist': hist, 'cred': 1}
 
 
 # ---------- coleta ----------
@@ -371,7 +384,7 @@ def assinatura(ano=None):
     return hashlib.sha1('\n'.join(partes).encode('utf-8')).hexdigest(), '\n'.join(partes)
 
 def coletar(desde, liq_desde=None, ano=None, avisar=print, mov_anterior=None, emp_conhecido=None,
-            saldo_anterior=None, emp_por_liq_dia=None, dias_extra=None, docs_desde=None):
+            saldo_anterior=None, emp_por_liq_dia=None, dias_extra=None, docs_desde=None, dias_pag_extra=None):
     """mov_anterior: o 'mov' da coleta passada; qualquer dia cujo total mudou no portal é relido,
     mesmo que seja anterior a 'desde' (o portal às vezes publica lançamentos com data retroativa)"""
     ano = ano or datetime.now().year; liq_desde = liq_desde or desde; mov_anterior = mov_anterior or {}
@@ -405,7 +418,7 @@ def coletar(desde, liq_desde=None, ano=None, avisar=print, mov_anterior=None, em
         a, n = mov_anterior.get(d, {}), res['mov'].get(d, {})
         return any(abs((a.get(k) or 0) - (n.get(k) or 0)) > 0.005 for k in CAMPOS[tipo])
     def escolher(tipo, inicio):
-        sel = [x for x in dias[tipo] if x[0] >= inicio or mudou(tipo, x[0]) or (tipo == 'emp' and x[0] in reler)]
+        sel = [x for x in dias[tipo] if x[0] >= inicio or mudou(tipo, x[0]) or (tipo == 'emp' and x[0] in reler) or (tipo == 'pag' and x[0] in set(dias_pag_extra or []))]
         extra = sorted({x[0] for x in sel if x[0] < inicio})
         if extra:
             avisar(f"Dias anteriores com lançamento novo ({tipo}): {', '.join(extra)}")

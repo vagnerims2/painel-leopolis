@@ -3,8 +3,9 @@ Uso: python3 atualizar_dados.py <pasta_saida_do_build> <pasta_do_repositorio> "<
 import csv, os, shutil, sys
 saida, repo, quando = sys.argv[1], sys.argv[2], sys.argv[3]
 dst = os.path.join(repo, 'data'); os.makedirs(dst, exist_ok=True)
-for n in ['empenhos', 'movimento', 'liquidacoes', 'saldo_fontes', 'dotacoes']:
-    shutil.copy(os.path.join(saida, n + '.csv'), os.path.join(dst, n + '.csv'))
+for n in ['empenhos', 'movimento', 'liquidacoes', 'saldo_fontes', 'dotacoes', 'pagamentos']:
+    if os.path.exists(os.path.join(saida, n + '.csv')):
+        shutil.copy(os.path.join(saida, n + '.csv'), os.path.join(dst, n + '.csv'))
 if os.path.exists(os.path.join(saida, 'notas.csv')):
     shutil.copy(os.path.join(saida, 'notas.csv'), os.path.join(dst, 'notas.csv'))
 rows = list(csv.DictReader(open(os.path.join(saida, 'itens.csv'), encoding='utf-8')))
