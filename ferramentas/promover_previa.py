@@ -25,6 +25,8 @@ if '<!doctype' not in s[:200].lower():
     s = '<!doctype html>\n<html lang="pt-BR">\n<head>' + s[:i] + '\n</head>\n<body>' + s[i:].rstrip() + '\n</body>\n</html>\n'
 assert 'MODO DESENVOLVEDOR' not in s and s.count('id="dash-root"') == 1
 s = s.replace(' (modo desenvolvedor)', '')
+# a prévia lê a planilha nova (planilha_previa.json) e cai na oficial se ela não existir; os links oficiais leem só a oficial
+s = s.replace("fetch('data/planilha_previa.json?v=' + Date.now()).then(r => { if (!r.ok) throw 0; return r.json(); }).catch(() => fetch('data/planilha.json?v=' + Date.now()).then(r => r.json()))", "fetch('data/planilha.json?v=' + Date.now()).then(r => r.json())")
 
 # ---------------- servidores
 si = s.replace('<title>Painel Modo Desenvolvedor</title>', '<title>Painel interno de Empenhos — Leópolis</title>')
