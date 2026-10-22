@@ -55,12 +55,12 @@ jobs:
           cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
       - name: Coleta no portal e recalcula
         run: python motor/estado/painel.py ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
-      - name: Planilha de requisições (modo desenvolvedor, grava data/planilha_previa.json)
+      - name: Planilha de requisições (Espelho Fornecedores -> data/planilha.json, aba Requisições e e-mail de segunda)
         if: success()
         continue-on-error: true
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
-        run: python ferramentas/planilha_requisicoes.py --aberto - data/planilha_previa.json
+        run: python ferramentas/planilha_requisicoes.py --aberto - data/planilha.json
       - name: Relatório semanal de requisições em atraso (segunda-feira, primeira rodada a partir das 7h)
         if: success()
         env:
