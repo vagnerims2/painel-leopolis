@@ -61,8 +61,11 @@ def trilha(l, emp_map, tem_re, re_map):
 
 
 def requisicoes_em_atraso(site, senha, hoje):
-    pac = json.load(open(os.path.join(site, 'data', 'planilha.enc.json'), encoding='utf-8'))
-    plan = decifrar(pac, senha)
+    aberta = os.path.join(site, 'data', 'planilha.json')
+    if os.path.exists(aberta):                          # planilha publicada sem senha (desde 22/10/2026)
+        plan = json.load(open(aberta, encoding='utf-8'))
+    else:
+        plan = decifrar(json.load(open(os.path.join(site, 'data', 'planilha.enc.json'), encoding='utf-8')), senha)
     ler = lambda n: list(csv.DictReader(open(os.path.join(site, 'data', n), encoding='utf-8')))
     emps, notas = ler('empenhos.csv'), (ler('notas.csv') if os.path.exists(os.path.join(site, 'data', 'notas.csv')) else [])
     emp_map, re_map = {}, defaultdict(list)
@@ -187,7 +190,7 @@ def enviar(arquivos, assunto, corpo):
 def main():
     site, saida = sys.argv[1], sys.argv[2]; os.makedirs(saida, exist_ok=True)
     senha = os.environ.get('PAINEL_SENHA', '')
-    if not senha:
+    if not senha and not os.path.exists(os.path.join(site, 'data', 'planilha.json')):
         print('Sem PAINEL_SENHA: não dá para abrir a planilha; relatório não gerado.'); sys.exit(3)
     hoje = date.today()
     lista, plan_atual = requisicoes_em_atraso(site, senha, hoje)

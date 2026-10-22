@@ -631,8 +631,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <section class="tab" data-tab="requisicoes" hidden>
     <div class="card" id="req-card">
       <h2>Requisições de compra</h2>
-      <p class="note">Cada requisição da planilha de compras ligada ao empenho do portal, na ordem: requisição de compra, requisição de empenho, empenho, liquidação e pagamento. A etapa em vermelho é onde ela está parada. Os dados vêm da planilha interna (memorando, situação, telefone e e-mail do fornecedor) e só aparecem com a senha dos servidores.</p>
-      <form id="req-trava" class="req-trava" autocomplete="on">
+      <p class="note">Cada requisição da planilha de compras ligada ao empenho do portal, na ordem: requisição de compra, requisição de empenho, empenho, liquidação e pagamento. A etapa em vermelho é onde ela está parada. Os dados vêm da planilha interna (memorando, situação, telefone e e-mail do fornecedor).</p>
+      <form id="req-trava" class="req-trava" autocomplete="on" hidden>
         <label for="req-senha">Senha dos servidores</label>
         <input id="req-senha" name="senha" type="password" autocomplete="current-password" placeholder="Digite a senha">
         <button type="submit" class="btn2" id="req-abrir">🔒 Ver dados</button>
@@ -646,7 +646,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
           <select id="req-sec"><option value="">Todas as secretarias</option></select>
           <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="ate30">Enviadas há até 30 dias</option><option value="31a90">Enviadas há 31 a 90 dias</option><option value="mais90">Enviadas há mais de 90 dias</option></select>
           <select id="req-ordem"><option value="rec">Mais recentes primeiro</option><option value="atraso">Maior atraso primeiro</option></select>
-          <button type="button" class="btn2" id="req-fechar">Fechar dados</button>
+          <button type="button" class="btn2" id="req-fechar" hidden>Fechar dados</button>
         </div>
         <p class="note" id="req-total"></p>
         <div class="tblwrap"><table id="t-req"><thead><tr>
@@ -1511,7 +1511,7 @@ document.getElementById('req-fechar').addEventListener('click', () => { REQ.linh
 document.getElementById('req-busca').addEventListener('input', drawReq);
 ['req-parada', 'req-sec', 'req-atraso', 'req-ordem'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
 dash.onData(() => { if (REQ.linhas) { ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
-{ let s = ''; try { s = sessionStorage.getItem('req-senha') || ''; } catch (e) {} if (s) tentarSenha(s, true); }
+/* sem senha: abre direto */ fetch('../data/planilha.json?v=' + Date.now()).then(r => r.json()).then(mostrarReq).catch(e => { document.getElementById('req-msg').textContent = 'Não consegui carregar os dados da planilha.'; });
 const REC_ARQ = '../data/receitas.json';
 // ---------- Receitas: Anexo 10 e arrecadação por mês, do portal ----------
 (function () {
