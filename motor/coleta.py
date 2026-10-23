@@ -381,6 +381,16 @@ def assinatura(ano=None):
             partes += ['|'.join(l['c']) for l in t[k] if re.match(r'^\d\d/\d\d/\d{4}$', (l['c'] + ['', ''])[1])]
     fon = tabela(f'{BASE}despesaEmpenhadaAPagar/listaDespesaEmpenhadaAPagarPorAno?{_q(ano)}')
     partes += ['|'.join(l['c']) for l in fon]
+    # o portal publica a relação de documentos fiscais (notas das liquidações) às vezes depois da liquidação:
+    # entra na assinatura a quantidade de documentos do mês, para reler quando aparecerem notas novas
+    try:
+        ini = hoje.replace(day=1).strftime('%d/%m/%Y'); fim = hoje.strftime('%d/%m/%Y')
+        d = post_json(f'{BASE}relacaoDocumentosFiscais/listaRelacaoDocumentosFiscaisAjax', {'formulario.tpFiltroRelacaoDocFiscais': '1', 'formulario.codEntidade': str(ENT),
+            'formulario.codFornecedor': '', 'formulario.idOrgao': '', 'formulario.idUnidade': '', 'formulario.dtInicial': ini, 'formulario.dtFinal': fim,
+            'draw': '1', 'start': '0', 'length': '1'})['paginacao']
+        partes.append(f"docs|{d.get('quantidadeTotal')}")
+    except Exception:
+        pass
     return hashlib.sha1('\n'.join(partes).encode('utf-8')).hexdigest(), '\n'.join(partes)
 
 def coletar(desde, liq_desde=None, ano=None, avisar=print, mov_anterior=None, emp_conhecido=None,
