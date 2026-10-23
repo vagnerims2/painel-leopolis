@@ -132,7 +132,7 @@ def principal(forcar=False, arquivo_coleta=None):
         except OSError:
             extra = []
         # dias de empenhos cujos itens não bateram com o valor (o portal devolveu itens de outro empenho): relê até 2 vezes
-        ri = estado.get('reler_itens', {})
+        ri = estado.get('reler_itens_v2', {})
         reler_agora = [d for d, t in sorted(ri.items(), reverse=True) if t < 2][:10]
         if reler_agora:
             log(f'Relendo {len(reler_agora)} dias com itens que não batem com o valor do empenho.')
@@ -165,9 +165,9 @@ def principal(forcar=False, arquivo_coleta=None):
     out = rodar([py, P('build.py'), P('master.json'), P('coleta_ultima.json'), saida, P('itens_requisicoes.csv')]).strip()
     resumo = json.loads(out[out.index('{'):])
     if not arquivo_coleta:
-        _ri = estado.get('reler_itens', {})
+        _ri = estado.get('reler_itens_v2', {})
         _tentou = set(reler_agora)
-        estado['reler_itens'] = {d: _ri.get(d, 0) + (1 if d in _tentou else 0) for d in resumo.get('reler_itens', [])}
+        estado['reler_itens_v2'] = {d: _ri.get(d, 0) + (1 if d in _tentou else 0) for d in resumo.get('reler_itens', [])}
         if resumo.get('itens_suspeitos'):
             log(f"{resumo['itens_suspeitos']} empenhos com itens que não batem com o valor: ficam fora dos relatórios de produto até a releitura acertar.")
     dif = abs(resumo['saldo_calculado'] - resumo['saldo_portal'])
