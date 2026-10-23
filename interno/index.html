@@ -352,6 +352,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
 @media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
 #dash-root #t-req tbody tr.lin{cursor:pointer}
+#dash-root #tbl tbody tr.lin{cursor:pointer}#dash-root #tbl tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}#dash-root #tbl tr.det:hover td{background:color-mix(in srgb,var(--color-fg) 3%,transparent)}#dash-root .req-det dd{white-space:pre-line}
 #dash-root .req-orig{color:var(--color-warn);font-weight:600}
 #dash-root .req-ano summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-fg-muted);font-weight:600;margin:6px 0}#dash-root .req-ano .tblwrap{margin-bottom:8px}#dash-root .req-ano tr.estorno td{color:var(--color-bad,#b42318)}
 #dash-root #t-liq tr.estorno td{color:var(--color-fg-muted);font-style:italic}
@@ -1221,7 +1222,8 @@ function drawTable() {
     { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); reqBadge(c0, r.empenho); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); { const pc = pillCell(tr, r.situacao, sitCls(r.situacao)); if (r.estornos) { const x = document.createElement('div'); x.className = 'sub2 est'; x.textContent = r.estornos; pc.appendChild(x); } }
-    const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tb.appendChild(tr); });
+    const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tr.classList.add('lin'); tr.tabIndex = 0;
+    tr.addEventListener('click', (ev) => { if (ev.target.closest('button,a')) return; detalheEmpenho(r, tr); }); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); detalheEmpenho(r, tr); } }); tb.appendChild(tr); });
   if (rows.length > lim) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = 9; c.style.color = 'var(--color-fg-muted)';
     c.append(document.createTextNode(`Mostrando ${intF.format(lim)} de ${intF.format(rows.length)} empenhos (os totais consideram todos). `));
     const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'btn2'; mais.textContent = 'Mostrar mais 500'; mais.style.marginRight = '8px'; mais.addEventListener('click', () => { window.__empLim = lim + 500; drawTable(); });
@@ -1624,7 +1626,7 @@ function drawReq() {
             try { navigator.clipboard.writeText(val).then(ok, () => { const s = getSelection(), rg = document.createRange(); rg.selectNodeContents(b); s.removeAllRanges(); s.addRange(rg); }); } catch (e) {} }); b.appendChild(bt); }
         w.append(a, b); dl.appendChild(w); };
       item('Fornecedor', [l.c ? 'cód. ' + l.c : '', l.f].filter(Boolean).join(' · '));
-      item('Telefone', fone(l.t), true); item('E-mail', l.em, true);
+      { const k = (l.t || l.em) ? null : contatoForn(l.c, l.f, l.eLig); item('Telefone', fone(l.t || (k && k.t)), true); item('E-mail', l.em || (k && k.em), true); if (k) item('Contato', `do cadastro de fornecedores (planilha, ${br(k.desde || '')})`); }
       item('Secretaria', l.s); item('Memorando', l.m);
       // situação de hoje no portal, numa frase (a observação da planilha pode estar desatualizada)
       const hoje = situacaoPortal(l);
@@ -1695,7 +1697,42 @@ function abrirItens(emp, e) {
   document.getElementById('nf-modal').hidden = false;
 }
 function reqBadge(cell, emp) { if (!REQ || !REQ.porEmp) return; const l = REQ.ligadas ? REQ.ligadas[semZeros(emp)] : REQ.porEmp[semZeros(emp)]; if (!l) return; const s = document.createElement('div'); s.className = 'req-badge'; s.textContent = 'Req. ' + l.map(x => x.r).join(', '); s.title = 'Requisição de compra ligada pela planilha'; cell.appendChild(s); }
-function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; lig.forEach(x => { if (x.eLig && x.emp) (REQ.ligadas[x.eLig] = REQ.ligadas[x.eLig] || []).push(x); }); }
+function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas = {}; REQ.contato = {};
+  lig.forEach(x => { if (x.emp) (x.emps || (x.eLig ? [x.eLig] : [])).forEach(n => (REQ.ligadas[n] = REQ.ligadas[n] || []).push(x));
+    if (x.t || x.em) { const ks = [x.c ? 'c:' + x.c : '', 'n:' + nz(x.f).slice(0, 25)].filter(Boolean); ks.forEach(k => { if (!REQ.contato[k]) REQ.contato[k] = x; }); } }); }
+// cadastro de fornecedores (contato da requisição mais recente de cada fornecedor na planilha, guardado pelo robô)
+const FORN = { fornecedores: null };
+fetch('../data/fornecedores.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (d) Object.assign(FORN, d); }).catch(() => {});
+const nomeChave = (s) => String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/^C[OÓ]DIGO NOME\s+\S+\s+/, '').replace(/^[\d./-]+\s+/, '').replace(/[^A-Z0-9]+/g, ' ').trim().slice(0, 28);
+function contatoForn(cod, nome, emp) { const F = FORN.fornecedores; if (!F) return null;
+  const k = (cod && F[cod]) ? cod : (emp && FORN.empenho_codigo && F[FORN.empenho_codigo[semZeros(emp)]]) ? FORN.empenho_codigo[semZeros(emp)] : (FORN.por_nome || {})[nomeChave(nome)];
+  return k ? F[k] : null; }
+// aba Empenhos: ao tocar num empenho, abre os dados do fornecedor e as requisições ligadas (como na aba Requisições)
+function detalheEmpenho(r, tr) {
+  const prox = tr.nextSibling; if (prox && prox.classList && prox.classList.contains('det')) { prox.remove(); tr.setAttribute('aria-expanded', 'false'); return; }
+  tr.setAttribute('aria-expanded', 'true'); const dt = document.createElement('tr'); dt.className = 'det'; const c = document.createElement('td'); c.colSpan = 9; dt.appendChild(c);
+  const dl = document.createElement('dl'); dl.className = 'req-det';
+  const item = (rot, val, copiar) => { if (!val) return; const w = document.createElement('div'); const a = document.createElement('dt'); a.textContent = rot; const b = document.createElement('dd'); b.textContent = val;
+    if (copiar) { const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'copiar'; bt.textContent = 'Copiar';
+      bt.addEventListener('click', (ev) => { ev.stopPropagation(); try { navigator.clipboard.writeText(val).then(() => { bt.textContent = 'Copiado'; setTimeout(() => { bt.textContent = 'Copiar'; }, 1500); }); } catch (e) {} }); b.appendChild(bt); }
+    w.append(a, b); dl.appendChild(w); };
+  const reqs = (REQ.ligadas || {})[semZeros(r.empenho)] || [];
+  const ctt = contatoForn((reqs[0] || {}).c, r.fornecedor, r.empenho) || reqs.find(x => x.t || x.em);
+  item('Fornecedor', [ctt && ctt.c ? 'cód. ' + ctt.c : '', r.fornecedor].filter(Boolean).join(' · '));
+  if (ctt) { item('Telefone', fone(ctt.t), true); item('E-mail', ctt.em, true); }
+  else item('Contato', 'Telefone e e-mail não encontrados na planilha para este fornecedor.');
+  item('Secretaria', r.secretaria); item('Licitação', [r.licitacao, r.contrato ? 'contrato ' + r.contrato : ''].filter(Boolean).join(' · '));
+  if (r.requisicao_empenho) item('Requisição de empenho', r.requisicao_empenho);
+  if (reqs.length) item(reqs.length > 1 ? 'Requisições de compra' : 'Requisição de compra', reqs.map(x => `${x.r} (${x.d || ''}${x.m ? ' · memo ' + x.m : ''}) — ${x.parada}${x.et ? ' · ' + x.et : ''}`).join('\n'));
+  else item('Requisição de compra', 'Nenhuma requisição de compra ligada a este empenho.');
+  if (r.grupo_itens) item('Compra dividida', `Empenhos ${r.grupo_itens.split(',').join(' + ')}`);
+  item('No portal hoje', situacaoPortal({ emp: r }) ? situacaoPortal({ emp: r }).txt : '');
+  const ac = document.createElement('div'); ac.className = 'req-acoes';
+  { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = 'Ver itens do empenho'; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(semZeros(r.empenho), r); }); ac.appendChild(b); }
+  { const nfs = notasPorEmp()[r.empenho]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${r.empenho}`); }); ac.appendChild(n); } }
+  if (reqs.length) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = 'Abrir na aba Requisições'; b.addEventListener('click', (ev) => { ev.stopPropagation(); irPara('requisicoes'); const q = document.getElementById('req-busca'); q.value = reqs[0].r; drawReq(); }); ac.appendChild(b); }
+  dl.appendChild(ac); c.appendChild(dl); tr.after(dt);
+}
 // base do ano (relatório completo do Equiplano: requisição de compra -> requisição de empenho -> empenho -> liquidação, estornos e itens)
 const RQ = { reqs: null };
 fetch('../data/requisicoes_ano.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(RQ, d); if (REQ._dados) mostrarReq(REQ._dados); }).catch(() => {});
