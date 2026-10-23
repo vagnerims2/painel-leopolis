@@ -101,6 +101,7 @@ jobs:
         run: |
           git config user.name "Painel Leopolis (GitHub)"
           git config user.email "vagnerims2@users.noreply.github.com"
+          date '+%d/%m/%Y %H:%M' > data/ultima_leitura.txt   # hora desta leitura do robô (muda sempre, mesmo sem novidade)
           git add data interno/planilha interno/resumos
           if git diff --cached --quiet; then echo "Nada mudou nos dados publicados."; exit 0; fi
           git commit -q -m "Dados de $(date '+%d/%m/%Y %H:%M') (GitHub)"
