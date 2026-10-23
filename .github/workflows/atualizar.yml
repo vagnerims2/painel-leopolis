@@ -67,6 +67,12 @@ jobs:
         env:
           PENDENTES_PASTA: ${{ secrets.PENDENTES_PASTA }}
         run: python ferramentas/pendentes.py - data/pendentes.json
+      - name: Base do ano das requisições (relatório completo do Equiplano no Drive -> data/requisicoes_ano.json)
+        if: success()
+        continue-on-error: true
+        env:
+          PENDENTES_PASTA: ${{ secrets.PENDENTES_PASTA }}
+        run: python ferramentas/requisicoes_ano.py - data/requisicoes_ano.json
       - name: Relatório semanal de requisições em atraso (segunda-feira, primeira rodada a partir das 7h)
         if: success()
         env:

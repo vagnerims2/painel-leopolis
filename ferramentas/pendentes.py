@@ -29,16 +29,58 @@ def baixar(url, timeout=120):
         return r.read()
 
 
-def achar_pdf(pasta):
-    """id e nome do relatório na pasta pública do Drive (o mais abaixo na lista, se houver mais de um)"""
+CACHE = os.path.join(os.path.dirname(__file__), '..', 'motor', 'estado', 'drive_pdfs.json')
+
+def listar(pasta):
+    """[(id, nome, alteração)] dos relatórios do Equiplano na pasta pública do Drive"""
     m = re.search(r'folders/([A-Za-z0-9_-]+)', pasta)
     pid = m.group(1) if m else pasta.strip()
     html = baixar(f'https://drive.google.com/embeddedfolderview?id={pid}').decode('utf-8', 'replace')
-    achados = re.findall(r'id="entry-([A-Za-z0-9_-]+)".*?flip-entry-title">([^<]*)', html, re.S)
-    pdfs = [(i, n.strip()) for i, n in achados if NOME.search(n)]
-    if not pdfs:
-        raise SystemExit('Itens pendentes: não achei o relatório na pasta do Drive (confira o nome do arquivo e o compartilhamento).')
-    return pdfs[-1]
+    out = []
+    for bloco in re.split(r'(?=<div class="flip-entry")', html)[1:]:
+        i = re.search(r'id="entry-([A-Za-z0-9_-]+)"', bloco); n = re.search(r'flip-entry-title">([^<]*)', bloco)
+        d = re.search(r'flip-entry-last-modified"[^>]*>(?:<[^>]+>)*([^<]+)', bloco)
+        if i and n and NOME.search(n.group(1)):
+            out.append((i.group(1), n.group(1).strip(), d.group(1).strip() if d else ''))
+    return out
+
+def tipo_de(texto):
+    """'pend' = relatório resumido (só pendentes); 'ano' = relatório completo, com movimentos"""
+    if re.search(r'Somente produtos com quantidade pendente', texto, re.I): return 'pend'
+    if re.search(r'Requisi\S+ de empenho\s+\d+/\d{4}', texto): return 'ano'
+    return 'pend'
+
+def relatorios(pasta):
+    """os relatórios da pasta com o tipo de cada um; baixa só o que é novo (guarda o tipo por id + data de alteração)"""
+    try:
+        cache = json.load(open(CACHE, encoding='utf-8'))
+    except Exception:
+        cache = {}
+    out = []
+    for fid, nome, mod in listar(pasta):
+        k = f'{fid}|{mod}'; dados = None
+        if k not in cache:
+            dados = baixar(f'https://drive.google.com/uc?export=download&id={fid}', timeout=600)
+            if not dados.startswith(b'%PDF'):
+                continue
+            import pypdf
+            r = pypdf.PdfReader(io.BytesIO(dados))
+            cache[k] = tipo_de('\n'.join(p.extract_text() or '' for p in r.pages[:3]))
+        out.append({'id': fid, 'nome': nome, 'mod': mod, 'chave': k, 'tipo': cache[k], 'dados': dados})
+    try:
+        os.makedirs(os.path.dirname(CACHE), exist_ok=True); json.dump(cache, open(CACHE, 'w', encoding='utf-8'))
+    except Exception:
+        pass
+    return out
+
+def achar_pdf(pasta, tipo='pend'):
+    """o relatório do tipo pedido (o último da lista, se houver mais de um); devolve (id, nome, bytes ou None)"""
+    rs = relatorios(pasta)
+    escolha = [r for r in rs if r['tipo'] == tipo] or ([r for r in rs] if tipo == 'pend' else [])
+    if not escolha:
+        raise SystemExit(f'Relatório ({tipo}): não achei na pasta do Drive (confira o nome do arquivo e o compartilhamento).')
+    r = escolha[-1]
+    return r['id'], r['nome'], r['dados']
 
 
 def texto_pdf(dados):
@@ -77,8 +119,8 @@ def main():
         pasta = os.environ.get('PENDENTES_PASTA', '')
         if not pasta:
             print('Itens pendentes: pasta do Drive (PENDENTES_PASTA) não configurada; pulando.'); return
-        fid, nome = achar_pdf(pasta)
-        dados = baixar(f'https://drive.google.com/uc?export=download&id={fid}')
+        fid, nome, dados = achar_pdf(pasta, 'pend')
+        dados = dados or baixar(f'https://drive.google.com/uc?export=download&id={fid}', timeout=600)
         if not dados.startswith(b'%PDF'):
             raise SystemExit('Itens pendentes: o arquivo do Drive não veio como PDF (confira o compartilhamento).')
     reqs, periodo, emitido = ler(texto_pdf(dados))
