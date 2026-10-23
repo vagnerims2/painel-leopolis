@@ -1708,6 +1708,9 @@ function juntarAno(linhas) {
     if (res.length) { if (l.re && !res.includes(semZeros(l.re))) x._reDif = l.re; x.re = res[res.length - 1]; if (res.length > 1) x.res = res.join(', '); }
     if (q.x && !/CANCELAD/i.test(`${l.et || ''} ${l.st || ''}`)) x.st = 'CANCELADA (estorno da requisição de compra)';
     return x; });
+  // regra do Vagner (23/10/2026): requisição anterior a 01/10/2026 que está só na planilha, sem requisição de empenho e com status PAGO não aparece
+  const oculta = (l) => !l._rq && !l.re && /PAGO/i.test(`${l.st || ''} ${l.et || ''}`) && (dmy(l.d) || '9999') < '2026-10-01';
+  for (let i = out.length - 1; i >= 0; i--) if (oculta(out[i])) out.splice(i, 1);
   Object.entries(RQ.reqs).forEach(([k, q]) => { if (vistos.has(k)) return; const res = REsDe(q), e = res.length ? porRE[res[res.length - 1]] : null;
     out.push({ r: k, d: q.d, f: q.f, c: q.c, s: e ? e.secretaria : '', re: res[res.length - 1] || '', ...(res.length > 1 ? { res: res.join(', ') } : {}), env: 'antes', st: q.x ? 'CANCELADA (estorno da requisição de compra)' : '', _rq: 1, _soAno: 1 }); });
   return out;
