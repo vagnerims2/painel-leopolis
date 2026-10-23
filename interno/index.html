@@ -1654,7 +1654,8 @@ function abrirItens(emp, e) {
   document.getElementById('nf-tit').textContent = `Itens do empenho ${emp}`;
   { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = true; }
   if (e) { const p = document.createElement('p'); p.className = 'note'; p.textContent = [e.fornecedor, br(e.data), e.licitacao].filter(Boolean).join(' · '); box.appendChild(p); }
-  if (grupo.length > 1) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `Compra dividida em ${grupo.length} empenhos (convênio e contrapartida): ${grupo.join(' e ')}. Os itens abaixo são da compra toda.`; box.appendChild(p); }
+  if (grupo.length > 1) { const p = document.createElement('p'); p.className = 'note'; const emps = (dash.data('empenhos').data || []).filter(x => grupo.includes(semZeros(x.empenho))), cap = emps.length && emps.every(x => /^4\.4\.90\.51|^4\.4\.90\.52\.52/.test(x.subelemento || x.natureza || ''));
+    p.textContent = `Compra dividida em ${grupo.length} empenhos${cap ? ' (convênio e contrapartida)' : ''}: ${grupo.join(' e ')}. Os itens abaixo são da compra toda.`; box.appendChild(p); }
   if (!its.length) { const p = document.createElement('p'); p.textContent = 'O portal não traz itens para este empenho.'; box.appendChild(p); }
   else { const w = document.createElement('div'); w.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'req-itens';
     t.innerHTML = '<thead><tr><th>Produto</th><th class="r">Qtd.</th><th class="r">Valor unit.</th><th class="r">Total</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="3">Total dos itens</td><td class="r"></td></tr></tfoot>';
