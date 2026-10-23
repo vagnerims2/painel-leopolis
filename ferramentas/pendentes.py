@@ -46,7 +46,7 @@ def baixar_drive(fid, timeout=900):
     return dados
 
 
-CACHE = os.path.join(os.path.dirname(__file__), '..', 'motor', 'estado', 'drive_pdfs.json')
+CACHE = os.path.join(os.path.dirname(__file__), '..', 'motor', 'estado', 'drive_pdfs_v2.json')
 
 def listar(pasta):
     """[(id, nome, alteração)] dos relatórios do Equiplano na pasta pública do Drive"""
@@ -62,10 +62,10 @@ def listar(pasta):
     return out
 
 def tipo_de(texto):
-    """'pend' = relatório resumido (só pendentes); 'ano' = relatório completo, com movimentos"""
-    if re.search(r'Somente produtos com quantidade pendente', texto, re.I): return 'pend'
-    if re.search(r'Requisi\S+ de empenho\s+\d+/\d{4}', texto): return 'ano'
-    return 'pend'
+    """'ano' = relatório completo (cada item traz os lançamentos e cada requisição o quadro "Movimento");
+    'pend' = relatório resumido, só com os itens pendentes"""
+    return 'ano' if re.search(r'Lan\S+amento|\bMovimento\b', texto) else 'pend'
+
 
 def relatorios(pasta):
     """os relatórios da pasta com o tipo de cada um; baixa só o que é novo (guarda o tipo por id + data de alteração)"""
