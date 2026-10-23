@@ -19,6 +19,7 @@ PASTA = os.environ.get('PAINEL_PASTA') or os.path.dirname(os.path.abspath(__file
 SITE = os.environ.get('PAINEL_SITE') or os.path.join(PASTA, 'site')
 SEM_GIT = os.environ.get('PAINEL_SEM_GIT') == '1'   # no GitHub: a automação faz o envio
 WORKFLOW_API = 'https://api.github.com/repos/vagnerims2/painel-leopolis/actions/workflows/atualizar.yml/runs?status=success&per_page=1'
+LEITURA_API = 'https://api.github.com/repos/vagnerims2/painel-leopolis/commits?path=data/ultima_leitura.txt&per_page=1'
 LOG = os.path.join(PASTA, 'painel.log')
 TRAVA = os.path.join(PASTA, 'painel.trava')
 PAG_POR_RODADA = 30  # dias de pagamento relidos por atualização até todos terem o fornecedor
@@ -59,7 +60,8 @@ def github_em_dia():
     """True se a automação do GitHub rodou com sucesso nos últimos 75 minutos"""
     try:
         import requests
-        r = requests.get(WORKFLOW_API, timeout=20).json()['workflow_runs']
+        c = requests.get(LEITURA_API, timeout=20).json()   # o turno do GitHub publica a hora da leitura a cada 20 min
+        r = [{'updated_at': c[0]['commit']['committer']['date']}] if isinstance(c, list) and c else requests.get(WORKFLOW_API, timeout=20).json()['workflow_runs']
         if r:
             fim = datetime.fromisoformat(r[0]['updated_at'].replace('Z', '+00:00'))
             idade = (datetime.now(fim.tzinfo) - fim).total_seconds() / 60
