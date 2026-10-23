@@ -25,7 +25,11 @@ for _n, _e in M['empenhos'].items():
     if 'req' not in _e and _n in _sem_req: _e['req'] = _sem_req[_n]
 for e in N['empenhos']:
     old = M['empenhos'].get(e['n'])
-    if old and not e['items'] and old.get('items'): e['items'] = old['items']
+    # releitura sem itens: mantém os itens antigos só se eles batiam com o valor do empenho (os que não batiam eram de
+    # outro empenho — ex.: tarifa bancária sem itens que tinha ficado com os jalecos do empenho seguinte)
+    if old and not e['items'] and old.get('items'):
+        _s = sum(float(i.get('vt') or 0) for i in old['items']); _v = float(e.get('v') or old.get('v') or 0)
+        if abs(_s - _v) <= max(0.05, 0.005 * _v): e['items'] = old['items']
     if old and not e.get('req') and old.get('req'): e['req'] = old['req']
     e['col'] = N['gerado'][:10]  # data em que o relatório deste empenho foi lido
     M['empenhos'][e['n']] = e
