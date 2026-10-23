@@ -61,6 +61,10 @@ jobs:
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
         run: python ferramentas/planilha_requisicoes.py --aberto - data/planilha.json
+      - name: Cadastro de fornecedores (contatos da planilha -> data/fornecedores.json)
+        if: success()
+        continue-on-error: true
+        run: python ferramentas/fornecedores.py data
       - name: Itens pendentes (relatório do Equiplano salvo no Drive -> data/pendentes.json)
         if: success()
         continue-on-error: true
