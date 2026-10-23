@@ -29,6 +29,23 @@ def baixar(url, timeout=120):
         return r.read()
 
 
+def baixar_drive(fid, timeout=900):
+    """baixa um arquivo público do Drive. Arquivos grandes (como o relatório completo de ~150 MB) não vêm direto: o Drive
+    devolve uma página "não foi possível verificar vírus"; aí confirma o download com os campos dessa página."""
+    dados = baixar(f'https://drive.usercontent.google.com/download?id={fid}&export=download&confirm=t', timeout=timeout)
+    if dados.startswith(b'%PDF'):
+        return dados
+    html = dados.decode('utf-8', 'replace')
+    campos = dict(re.findall(r'name="([^"]+)"\s+value="([^"]*)"', html))
+    if campos:
+        q = '&'.join(f'{k}={urllib.request.quote(v)}' for k, v in campos.items())
+        dados = baixar(f'https://drive.usercontent.google.com/download?{q}', timeout=timeout)
+        if dados.startswith(b'%PDF'):
+            return dados
+    dados = baixar(f'https://drive.google.com/uc?export=download&id={fid}', timeout=timeout)
+    return dados
+
+
 CACHE = os.path.join(os.path.dirname(__file__), '..', 'motor', 'estado', 'drive_pdfs.json')
 
 def listar(pasta):
@@ -60,9 +77,9 @@ def relatorios(pasta):
     for fid, nome, mod in listar(pasta):
         k = f'{fid}|{mod}'; dados = None
         if k not in cache:
-            dados = baixar(f'https://drive.google.com/uc?export=download&id={fid}', timeout=600)
+            dados = baixar_drive(fid)
             if not dados.startswith(b'%PDF'):
-                continue
+                print(f'Aviso: "{nome}" não veio como PDF do Drive (confira o compartilhamento).'); continue
             import pypdf
             r = pypdf.PdfReader(io.BytesIO(dados))
             cache[k] = tipo_de('\n'.join(p.extract_text() or '' for p in r.pages[:3]))
@@ -120,7 +137,7 @@ def main():
         if not pasta:
             print('Itens pendentes: pasta do Drive (PENDENTES_PASTA) não configurada; pulando.'); return
         fid, nome, dados = achar_pdf(pasta, 'pend')
-        dados = dados or baixar(f'https://drive.google.com/uc?export=download&id={fid}', timeout=600)
+        dados = dados or baixar_drive(fid)
         if not dados.startswith(b'%PDF'):
             raise SystemExit('Itens pendentes: o arquivo do Drive não veio como PDF (confira o compartilhamento).')
     reqs, periodo, emitido = ler(texto_pdf(dados))

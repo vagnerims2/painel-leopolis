@@ -57,7 +57,7 @@ def main():
         r = rs[-1]; nome, chave = r['nome'], r['chave']
         if velho.get('chave') == chave:
             print(f"Base do ano: relatório já lido ({velho.get('emitido')})."); return
-        dados = r['dados'] or P.baixar(f"https://drive.google.com/uc?export=download&id={r['id']}", timeout=900)
+        dados = r['dados'] or P.baixar_drive(r['id'])
     R, periodo, emitido = ler(P.texto_pdf(dados))
     if len(R) < 0.8 * len(velho.get('reqs') or {}):
         raise SystemExit(f'Base do ano: li só {len(R)} requisições (antes {len(velho.get("reqs") or {})}); mantive a base anterior.')
