@@ -161,11 +161,34 @@ itens_suspeitos = {n for n, e in E.items() if not _itens_ok(e)}
 # fonte de recurso. O portal põe os itens num empenho só (ou divide diferente dos valores); o que precisa bater é o total
 # do grupo. Esses itens valem, e os empenhos ficam ligados em "grupo_itens".
 grupo_itens = {}
+# liga empenhos que são a mesma compra: (a) mesmo fornecedor, data, licitação e contrato; (b) a mesma nota fiscal
+# (mesmo CNPJ e número) liquidada em empenhos diferentes — ex.: NF de R$ 10 mil liquidada em R$ 9 mil num empenho
+# (convênio) e R$ 1 mil noutro (contrapartida). O grupo só vale se a soma dos itens bater com a soma dos empenhos.
+_pai = {}
+def _raiz(x):
+    while _pai.get(x, x) != x: x = _pai[x]
+    return x
+def _une(a, b):
+    ra, rb = _raiz(a), _raiz(b)
+    if ra != rb: _pai[rb] = ra
 _gk = defaultdict(list)
 for n, e in E.items():
     if e.get('lic') or e.get('contrato'):
         _gk[(e.get('d'), nforn(e.get('forn')), e.get('lic', ''), e.get('contrato', ''))].append(n)
 for ns in _gk.values():
+    for x in ns[1:]: _une(ns[0], x)
+_nf = defaultdict(set)
+for x in M.get('docs', {}).values():
+    if x.get('ano') != str(hoje.year) or 'NOTA FISCAL' not in norm(x.get('tipo', '')) or not x.get('nr'): continue
+    l = L.get(x['l'])
+    if l and x['l'] in liq_ok: _nf[(re.sub(r'\D', '', x.get('doc', '')), x['nr'].lstrip('0'), x.get('serie', ''))].add(l['e'])
+for es in _nf.values():
+    es = sorted(es)
+    if len(es) > 1 and len({nforn(E[k].get('forn')) for k in es if k in E}) == 1:
+        for x in es[1:]: _une(es[0], x)
+_grupos = defaultdict(list)
+for n in E: _grupos[_raiz(n)].append(n)
+for ns in _grupos.values():
     if len(ns) < 2 or not any(n in itens_suspeitos for n in ns): continue
     v = sum(float(E[n].get('v') or 0) for n in ns); si = sum(float(i.get('vt') or 0) for n in ns for i in E[n].get('items') or [])
     if si and abs(si - v) <= max(0.05, 0.005 * v):
