@@ -1016,7 +1016,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   { const txt = (u) => fetch('../data/' + u + '?v=' + v).then(r => r.ok ? r.text() : '').then(t => t.trim()).catch(() => '');
     // rodapé: hora da última leitura do robô (mesmo sem novidade); se ainda não houver, a da última mudança nos dados
     Promise.all([txt('ultima_leitura.txt'), txt('atualizado.txt')]).then(([lei, mud]) => { const el = document.getElementById('atualizado'); const q = lei || mud; if (!el || !q) return;
-      el.textContent = 'Última atualização: ' + q + '.' + (lei && mud && mud !== lei ? ' Último lançamento novo do portal lido em ' + mud + '.' : ''); }); }
+      el.textContent = 'Última atualização: ' + q + '.'; }); }
   const OPCIONAIS = ['notas', 'pagamentos'];
   Promise.all(FONTES.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
     .concat(OPCIONAIS.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
