@@ -352,6 +352,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
 @media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
 #dash-root #t-req tbody tr.lin{cursor:pointer}
+#dash-root .req-ord{all:unset;cursor:pointer;font-weight:inherit;display:inline-flex;gap:4px;align-items:center}#dash-root .req-ord span{font-size:11px;color:var(--color-fg-muted)}#dash-root .req-ord:focus-visible{outline:2px solid var(--acc,#3D85D8);outline-offset:2px}#dash-root .req-per{display:flex;align-items:center;gap:6px;font-size:13px}#dash-root .req-per input{min-width:0}#dash-root #req-forn{min-width:min(100%,16rem)}
 #dash-root #tbl tbody tr.lin{cursor:pointer}#dash-root #tbl tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}#dash-root #tbl tr.det:hover td{background:color-mix(in srgb,var(--color-fg) 3%,transparent)}#dash-root .req-det dd{white-space:pre-line}
 #dash-root .req-orig{color:var(--color-warn);font-weight:600}
 #dash-root .req-ano summary{cursor:pointer;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--color-fg-muted);font-weight:600;margin:6px 0}#dash-root .req-ano .tblwrap{margin-bottom:8px}#dash-root .req-ano tr.estorno td{color:var(--color-bad,#b42318)}
@@ -712,14 +713,17 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
           <input id="req-busca" type="search" list="req-forn-lista" autocomplete="off" placeholder="Nº da requisição ou do empenho · memorando 34 · nome do fornecedor"><datalist id="req-forn-lista"></datalist>
           <select id="req-parada"><option value="">Todas as etapas</option></select>
           <select id="req-sec"><option value="">Todas as secretarias</option></select>
-          <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="ate30">Enviadas há até 30 dias</option><option value="31a90">Enviadas há 31 a 90 dias</option><option value="mais90">Enviadas há mais de 90 dias</option></select>
-          <select id="req-origem"><option value="">Todas as origens</option><option value="ambas">Na planilha e no Equiplano</option><option value="soplan">Só na planilha (conferir)</option><option value="soano">Só no Equiplano</option><option value="dif">Req. de empenho diferente</option></select>
-          <select id="req-ordem"><option value="rec">Mais recentes primeiro</option><option value="atraso">Maior atraso primeiro</option></select>
+          <select id="req-atraso"><option value="">Todos os envios</option><option value="naoenv">Aguardando envio</option><option value="env">Já enviadas</option></select>
+          <select id="req-tempo" aria-label="Tempo de atraso"><option value="">Qualquer atraso</option><option value="0-15">Até 15 dias</option><option value="16-30">16 a 30 dias</option><option value="31-60">31 a 60 dias</option><option value="61-90">61 a 90 dias</option><option value="91-180">91 a 180 dias</option><option value="181-99999">Mais de 180 dias</option><option value="31-99999">Mais de 30 dias</option><option value="91-99999">Mais de 90 dias</option><option value="sem">Sem atraso (fechadas)</option></select>
+                    <input id="req-forn" type="search" list="req-forn-lista2" autocomplete="off" placeholder="Fornecedor (nome ou CNPJ)"><datalist id="req-forn-lista2"></datalist>
+          <select id="req-lic"><option value="">Todas as licitações</option></select>
+          <label class="req-per">De <input type="date" id="req-de"></label>
+          <label class="req-per">até <input type="date" id="req-ate"></label>
           <button type="button" class="btn2" id="req-fechar" hidden>Fechar dados</button>
         </div>
         <p class="note" id="req-total"></p>
         <div class="tblwrap"><table id="t-req"><thead><tr>
-          <th>Requisição</th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r">Atraso</th>
+          <th><button type="button" class="req-ord" data-ro="rec">Requisição <span aria-hidden="true"></span></button></th><th>Fornecedor</th><th>Trilha</th><th>Parada em</th><th class="r"><button type="button" class="req-ord" data-ro="atraso">Atraso <span aria-hidden="true"></span></button></th>
         </tr></thead><tbody></tbody></table></div>
         <span id="req-atual" hidden></span>
       </div>
@@ -1564,6 +1568,10 @@ function pendDe(l) { if (!PEND.reqs || l.parada === 'Cancelada') return null;
   if (depois) { if (!e || !ix) return null; const its = (e._ms || [semZeros(e.empenho)]).flatMap(n => ix.itens[n] || []).filter(r => r.situacao !== 'Anulado'); if (!its.length) return null;
     return { tipo: 'pend', fonte: 'empenho', desat: N(e.liquidado) > 0.004, itens: its.map((r, k) => [String(k + 1).padStart(3, '0'), r.codigo || '', [r.produto, r.unidade].filter(Boolean).join(' · '), N(r.valor_total), N(r.valor_unitario), N(r.quantidade), 0, N(r.quantidade)]) }; }
   if (!d || (ini && d < ini)) return null; return { tipo: 'receb' }; }
+// CNPJ de cada fornecedor (das notas fiscais do portal), pelo nome
+function cnpjPorNome() { const d = dash.data('notas'); if (d.status !== 'ok') return {}; if (window.__cpn && window.__cpn.src === d.data) return window.__cpn.m;
+  const m = {}; d.data.forEach(n => { const c = String(n.cpf_cnpj || '').replace(/\D/g, ''); if (c.length >= 11) { const k = nomeChave(n.fornecedor); if (!m[k]) m[k] = c; } }); window.__cpn = { src: d.data, m }; return m; }
+const fmtDoc = (c) => c.length === 14 ? `${c.slice(0, 2)}.${c.slice(2, 5)}.${c.slice(5, 8)}/${c.slice(8, 12)}-${c.slice(12)}` : c.length === 11 ? `${c.slice(0, 3)}.${c.slice(3, 6)}.${c.slice(6, 9)}-${c.slice(9)}` : c;
 function drawReq() {
   const lista = prepararReq(); const tb = document.querySelector('#t-req tbody'); if (!lista) return; tb.replaceChildren();
   const sec = document.getElementById('req-sec'), par = document.getElementById('req-parada');
@@ -1594,13 +1602,24 @@ function drawReq() {
   { const dl = document.getElementById('req-forn-lista');
     if (dl && dl.dataset.n !== String(lista.length)) { dl.dataset.n = String(lista.length); dl.replaceChildren();
       const nomes = new Map(); lista.forEach(l => [l.f, l.emp && l.emp.fornecedor].forEach(f => { f = String(f || '').replace(/^[\d.\s/-]+/, '').trim(); if (f.length > 2) { const k = nz(f); if (!nomes.has(k)) nomes.set(k, f); } }));
-      [...nomes.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => { const o = document.createElement('option'); o.value = f; dl.appendChild(o); }); } }
-  const fx = document.getElementById('req-atraso').value, ordemReq = document.getElementById('req-ordem').value;
-  const og = document.getElementById('req-origem').value;
-  const origemOk = (l) => !og || !RQ.reqs || (og === 'ambas' ? l._rq && !l._soAno : og === 'soplan' ? !l._rq : og === 'soano' ? !!l._soAno : !!l._reDif);
-  const rows = lista.filter(l => origemOk(l) && (!REQ.soPend || (pendDe(l) || {}).tipo === 'pend') && (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : l.aberta && naFaixa(fx, l.atraso)))
+      [...nomes.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => { const o = document.createElement('option'); o.value = f; dl.appendChild(o); });
+      const dl2 = document.getElementById('req-forn-lista2'), cp = cnpjPorNome(); dl2.replaceChildren();
+      [...nomes.values()].sort((a, b) => a.localeCompare(b, 'pt-BR')).forEach(f => { const o = document.createElement('option'); o.value = f; const c = cp[nomeChave(f)]; if (c) o.label = fmtDoc(c); dl2.appendChild(o); }); } }
+  const tp = document.getElementById('req-tempo').value, [tMin, tMax] = tp && tp !== 'sem' ? tp.split('-').map(Number) : [0, 0];
+  const tempoOk = (l) => !tp || (tp === 'sem' ? !l.aberta && !l.naoEnviada : l.aberta && !l.naoEnviada && l.atraso >= tMin && l.atraso <= tMax);
+  const fx = document.getElementById('req-atraso').value, ordemReq = REQ.ord.k, dir = REQ.ord.dir;
+  document.querySelectorAll('#t-req .req-ord').forEach(b => { const on = b.dataset.ro === ordemReq; b.querySelector('span').textContent = on ? '' : '↕'; const th = b.closest('th'); if (on) th.setAttribute('aria-sort', dir < 0 ? 'descending' : 'ascending'); else th.removeAttribute('aria-sort'); b.title = on ? (dir < 0 ? 'Clique para inverter (mais antigas primeiro)' : 'Clique para inverter (mais recentes primeiro)') : 'Clique para ordenar por esta coluna'; });
+  const lic = document.getElementById('req-lic'), de = document.getElementById('req-de').value, ate = document.getElementById('req-ate').value;
+  fillSelect(lic, [...new Set(lista.map(l => l.emp && l.emp.licitacao).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR', { numeric: true })));
+  const fq = nz(document.getElementById('req-forn').value.trim()), fdig = fq.replace(/\D/g, '');
+  const cnpjDe = cnpjPorNome();
+  const fornOk = (l) => { if (!fq) return true; const nomes = [l.f, l.emp && l.emp.fornecedor].filter(Boolean);
+    if (fdig.length >= 5 && fdig.length === fq.replace(/[\s./-]/g, '').length) return nomes.some(n => (cnpjDe[nomeChave(n)] || '').includes(fdig));
+    const ws = fq.split(/\s+/); return nomes.some(n => { const t = nz(n); return ws.every(w => t.includes(w)); }); };
+  const origemOk = (l) => (!lic.value || (l.emp && l.emp.licitacao === lic.value)) && (!de || (dmy(l.d) || '') >= de) && (!ate || (dmy(l.d) || '') <= ate) && fornOk(l);
+  const rows = lista.filter(l => origemOk(l) && (!REQ.soPend || (pendDe(l) || {}).tipo === 'pend') && (!par.value || l.parada === par.value) && (!sec.value || secGrupo(l.s) === sec.value) && (!fx || (fx === 'naoenv' ? l.naoEnviada : fx === 'env' ? !l.naoEnviada : l.aberta && naFaixa(fx, l.atraso))) && tempoOk(l)
     && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : palavras.every(w => nz([l.f, l.emp && l.emp.fornecedor].filter(Boolean).join(' ')).includes(w)))))
-    .sort((a, b) => ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0));
+    .sort((a, b) => -dir * (ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0)));
   document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
   rows.slice(0, 600).forEach(l => {
     const tr = document.createElement('tr'); tr.className = 'lin'; tr.tabIndex = 0; tr.setAttribute('aria-expanded', 'false');
@@ -1772,7 +1791,10 @@ document.getElementById('req-fechar').addEventListener('click', () => { REQ.linh
   document.getElementById('req-senha').value = ''; document.getElementById('req-trava').hidden = false; document.getElementById('req-aberto').hidden = true;
   document.getElementById('req-msg').className = 'note'; document.getElementById('req-msg').textContent = 'Dados fechados.'; if (typeof drawTable === 'function') drawTable(); });
 document.getElementById('req-busca').addEventListener('input', drawReq);
-['req-parada', 'req-sec', 'req-atraso', 'req-ordem', 'req-origem'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
+REQ.ord = { k: 'rec', dir: -1 };
+document.getElementById('req-forn').addEventListener('input', drawReq);
+document.querySelectorAll('#t-req .req-ord').forEach(b => b.addEventListener('click', () => { const k = b.dataset.ro; if (REQ.ord.k === k) REQ.ord.dir *= -1; else REQ.ord = { k, dir: -1 }; drawReq(); }));
+['req-parada', 'req-sec', 'req-atraso', 'req-tempo', 'req-lic', 'req-de', 'req-ate'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
 dash.onData(() => { if (REQ.linhas) { if (REQ._dados) REQ.linhas = juntarAno(REQ._dados.linhas || []); ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
 /* sem senha: abre direto */ fetch('../data/planilha.json?v=' + Date.now()).then(r => r.json()).then(mostrarReq).catch(e => { document.getElementById('req-msg').textContent = 'Não consegui carregar os dados da planilha.'; });
 // ---------- Receitas: relatório de uma ou mais receitas (IPTU, ISS…) por período, do Anexo 10 do portal ----------
