@@ -352,6 +352,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #t-req td{vertical-align:top}#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:10.5rem;max-width:10.5rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:5.5rem;max-width:5.5rem}#dash-root #t-req td{overflow-wrap:break-word}
 @media (max-width:640px){#dash-root #t-req th:nth-child(4),#dash-root #t-req td:nth-child(4){width:8rem;max-width:8rem}#dash-root #t-req th:nth-child(5),#dash-root #t-req td:nth-child(5){width:4.8rem;max-width:4.8rem}}#dash-root #t-req td:nth-child(4) .pill,#dash-root #t-req td:nth-child(5) .pill{white-space:normal;display:inline-block;max-width:100%;line-height:1.25;text-align:left;font-size:11px;padding:2px 7px}#dash-root #t-req td:nth-child(5) .pill{text-align:center;white-space:nowrap;overflow-wrap:normal}#dash-root #t-req .req-et{font-size:10.5px;line-height:1.3;margin-top:3px}#dash-root #t-req td:nth-child(5) .pill{font-size:10.5px;padding:1px 6px}
 #dash-root #t-req tbody tr.lin{cursor:pointer}
+#dash-root .p-fonte{display:inline-flex;gap:10px;align-items:center;font-size:13px;flex-wrap:wrap}#dash-root .p-nfitem{color:var(--c1,#3D85D8);font-weight:600}
 #dash-root .req-ord{all:unset;cursor:pointer;font-weight:inherit;display:inline-flex;gap:4px;align-items:center}#dash-root .req-ord span{font-size:11px;color:var(--color-fg-muted)}#dash-root .req-ord:focus-visible{outline:2px solid var(--acc,#3D85D8);outline-offset:2px}#dash-root .req-per{display:flex;align-items:center;gap:6px;font-size:13px}#dash-root .req-per input{min-width:0}#dash-root #req-forn{min-width:min(100%,16rem)}
 #dash-root #tbl tbody tr.lin{cursor:pointer}#dash-root #tbl tr.det td{background:color-mix(in srgb,var(--color-fg) 3%,transparent);padding:12px 14px}#dash-root #tbl tr.det:hover td{background:color-mix(in srgb,var(--color-fg) 3%,transparent)}#dash-root .req-det dd{white-space:pre-line}
 #dash-root .req-orig{color:var(--color-warn);font-weight:600}
@@ -896,10 +897,11 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   <section class="tab" data-tab="produtos" hidden>
     <div class="card" id="produtos">
       <h2>Buscar produto</h2>
-      <p class="note">Itens de todos os empenhos de 2026, com a situação do empenho.</p>
+      <p class="note">Itens de todos os empenhos de 2026, com a situação do empenho, e os produtos das notas fiscais cujo XML foi salvo na pasta do Drive (marcados como "item da nota fiscal"). <span id="p-xml"></span></p>
       <div class="tools">
-        <input id="p-busca" type="search" placeholder="Ex.: bola, caneta, luva, nº do empenho…">
+        <input id="p-busca" type="search" placeholder="Ex.: bola, caneta, luva, nº do empenho ou da nota…">
         <label><input id="p-parte" type="checkbox"> qualquer parte do nome</label>
+        <span class="p-fonte" role="group" aria-label="Onde procurar">Buscar em: <label><input id="p-emp" type="checkbox" checked> empenho</label> <label><input id="p-nf" type="checkbox" checked> nota fiscal</label></span>
         <select id="p-sec"><option value="">Todas as secretarias</option></select>
         <select id="p-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
       </div>
@@ -1281,24 +1283,84 @@ function drawDot() { const d = dash.data('dotacoes'), tb = document.querySelecto
 dBusca.addEventListener('input', drawDot); [dRec, dSup].forEach(e => e.addEventListener('change', drawDot));
 
 // ---------- Produtos ----------
+// produtos das notas fiscais (XML salvo na pasta do Drive), ligados ao empenho pela chave de acesso
+const NFI = { notas: null };
+fetch('../data/notas_itens.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(NFI, d); NFI._rows = null;
+  const el = document.getElementById('p-xml'); const n = Object.keys(d.notas || {}).length; if (el) el.textContent = `XMLs lidos: ${intF.format(n)} notas, última leitura em ${d.lido || '—'}.`; if (pBusca.value || pSec.value || pSit.value) drawProd(); }).catch(() => {});
+function itensNF() { if (!NFI.notas) return []; const nd = dash.data('notas'), ed = dash.data('empenhos'); if (nd.status !== 'ok' || ed.status !== 'ok') return [];
+  if (NFI._rows && NFI._src === nd.data) return NFI._rows;
+  const porChave = {}, liqs = {}; nd.data.forEach(r => { if (!r.chave) return; (porChave[r.chave] = porChave[r.chave] || new Set()).add(semZeros(r.empenho)); (liqs[r.chave] = liqs[r.chave] || new Set()).add(r.liquidacao); });
+  const emp = {}; ed.data.forEach(r => { emp[semZeros(r.empenho)] = r; });
+  const out = []; Object.entries(NFI.notas).forEach(([ch, n]) => { if (n.canc) return; const es = [...(porChave[ch] || [])].sort((a, b) => a - b); const e = emp[es[0]] || {};
+    (n.i || []).forEach((it, k) => out.push({ chave: 'nf' + ch + '-' + k, _nf: n.n, _ch: ch, empenho: es.join(' + ') || '—', data: n.d, fornecedor: e.fornecedor || n.f, secretaria: e.secretaria || '',
+      _liq: [...(liqs[ch] || [])].join(', '), produto: String(it[0]).replace(/^\d{8,}\s+/, ''), unidade: it[1], quantidade: it[2], valor_unitario: it[3], valor_total: it[4], situacao: es.length ? (e.situacao || '') : 'Liquidação ainda não publicada no portal' })); });
+  NFI._rows = out; NFI._src = nd.data; return out; }
+const pEmp = document.getElementById('p-emp'), pNf = document.getElementById('p-nf');
+// pelo menos uma das caixinhas fica marcada
+[pEmp, pNf].forEach(c => c.addEventListener('change', () => { if (!pEmp.checked && !pNf.checked) (c === pEmp ? pNf : pEmp).checked = true; }));
 const pBusca = document.getElementById('p-busca'), pParte = document.getElementById('p-parte'), pSit = document.getElementById('p-sit'), pSec = document.getElementById('p-sec');
 function drawProd() { const d = dash.data('itens'), tb = document.querySelector('#t-prod tbody'), tp = document.querySelector('#t-precos tbody'), res = document.getElementById('p-resumo'); tb.replaceChildren(); tp.replaceChildren(); if (d.status !== 'ok') return;
-  fillSelect(pSec, uniq(d.data, 'secretaria')); const q = nz(pBusca.value.trim()), f = pSit.value;
+  fillSelect(pSec, uniq(d.data, 'secretaria')); const q = nz(pBusca.value.trim()), f = pSit.value, fonte = pEmp.checked && pNf.checked ? '' : pNf.checked ? 'nf' : 'emp';
+  const base = (fonte === 'nf' ? [] : d.data).concat(fonte === 'emp' ? [] : itensNF());
   if (!q && !f && !pSec.value) { relatorioProduto([]); res.textContent = `${intF.format(d.data.length)} itens disponíveis. Digite um produto para buscar.`; emptyRow(tp, 6, 'Faça uma busca para ver os preços.'); return; }
   const palavra = (t) => nz(t).split(/[^a-z0-9]+/).some(w => w === q || w === q + 's' || w === q + 'es');
+  // número digitado: nas notas, pelo número da nota (vai filtrando enquanto digita) ou pela chave; nos itens do empenho, pelo nº do empenho
+  // ou pelo nº de nota fiscal liquidada nesse empenho (notas do portal)
+  const qn = /^\d+$/.test(q) ? semZeros(q) : '', empDaNota = qn && pEmp.checked ? empenhosDaNota(qn) : null;
+  if (qn) return drawProdRows(base.filter(r => (!f || r.situacao === f) && (!pSec.value || r.secretaria === pSec.value)
+    && (r._nf ? semZeros(r._nf).startsWith(qn) || (q.length >= 6 && r._ch.includes(q)) : semZeros(r.empenho) === qn || empDaNota.has(semZeros(r.empenho)))), fonte, res, tb, tp);
   const casa = (r) => !q || (pParte.checked ? nz([r.produto, r.marca, r.fornecedor, r.empenho].join(' ')).includes(q) : (q.includes(' ') ? nz(r.produto).includes(q) : palavra(r.produto)) || String(r.empenho) === q);
-  const rows = d.data.filter(r => (!f || r.situacao === f) && (!pSec.value || r.secretaria === pSec.value) && casa(r));
-  relatorioProduto(rows);
+  drawProdRows(base.filter(r => (!f || r.situacao === f) && (!pSec.value || r.secretaria === pSec.value) && casa(r)), fonte, res, tb, tp); }
+// janela "Itens da nota fiscal": produtos do XML, chave de acesso (copiar e consultar na Receita) e o empenho ligado
+function abrirItensNota(ch) { const n = (NFI.notas || {})[ch]; if (!n) return; const rows = itensNF().filter(r => r._ch === ch), r0 = rows[0] || {};
+  const box = document.getElementById('nf-lista'); box.replaceChildren(); { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = true; }
+  document.getElementById('nf-tit').textContent = `Itens da nota fiscal nº ${n.n}`;
+  const p = document.createElement('p'); p.className = 'note'; p.textContent = [n.f, 'emitida em ' + br(n.d), r0._liq ? 'liquidação ' + r0._liq : 'liquidação ainda não publicada no portal'].join(' · '); box.appendChild(p);
+  const w = document.createElement('div'); w.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'req-itens';
+  t.innerHTML = '<thead><tr><th>Produto</th><th class="r">Qtd.</th><th class="r">Valor unit.</th><th class="r">Total</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="3">Total da nota</td><td class="r"></td></tr></tfoot>';
+  const tb = t.querySelector('tbody'); let soma = 0;
+  (n.i || []).forEach(it => { const tr = document.createElement('tr'); fornCell(tr, String(it[0]).replace(/^\d{8,}\s+/, ''), it[1] ? 'Unidade: ' + it[1] : ''); td(tr, qtdF.format(N(it[2])), 'r'); td(tr, brl2.format(N(it[3])), 'r'); td(tr, brl2.format(N(it[4])), 'r'); soma += N(it[4]); tb.appendChild(tr); });
+  t.querySelector('tfoot td.r').textContent = brl2.format(N(n.v) || soma); w.appendChild(t); box.appendChild(w);
+  const ch2 = document.createElement('div'); ch2.className = 'sub2 nf-chave'; ch2.textContent = 'Chave de acesso: ' + ch.replace(/(\d{4})(?=\d)/g, '$1 '); box.appendChild(ch2);
+  const ac = document.createElement('div'); ac.className = 'nf-acoes';
+  const cp = document.createElement('button'); cp.type = 'button'; cp.className = 'btn2'; cp.textContent = 'Copiar chave de acesso';
+  cp.addEventListener('click', () => { try { navigator.clipboard.writeText(ch).then(() => { cp.textContent = 'Chave copiada'; }, () => prompt('Chave de acesso', ch)); } catch (e) { prompt('Chave de acesso', ch); } }); ac.appendChild(cp);
+  const a = document.createElement('a'); a.className = 'btn2'; a.textContent = 'Consultar na Receita'; a.href = RECEITA_NFE + ch; a.target = '_blank'; a.rel = 'noopener';
+  a.addEventListener('click', () => { try { navigator.clipboard.writeText(ch); } catch (e) {} }); ac.appendChild(a);
+  if (r0.empenho && r0.empenho !== '—') r0.empenho.split(' + ').forEach(e => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2 pri'; b.textContent = 'Ver o empenho ' + e;
+    b.addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; abrirEmpenhoNum(e); }); ac.appendChild(b);
+    // requisição de compra ligada a esse empenho (pela base do ano / planilha)
+    if (!REQ.ligadas && REQ.linhas) ligarReq();
+    const vistos = new Set(); ((REQ.ligadas || {})[semZeros(e)] || []).forEach(x => { if (vistos.has(x.r)) return; vistos.add(x.r);
+      const q = document.createElement('button'); q.type = 'button'; q.className = 'btn2 pri'; q.textContent = 'Ver a requisição de compra ' + x.r;
+      q.addEventListener('click', () => { document.getElementById('nf-modal').hidden = true; abrirReqNum(x.r); }); ac.appendChild(q); }); });
+  else { const s2 = document.createElement('span'); s2.className = 'sub2'; s2.textContent = 'Empenho: aparece quando o portal publicar a liquidação desta nota.'; ac.appendChild(s2); }
+  box.appendChild(ac);
+  const nt = document.createElement('p'); nt.className = 'note'; nt.textContent = 'Na Receita, a chave já vai copiada: se o campo vier vazio, cole a chave e confirme que você não é um robô.'; box.appendChild(nt);
+  document.getElementById('nf-modal').hidden = false; }
+function abrirReqNum(num) { irPara('requisicoes'); const q = document.getElementById('req-busca'); q.value = String(num); drawReq();
+  setTimeout(() => { const tr = [...document.querySelectorAll('#t-req tbody tr.lin')].find(t => semZeros(t.cells[0].innerText.split('\n')[0]) === semZeros(num)) || document.querySelector('#t-req tbody tr.lin');
+    if (tr && tr.getAttribute('aria-expanded') !== 'true') tr.click(); if (tr) tr.scrollIntoView({ block: 'center' }); }, 50); }
+function abrirEmpenhoNum(num) { filtrarEmpenhos({ busca: String(num) }); setTimeout(() => { const tr = [...document.querySelectorAll('#tbl tbody tr.lin')].find(t => semZeros(t.cells[0].innerText.split('\n')[0]) === semZeros(num)) || document.querySelector('#tbl tbody tr.lin');
+  if (tr && tr.getAttribute('aria-expanded') !== 'true') tr.click(); if (tr) tr.scrollIntoView({ block: 'center' }); }, 50); }
+function empenhosDaNota(qn) { const d = dash.data('notas'), out = new Set(); if (d.status === 'ok') d.data.forEach(r => { if (semZeros(String(r.numero).split('/')[0]) === qn) out.add(semZeros(r.empenho)); }); return out; }
+function drawProdRows(rows, fonte, res, tb, tp) {
+  const nNF = rows.filter(r => r._nf).length;
+  // o relatório mês a mês soma o que foi empenhado; os itens da nota entram só quando a busca é só na nota (senão contaria duas vezes)
+  relatorioProduto(fonte === 'nf' ? rows : rows.filter(r => !r._nf));
   const s = (k) => rows.reduce((a, r) => a + Number(r[k] || 0), 0);
-  res.textContent = `${intF.format(rows.length)} itens · quantidade ${qtdF.format(s('quantidade'))} · valor ${brl2.format(s('valor_total'))} · pagos: ${intF.format(rows.filter(r => r.situacao === 'Pago').length)} · em aberto: ${intF.format(rows.filter(r => !['Pago', 'Anulado'].includes(r.situacao)).length)}`;
+  res.textContent = (nNF ? `${intF.format(rows.length - nNF)} itens de empenho e ${intF.format(nNF)} de nota fiscal · ` : '') + `${intF.format(rows.length)} itens · quantidade ${qtdF.format(s('quantidade'))} · valor ${brl2.format(s('valor_total'))} · pagos: ${intF.format(rows.filter(r => r.situacao === 'Pago').length)} · em aberto: ${intF.format(rows.filter(r => !['Pago', 'Anulado'].includes(r.situacao)).length)}`;
   rows.slice(0, 400).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.chave; const p = td(tr, r.produto); p.style.fontWeight = '600'; const sub = [r.marca, r.embalagem, r.unidade].filter(Boolean).join(' · '); if (sub) { const m = document.createElement('div'); m.className = 'sub2'; m.textContent = sub; p.appendChild(m); }
+    if (r._nf) { const m = document.createElement('div'); m.className = 'sub2 p-nfitem'; m.textContent = `Item da nota fiscal nº ${r._nf}` + (r._liq ? ` · liquidação ${r._liq}` : ''); p.appendChild(m);
+      // clicar no item da nota abre o empenho (com liquidação, pagamento e requisições ligados)
+      tr.classList.add('lin'); tr.style.cursor = 'pointer'; tr.title = 'Ver os itens da nota fiscal ' + r._nf; tr.addEventListener('click', () => abrirItensNota(r._ch)); }
     td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, qtdF.format(N(r.quantidade)), 'r'); td(tr, brl2.format(N(r.valor_unitario)), 'r'); td(tr, brl2.format(N(r.valor_total)), 'r hide-sm');
     pillCell(tr, r.situacao, sitCls(r.situacao)); tb.appendChild(tr); });
   if (rows.length > 400) emptyRow(tb, 9, `Mostrando 400 de ${intF.format(rows.length)} itens. Refine a busca.`); if (!rows.length) emptyRow(tb, 9, 'Nenhum item encontrado.');
   const m = {}; rows.forEach(r => { const k = [r.produto, r.embalagem, r.unidade].filter(Boolean).join(' · '); const v = N(r.valor_unitario); if (!v) return; m[k] = m[k] || { n: 0, s: 0, min: v, max: v, quem: r.fornecedor }; m[k].n++; m[k].s += v; m[k].max = Math.max(m[k].max, v); if (v < m[k].min) { m[k].min = v; m[k].quem = r.fornecedor; } else if (v === m[k].min && m[k].n === 1) m[k].quem = r.fornecedor; });
   Object.entries(m).sort((a, b) => b[1].n - a[1].n).slice(0, 60).forEach(([k, v]) => { const tr = document.createElement('tr'); td(tr, k); td(tr, intF.format(v.n), 'r'); td(tr, brl2.format(v.min), 'r'); td(tr, brl2.format(v.s / v.n), 'r'); td(tr, brl2.format(v.max), 'r'); td(tr, v.quem, 'hide-sm'); tp.appendChild(tr); });
   if (!Object.keys(m).length) emptyRow(tp, 6, 'Sem preços para a busca.'); }
-pBusca.addEventListener('input', drawProd); [pParte, pSit, pSec].forEach(e => e.addEventListener('change', drawProd));
+pBusca.addEventListener('input', drawProd); [pParte, pSit, pSec, pEmp, pNf].forEach(e => e.addEventListener('change', drawProd));
 function relatorioProduto(rows) {
   const tm = document.querySelector('#t-pmes tbody'), ts = document.querySelector('#t-psec tbody'), tpp = document.querySelector('#t-pprod tbody'); tm.replaceChildren(); ts.replaceChildren(); tpp.replaceChildren();
   const set = (id, t) => { document.getElementById(id).textContent = t; }; ['pm-q', 'pm-v', 'pm-n', 'pm-p'].forEach(id => set(id, '—')); set('pm-aviso', '');
@@ -1676,7 +1738,9 @@ function drawReq() {
           const tw2 = document.createElement('div'); tw2.className = 'tblwrap'; tw2.appendChild(mv); w.appendChild(tw2); dl.appendChild(w); } }
       const ac = document.createElement('div'); ac.className = 'req-acoes';
       if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = l.emps ? `Ver itens dos empenhos ${l.emps.join(' + ')}` : `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
-        const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); } }
+        const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); }
+        // volta para o empenho na aba Empenhos (já aberto)
+        (l.emps || [l.eLig]).forEach(e => { const v = document.createElement('button'); v.type = 'button'; v.className = 'btn2 pri'; v.textContent = 'Ver o empenho ' + e; v.addEventListener('click', (ev) => { ev.stopPropagation(); abrirEmpenhoNum(e); }); ac.appendChild(v); }); }
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
     tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });
     tb.appendChild(tr); });
@@ -1751,7 +1815,7 @@ function detalheEmpenho(r, tr) {
   const ac = document.createElement('div'); ac.className = 'req-acoes';
   { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = 'Ver itens do empenho'; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(semZeros(r.empenho), r); }); ac.appendChild(b); }
   { const nfs = notasPorEmp()[r.empenho]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${r.empenho}`); }); ac.appendChild(n); } }
-  if (reqs.length) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = 'Abrir na aba Requisições'; b.addEventListener('click', (ev) => { ev.stopPropagation(); irPara('requisicoes'); const q = document.getElementById('req-busca'); q.value = reqs[0].r; drawReq(); }); ac.appendChild(b); }
+  [...new Set(reqs.map(x => x.r))].forEach(n => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2 pri'; b.textContent = 'Ver a requisição de compra ' + n; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirReqNum(n); }); ac.appendChild(b); });
   dl.appendChild(ac); c.appendChild(dl); tr.after(dt);
 }
 // base do ano (relatório completo do Equiplano: requisição de compra -> requisição de empenho -> empenho -> liquidação, estornos e itens)
