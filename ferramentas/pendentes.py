@@ -73,17 +73,27 @@ def relatorios(pasta):
         cache = json.load(open(CACHE, encoding='utf-8'))
     except Exception:
         cache = {}
-    out = []
+    out, diag = [], []
     for fid, nome, mod in listar(pasta):
         k = f'{fid}|{mod}'; dados = None
         if k not in cache:
-            dados = baixar_drive(fid)
+            try:
+                dados = baixar_drive(fid)
+            except Exception as e:
+                diag.append({'arquivo': nome, 'alterado': mod, 'erro': f'download: {e}'[:300]}); continue
             if not dados.startswith(b'%PDF'):
+                diag.append({'arquivo': nome, 'alterado': mod, 'erro': 'não veio como PDF', 'bytes': len(dados), 'inicio': dados[:400].decode('utf-8', 'replace')})
                 print(f'Aviso: "{nome}" não veio como PDF do Drive (confira o compartilhamento).'); continue
             import pypdf
             r = pypdf.PdfReader(io.BytesIO(dados))
             cache[k] = tipo_de('\n'.join(p.extract_text() or '' for p in r.pages[:3]))
         out.append({'id': fid, 'nome': nome, 'mod': mod, 'chave': k, 'tipo': cache[k], 'dados': dados})
+        diag.append({'arquivo': nome, 'alterado': mod, 'tipo': cache[k], 'bytes': len(dados) if dados else None})
+    try:
+        json.dump({'quando': datetime.now(timezone(timedelta(hours=-3))).strftime('%d/%m/%Y %H:%M'), 'arquivos': diag},
+                  open(os.path.join(os.path.dirname(__file__), '..', 'data', 'drive_status.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+    except Exception:
+        pass
     try:
         os.makedirs(os.path.dirname(CACHE), exist_ok=True); json.dump(cache, open(CACHE, 'w', encoding='utf-8'))
     except Exception:
