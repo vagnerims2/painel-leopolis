@@ -14,6 +14,7 @@ python ferramentas/planilha_requisicoes.py --aberto - data/planilha.json || echo
 python ferramentas/fornecedores.py data || echo "Aviso: cadastro de fornecedores não atualizado nesta rodada."
 python ferramentas/pendentes.py - data/pendentes.json || echo "Aviso: itens pendentes não lidos nesta rodada."
 python ferramentas/requisicoes_ano.py - data/requisicoes_ano.json || echo "Aviso: base do ano não lida nesta rodada."
+python ferramentas/notas_xml.py data/notas_itens.json || echo "Aviso: XML das notas não lidos nesta rodada."
 
 # relatório semanal de requisições em atraso: segunda-feira, primeira rodada a partir das 7h (ou quando pedido)
 semana=$(date +%G-%V); marca=motor/estado/relatorio_atraso.txt
