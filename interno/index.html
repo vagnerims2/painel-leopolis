@@ -1647,11 +1647,14 @@ function situacaoPortal(l) { const e = l.emp; if (!e) return null;
   return { txt: p.join(' · ') };
 }
 function abrirItens(emp, e) {
-  const d = dash.data('itens'), its = d.status === 'ok' ? d.data.filter(r => semZeros(r.empenho) === emp) : [];
+  // convênio + contrapartida: mostra os itens da compra toda (os do grupo de empenhos)
+  const grupo = e && e.grupo_itens ? e.grupo_itens.split(',').map(semZeros) : [emp];
+  const d = dash.data('itens'), its = d.status === 'ok' ? d.data.filter(r => grupo.includes(semZeros(r.empenho))) : [];
   const box = document.getElementById('nf-lista'); box.replaceChildren();
   document.getElementById('nf-tit').textContent = `Itens do empenho ${emp}`;
   { const nt = document.querySelector('#nf-modal .nf-caixa > p.note'); if (nt) nt.hidden = true; }
   if (e) { const p = document.createElement('p'); p.className = 'note'; p.textContent = [e.fornecedor, br(e.data), e.licitacao].filter(Boolean).join(' · '); box.appendChild(p); }
+  if (grupo.length > 1) { const p = document.createElement('p'); p.className = 'note'; p.textContent = `Compra dividida em ${grupo.length} empenhos (convênio e contrapartida): ${grupo.join(' e ')}. Os itens abaixo são da compra toda.`; box.appendChild(p); }
   if (!its.length) { const p = document.createElement('p'); p.textContent = 'O portal não traz itens para este empenho.'; box.appendChild(p); }
   else { const w = document.createElement('div'); w.className = 'tblwrap'; const t = document.createElement('table'); t.className = 'req-itens';
     t.innerHTML = '<thead><tr><th>Produto</th><th class="r">Qtd.</th><th class="r">Valor unit.</th><th class="r">Total</th></tr></thead><tbody></tbody><tfoot><tr><td colspan="3">Total dos itens</td><td class="r"></td></tr></tfoot>';
@@ -2124,12 +2127,16 @@ const REC_ARQ = '../data/receitas.json';
       itens.forEach(r => { nIt[r.empenho] = (nIt[r.empenho] || 0) + 1; });
       pags.forEach(p => { const k = p.empenho + '/' + p.ano_empenho; (pagE[k] = pagE[k] || []).push(p); });
       const esc = (r, f, d, est) => ({ ...r, quantidade: N(r.quantidade) * f, valor_total: N(r.valor_total) * f, data: d, est });
-      const ef = (rs) => { const out = []; rs.forEach(r => { const e = emp[r.empenho], val = e ? N(e.valor) : 0;
+      // convênio + contrapartida: a compra sai em 2+ empenhos (um por fonte) e os itens vêm num só; conta pelo grupo todo
+      const grp = (e) => { if (!e || !e.grupo_itens) return e; const ms = e.grupo_itens.split(',').map(n => emp[n]).filter(Boolean); if (ms.length < 2) return e;
+        const sm = (k) => ms.reduce((a, x) => a + N(x[k]), 0);
+        return { ...e, valor: sm('valor'), anulado: sm('anulado'), liquidado: sm('liquidado'), pago: sm('pago'), primeira_liquidacao: ms.map(x => x.primeira_liquidacao).filter(Boolean).sort()[0] || '', _ms: ms.map(x => x.empenho) }; };
+      const ef = (rs) => { const out = []; rs.forEach(r => { const e = grp(emp[r.empenho]), val = e ? N(e.valor) : 0;
         if (!e || !val) { if (baseRl === 'emp') out.push({ ...r, est: false }); return; }
         const varios = nIt[r.empenho] > 1;
         if (baseRl === 'emp') { const f = Math.max(0, (val - N(e.anulado)) / val); if (f > 1e-6) out.push(esc(r, f, r.data, f < 0.9999 && varios)); }
         else if (baseRl === 'liq') { const f = Math.min(1, N(e.liquidado) / val); if (f > 1e-6) out.push(esc(r, f, e.primeira_liquidacao || r.data, f < 0.9999 && varios)); }
-        else { const parc = Math.abs(N(e.pago) / val - 1) > 1e-4; (pagE[r.empenho + '/' + String(r.data).slice(0, 4)] || []).forEach(p => { const f = N(p.valor) / val; if (Math.abs(f) > 1e-6) out.push(esc(r, f, p.data, parc && varios)); }); } });
+        else { const parc = Math.abs(N(e.pago) / val - 1) > 1e-4; (e._ms || [r.empenho]).flatMap(n => pagE[n + '/' + String(r.data).slice(0, 4)] || []).forEach(p => { const f = N(p.valor) / val; if (Math.abs(f) > 1e-6) out.push(esc(r, f, p.data, parc && varios)); }); } });
         return out; };
       const nC = (xs) => new Set(xs.map(r => r.chave)).size;
       dados.forEach(x => { x.sel = ef(x.todos.filter(r => marcadas.has(x.g.q + '|' + variante(r)))); x.per = x.sel.filter(r => noPer(r.data)); });

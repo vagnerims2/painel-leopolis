@@ -157,6 +157,19 @@ def _itens_ok(e):
     s, v = sum(float(i.get('vt') or 0) for i in its), float(e.get('v') or 0)
     return abs(s - v) <= max(0.05, 0.005 * v)
 itens_suspeitos = {n for n, e in E.items() if not _itens_ok(e)}
+# convênio + contrapartida: a mesma compra (mesmo fornecedor, data, licitação e contrato) sai em 2+ empenhos, um por
+# fonte de recurso. O portal põe os itens num empenho só (ou divide diferente dos valores); o que precisa bater é o total
+# do grupo. Esses itens valem, e os empenhos ficam ligados em "grupo_itens".
+grupo_itens = {}
+_gk = defaultdict(list)
+for n, e in E.items():
+    if e.get('lic') or e.get('contrato'):
+        _gk[(e.get('d'), nforn(e.get('forn')), e.get('lic', ''), e.get('contrato', ''))].append(n)
+for ns in _gk.values():
+    if len(ns) < 2 or not any(n in itens_suspeitos for n in ns): continue
+    v = sum(float(E[n].get('v') or 0) for n in ns); si = sum(float(i.get('vt') or 0) for n in ns for i in E[n].get('items') or [])
+    if si and abs(si - v) <= max(0.05, 0.005 * v):
+        for n in ns: grupo_itens[n] = ','.join(sorted(ns, key=int)); itens_suspeitos.discard(n)
 rows = {}
 for n, e in E.items():
     anul = sum(abs(m['v']) for m in e['movs'] if re.match(r'Estorno de Empenho|Anula', m['k'], re.I))
@@ -174,7 +187,7 @@ for n, e in E.items():
     rows[n] = dict(empenho=n, data=e['d'], tipo=e['tipo'], fornecedor=re.sub(r'^[\d.]+\s+', '', e['forn']), secretaria=sec(e['sec']),
         licitacao=licit(e['lic']), modalidade=modal(e['lic']), contrato=e.get('contrato', ''), natureza='.'.join(e['el'].split('.')[:4]), subelemento=codigo_de(e),
         tipo_despesa=e['eld'], dotacao=e.get('dot', ''), fonte=fonte_de(e), valor=round(e['v'], 2), anulado=round(anul, 2), liquidado=round(liquidado, 2), pago=round(pago, 2),
-        primeira_liquidacao=d1, ultimo_pagamento=dp, requisicao_empenho=e.get('req', ''), produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])),
+        primeira_liquidacao=d1, ultimo_pagamento=dp, requisicao_empenho=e.get('req', ''), grupo_itens=grupo_itens.get(n, ''), produtos=('; '.join(prods) or e.get('hist', ''))[:180], _g=(e['d'], nforn(e['forn'])),
         _anul_movs=round(anul, 2), _est=_estornos(e, pag_e[n]))
 
 # reconcilia com o saldo a pagar oficial (fornecedor + data): anulações posteriores
@@ -214,7 +227,7 @@ for r in rows.values():
 
 cols = ['empenho', 'data', 'tipo', 'fornecedor', 'secretaria', 'licitacao', 'modalidade', 'contrato', 'natureza', 'subelemento', 'tipo_despesa', 'dotacao', 'fonte',
         'valor', 'anulado', 'liquidado', 'pago', 'falta_liquidar', 'liquidado_nao_pago', 'saldo_a_pagar', 'situacao', 'dias', 'primeira_liquidacao', 'dias_ate_liquidar',
-        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos', 'estornos', 'valor_estornado', 'requisicao_empenho']
+        'ultimo_pagamento', 'dias_ate_pagar', 'grupo_saldo', 'saldo_grupo_portal', 'produtos', 'estornos', 'valor_estornado', 'requisicao_empenho', 'grupo_itens']
 R = sorted(rows.values(), key=lambda r: (r['data'], int(r['empenho'])), reverse=True)
 def wcsv(name, rs, cs):
     with open(os.path.join(out, name), 'w', newline='', encoding='utf-8') as f:
@@ -412,7 +425,7 @@ json.dump(dict(novos_parados=sorted(novos_parados, key=lambda x: -x['dias']), no
 # ---------- resumo ----------
 tot_saldo_portal = sum(s['v'] for s in M['saldo'])
 calc_saldo = sum(r['saldo_a_pagar'] for r in R)
-resumo = dict(estornos_pagamento=estornos_pag, estornos_liquidacao=estornos_liq, itens_suspeitos=len(itens_suspeitos),
+resumo = dict(grupos_convenio=len(set(grupo_itens.values())), estornos_pagamento=estornos_pag, estornos_liquidacao=estornos_liq, itens_suspeitos=len(itens_suspeitos),
     reler_itens=sorted({E[n]['d'] for n in itens_suspeitos if E[n].get('d')}), liquidacoes_religadas=liq_relink, nomes_corrigidos=nomes_corrigidos, gerado=N['gerado'], empenhos=len(R), itens=len(itens), liquidacoes_recentes=len(lr), dotacoes=len(drows),
     saldo_portal=round(tot_saldo_portal, 2), saldo_calculado=round(calc_saldo, 2), grupos_divergentes=len(diverg),
     empenhado_ano=round(sum(m['empenhado_liquido'] for m in mov), 2), empenhos_valor=round(sum(r['valor'] - r['anulado'] for r in R), 2),
