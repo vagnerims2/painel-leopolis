@@ -1,5 +1,6 @@
 name: Atualizar painel
-# Dias úteis, das 7h30 às 17h30 (Brasília): um turno que lê o portal a cada 20 minutos.
+# Dias úteis, das 7h30 às 17h30 (Brasília): um turno que confere o portal a cada 5 minutos (publica só se houver novidade)
+# e faz a rodada completa (planilha, Drive, XMLs, fornecedores) a cada 20 minutos.
 # O GitHub atrasa ou pula agendamentos em horário de pico, então em vez de um disparo a cada 20 min há um turno
 # que fica rodando (até ~5h30 por vez, limite do GitHub é 6h). Os disparos de hora em hora (minuto 31) são reserva:
 # se já houver turno rodando, o próximo fica na fila e assume quando ele terminar; fora do horário, encerra na hora.
@@ -17,7 +18,7 @@ on:
         type: boolean
         default: false
       turno:
-        description: 'Começar agora o turno (lê a cada 20 min até 17h30)'
+        description: 'Começar agora o turno (portal a cada 5 min, completa a cada 20 min, até 17h30)'
         type: boolean
         default: false
   push:
@@ -61,7 +62,7 @@ jobs:
           fi
           cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
           rm -f motor/estado/painel.trava   # trava de rodada interrompida (cancelada) não pode bloquear as próximas
-      - name: Rodadas (uma só em push/manual; no agendamento, a cada 20 min até 17h30)
+      - name: Rodadas (uma só em push/manual; no turno, portal a cada 5 min e completa a cada 20 min até 17h30)
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
           PENDENTES_PASTA: ${{ secrets.PENDENTES_PASTA }}
@@ -72,18 +73,24 @@ jobs:
           RELATORIO_AGORA: ${{ github.event.inputs.relatorio }}
           EVENTO: ${{ github.event.inputs.turno == 'true' && 'schedule' || github.event_name }}
           FORCAR: ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
-          INTERVALO: '1200'
+          INTERVALO: '300'
+          COMPLETA: '1200'
         run: |
           git config user.name "Painel Leopolis (GitHub)"
           git config user.email "vagnerims2@users.noreply.github.com"
           if [ "$EVENTO" != "schedule" ]; then bash ferramentas/rodada.sh $FORCAR || true; exit 0; fi
-          inicio=$(date +%s); n=0
+          # portal de 5 em 5 min (só publica se houver novidade); rodada completa (planilha, Drive, fornecedores) de 20 em 20 min
+          inicio=$(date +%s); n=0; ultima_completa=0
           while :; do
             agora=$(date +%H%M); dia=$(date +%u)
             if [ "$dia" -gt 5 ] || [ "$agora" -lt 0730 ] || [ "$agora" -ge 1730 ]; then echo "Fora do horário (7h30 às 17h30, dias úteis): encerra o turno."; break; fi
             if [ $(( $(date +%s) - inicio )) -ge 19800 ]; then echo "Turno chegou a 5h30: encerra; o próximo disparo assume."; break; fi
-            t0=$(date +%s); n=$((n+1)); echo "::group::Rodada $n — $(date '+%d/%m %H:%M')"
-            bash ferramentas/rodada.sh || true
+            t0=$(date +%s); n=$((n+1))
+            if [ $(( t0 - ultima_completa )) -ge $(( COMPLETA - 60 )) ]; then
+              echo "::group::Rodada completa $n — $(date '+%d/%m %H:%M')"; bash ferramentas/rodada.sh || true; ultima_completa=$t0
+            else
+              echo "::group::Portal $n — $(date '+%d/%m %H:%M')"; bash ferramentas/rodada.sh --so-portal || true
+            fi
             echo "::endgroup::"
             espera=$(( INTERVALO - ($(date +%s) - t0) )); [ $espera -gt 0 ] && sleep $espera
           done

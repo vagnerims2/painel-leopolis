@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Uma rodada do robô no GitHub: portal -> planilha -> fornecedores -> pendentes -> base do ano -> e-mail de segunda -> publica.
-# Uso: bash ferramentas/rodada.sh [--forcar]
+# Uso: bash ferramentas/rodada.sh [--forcar] [--so-portal]
+#   --so-portal: só confere o portal (rodadas de 5 em 5 min); publica só se o portal trouxe novidade.
+#   Planilha, Drive e fornecedores ficam para a rodada completa (de 20 em 20 min).
 set -u
-FORCAR="${1:-}"
+FORCAR=""; SO_PORTAL=""
+for a in "$@"; do case "$a" in --forcar) FORCAR="--forcar";; --so-portal) SO_PORTAL=1;; esac; done
 git pull -q --rebase --autostash -X theirs origin main || echo "Aviso: não consegui pegar a versão mais nova do repositório; sigo com a atual."
 cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
 # no GitHub só roda uma rodada por vez (fila do workflow): trava velha de uma rodada interrompida não pode bloquear
@@ -13,6 +16,11 @@ if ! python motor/estado/painel.py $FORCAR; then
   echo "Coleta no portal falhou nesta rodada; nada publicado. Tenta de novo na próxima."
   return 1 2>/dev/null || exit 1
 fi
+if [ -n "$SO_PORTAL" ]; then
+  # só publica se a coleta mudou algum dado (o GitHub Pages aceita poucas publicações por hora)
+  if [ -z "$(git status --porcelain data interno/planilha interno/resumos)" ]; then echo "Portal sem novidade."; exit 0; fi
+  echo "Portal com novidade: publica agora."
+else
 python ferramentas/planilha_requisicoes.py --aberto - data/planilha.json || echo "Aviso: planilha não lida nesta rodada."
 python ferramentas/fornecedores.py data || echo "Aviso: cadastro de fornecedores não atualizado nesta rodada."
 python ferramentas/pendentes.py - data/pendentes.json || echo "Aviso: itens pendentes não lidos nesta rodada."
@@ -23,6 +31,8 @@ python ferramentas/notas_xml.py data/notas_itens.json || echo "Aviso: XML das no
 semana=$(date +%G-%V); marca=motor/estado/relatorio_atraso.txt
 if [ "${RELATORIO_AGORA:-}" = "true" ] || { [ "$(date +%u)" = 1 ] && [ "$(date +%H)" -ge 7 ] && [ "$(cat $marca 2>/dev/null)" != "$semana" ]; }; then
   if python ferramentas/relatorio_atraso.py . /tmp/relatorio --enviar; then echo "$semana" > $marca; else echo "Relatório não enviado (veja a mensagem acima)."; fi
+fi
+
 fi
 
 # publica (a hora da leitura muda sempre, mesmo sem novidade no portal)
