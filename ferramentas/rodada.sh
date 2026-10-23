@@ -7,6 +7,7 @@ git pull -q --rebase --autostash -X theirs origin main || echo "Aviso: não cons
 cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
 
 if ! python motor/estado/painel.py $FORCAR; then
+  tail -n 40 motor/estado/painel.log || true
   echo "Coleta no portal falhou nesta rodada; nada publicado. Tenta de novo na próxima."
   return 1 2>/dev/null || exit 1
 fi
@@ -24,6 +25,7 @@ fi
 
 # publica (a hora da leitura muda sempre, mesmo sem novidade no portal)
 date '+%d/%m/%Y %H:%M' > data/ultima_leitura.txt
+tail -n 60 motor/estado/painel.log > data/robo_log.txt 2>/dev/null || true   # registro da rodada (só mensagens do robô) para conferência
 git add data interno/planilha interno/resumos
 if git diff --cached --quiet; then echo "Nada mudou nos dados publicados."; exit 0; fi
 git commit -q -m "Dados de $(date '+%d/%m/%Y %H:%M') (GitHub)"
