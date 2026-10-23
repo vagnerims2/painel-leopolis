@@ -5,6 +5,8 @@ set -u
 FORCAR="${1:-}"
 git pull -q --rebase --autostash -X theirs origin main || echo "Aviso: não consegui pegar a versão mais nova do repositório; sigo com a atual."
 cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
+# no GitHub só roda uma rodada por vez (fila do workflow): trava velha de uma rodada interrompida não pode bloquear
+rm -f motor/estado/painel.trava
 
 if ! python motor/estado/painel.py $FORCAR; then
   tail -n 40 motor/estado/painel.log || true

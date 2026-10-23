@@ -60,6 +60,7 @@ jobs:
             cp motor/semente/alertas.json motor/semente/reler.txt motor/semente/ultima_coleta.txt motor/estado/
           fi
           cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
+          rm -f motor/estado/painel.trava   # trava de rodada interrompida (cancelada) não pode bloquear as próximas
       - name: Rodadas (uma só em push/manual; no agendamento, a cada 20 min até 17h30)
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
