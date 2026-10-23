@@ -16,6 +16,10 @@ on:
         description: 'Enviar agora o relatório de requisições em atraso (e-mail)'
         type: boolean
         default: false
+      turno:
+        description: 'Começar agora o turno (lê a cada 20 min até 17h30)'
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths: ['motor/**', '.github/workflows/atualizar.yml']
@@ -65,7 +69,7 @@ jobs:
           GMAIL_SENHA_APP: ${{ secrets.GMAIL_SENHA_APP }}
           RELATORIO_PARA: ${{ secrets.RELATORIO_PARA }}
           RELATORIO_AGORA: ${{ github.event.inputs.relatorio }}
-          EVENTO: ${{ github.event_name }}
+          EVENTO: ${{ github.event.inputs.turno == 'true' && 'schedule' || github.event_name }}
           FORCAR: ${{ (github.event_name == 'push' || github.event.inputs.forcar == 'true') && '--forcar' || '' }}
           INTERVALO: '1200'
         run: |
