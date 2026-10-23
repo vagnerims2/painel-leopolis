@@ -1498,7 +1498,7 @@ function trilha(l, empMap, temRE, reMap) {
   if (!l.e) { P.push({ n: 'Empenho', v: 'aguardando', s: parada ? 'esp' : 'aqui' }, { n: 'Liquidação', v: '—', s: 'esp' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: parada || 'Aguardando empenho', desde, emp: e }; }
   if (!e) { P.push({ n: 'Empenho', v: `${l.e} (não achado)`, s: 'aqui' }, { n: 'Liquidação', v: '—', s: 'esp' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Empenho não achado no portal', desde, emp: e }; }
   if (e.situacao === 'Anulado') { P.push({ n: 'Empenho', v: `${e.empenho} anulado`, s: 'canc' }, { n: 'Liquidação', v: '—', s: 'canc' }, { n: 'Pagamento', v: '—', s: 'canc' }); return { P, parada: 'Empenho anulado', desde: e.data, emp: e }; }
-  P.push({ n: 'Empenho', v: `${e.empenho} · ${br(e.data)}`, s: 'ok' }); desde = e.data;
+  P.push({ n: e._ms ? 'Empenhos' : 'Empenho', v: `${e.empenho} · ${br(e.data)}`, s: 'ok' }); desde = e.data;
   const val = N(e.valor), liq = N(e.liquidado), pag = N(e.pago), falta = N(e.falta_liquidar);
   if (liq <= 0.004) { P.push({ n: 'Liquidação', v: `falta ${brl.format(val)}`, s: 'aqui' }, { n: 'Pagamento', v: '—', s: 'esp' }); return { P, parada: 'Aguardando liquidação', desde, emp: e }; }
   const liqParc = falta > 0.004;
@@ -1527,7 +1527,17 @@ function prepararReq() {
   const d = dash.data('emp'); if (!REQ.linhas || d.status !== 'ok') return null;
   const empMap = {}, reMap = {}; d.data.forEach(r => { empMap[semZeros(r.empenho)] = r; if (r.requisicao_empenho) (reMap[semZeros(r.requisicao_empenho)] = reMap[semZeros(r.requisicao_empenho)] || []).push(r); });
   const temRE = REQ.linhas.some(l => l.re);
-  return REQ.linhas.map(l => { const t = trilha({ ...l, e: l.e ? semZeros(l.e) : '' }, empMap, temRE, reMap); return { ...l, ...t, eLig: t.emp ? semZeros(t.emp.empenho) : (l.e ? semZeros(l.e) : ''), reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null, ...atrasoReq(l, t) }; });
+  // requisição com 2+ empenhos (relatório do ano) ou compra dividida: a trilha soma os empenhos vivos (não anulados)
+  const juntaEmps = (l) => { const q = RQ.reqs && RQ.reqs[semZeros(l.r)]; let ns = q ? [...new Set(q.m.filter(m => m[0] === 'EM').map(m => semZeros(m[1])))] : [];
+    ns.slice().forEach(n => { const e = empMap[n]; if (e && e.grupo_itens) e.grupo_itens.split(',').forEach(x => { x = semZeros(x); if (!ns.includes(x)) ns.push(x); }); });
+    const ms = ns.map(n => empMap[n]).filter(Boolean); if (ms.length < 2) return null;
+    const vivos = ms.filter(e => e.situacao !== 'Anulado'); if (vivos.length < 2) return vivos[0] || ms[ms.length - 1];
+    const sm = (k) => vivos.reduce((a, e) => a + N(e[k]), 0), datas = (k) => vivos.map(e => e[k]).filter(Boolean).sort();
+    return { ...vivos[0], empenho: vivos.map(e => e.empenho).join(' + '), _ms: vivos.map(e => semZeros(e.empenho)), grupo_itens: vivos.map(e => e.empenho).join(','),
+      valor: sm('valor'), anulado: sm('anulado'), liquidado: sm('liquidado'), pago: sm('pago'), falta_liquidar: sm('falta_liquidar'), liquidado_nao_pago: sm('liquidado_nao_pago'), saldo_a_pagar: sm('saldo_a_pagar'),
+      data: datas('data')[0] || '', primeira_liquidacao: datas('primeira_liquidacao')[0] || '', ultimo_pagamento: datas('ultimo_pagamento').pop() || '', situacao: vivos.every(e => e.situacao === 'Pago') ? 'Pago' : vivos[0].situacao }; };
+  return REQ.linhas.map(l => { const ag = juntaEmps(l); if (ag) empMap['G' + l.r] = ag;
+    const t = trilha({ ...l, e: ag ? 'G' + l.r : (l.e ? semZeros(l.e) : '') }, empMap, temRE, reMap); if (ag && t.emp === ag && ag._ms) t.emp = ag; return { ...l, ...t, eLig: t.emp ? (t.emp._ms ? t.emp._ms[0] : semZeros(t.emp.empenho)) : (l.e ? semZeros(l.e) : ''), emps: t.emp && t.emp._ms ? t.emp._ms : null, reNum: l.re || (t.emp && t.emp.requisicao_empenho) || '', dias: t.desde ? dias(t.desde) : null, ...atrasoReq(l, t) }; });
 }
 // itens pendentes: relatório do Equiplano (só produtos com quantidade pendente), salvo no Drive e lido pelo robô
 const PEND = { reqs: null };
@@ -1542,14 +1552,14 @@ let PEND_IDX = null;
 function pendIdx() { if (PEND_IDX) return PEND_IDX; const it = dash.data('itens'), lq = dash.data('liquidacoes'); if (it.status !== 'ok' || lq.status !== 'ok') return null;
   const itens = {}, liq = {}; it.data.forEach(r => { (itens[semZeros(r.empenho)] = itens[semZeros(r.empenho)] || []).push(r); });
   lq.data.forEach(r => { const k = semZeros(r.empenho); if (!liq[k] || r.data > liq[k]) liq[k] = r.data; }); return (PEND_IDX = { itens, liq }); }
-function pendDe(l) { if (!PEND.reqs) return null;
+function pendDe(l) { if (!PEND.reqs || l.parada === 'Cancelada') return null;
   const e = l.emp, ix = pendIdx(), emi = PEND.emitido ? dataBR(PEND.emitido) : '', ini = PEND.periodo ? dataBR(PEND.periodo[0]) : '';
   if (e && e.situacao === 'Anulado') return null;
   if (e && (e.situacao === 'Pago' || (N(e.liquidado) > 0.004 && N(e.falta_liquidar) < 0.005))) return { tipo: 'receb', porPortal: true };
-  const ultLiq = e && ix ? ix.liq[semZeros(e.empenho)] || '' : '', liqDepois = !!(ultLiq && emi && ultLiq >= emi);
+  const ultLiq = e && ix ? (e._ms || [semZeros(e.empenho)]).map(n => ix.liq[n] || '').sort().pop() || '' : '', liqDepois = !!(ultLiq && emi && ultLiq >= emi);
   const p = PEND.reqs[semZeros(l.r)]; if (p) return { tipo: 'pend', itens: p.i, desat: liqDepois, fonte: 'pdf' };
   const d = dataBR(l.d), depois = !!(emi && ((d && d >= emi) || (e && e.data >= emi)));
-  if (depois) { if (!e || !ix) return null; const its = (ix.itens[semZeros(e.empenho)] || []).filter(r => r.situacao !== 'Anulado'); if (!its.length) return null;
+  if (depois) { if (!e || !ix) return null; const its = (e._ms || [semZeros(e.empenho)]).flatMap(n => ix.itens[n] || []).filter(r => r.situacao !== 'Anulado'); if (!its.length) return null;
     return { tipo: 'pend', fonte: 'empenho', desat: N(e.liquidado) > 0.004, itens: its.map((r, k) => [String(k + 1).padStart(3, '0'), r.codigo || '', [r.produto, r.unidade].filter(Boolean).join(' · '), N(r.valor_total), N(r.valor_unitario), N(r.quantidade), 0, N(r.quantidade)]) }; }
   if (!d || (ini && d < ini)) return null; return { tipo: 'receb' }; }
 function drawReq() {
@@ -1629,6 +1639,8 @@ function drawReq() {
           tw.appendChild(t); w.appendChild(tw); dl.appendChild(w); }
         else if (pd && pd.tipo === 'receb') item('Itens', pd.porPortal ? 'Todos recebidos (empenho pago ou totalmente liquidado no portal)' : `Todos recebidos (não constam como pendentes no relatório do Equiplano de ${PEND.emitido ? PEND.emitido.slice(0, 10) : '—'})`); }
       { const q = RQ.reqs && RQ.reqs[semZeros(l.r)];
+        if (l.parada === 'Cancelada' && l.emp && l.emp.situacao !== 'Anulado' && N(l.emp.saldo_a_pagar) > 0.004) item('Atenção', `Requisição estornada, mas o empenho ${l.emp.empenho} ainda tem saldo de ${brl.format(N(l.emp.saldo_a_pagar))} no portal. Falta anular o empenho no Equiplano.`);
+        if (l.emps && N(l.emp.valor) - N(l.emp.anulado) > N(((RQ.reqs || {})[semZeros(l.r)] || { m: [] }).m.filter(m => m[0] === 'RC').reduce((a, m) => a + m[3], 0)) + 0.05 && N(l.emp.saldo_a_pagar) > 0.004) item('Atenção', `Os empenhos ${l.emp.empenho} somam ${brl.format(N(l.emp.valor) - N(l.emp.anulado))}, mais que a requisição de compra, e ainda há saldo de ${brl.format(N(l.emp.saldo_a_pagar))}. Pode ser empenho em duplicidade: confira no Equiplano.`);
         if (l._reDif) item('Atenção', `A planilha diz requisição de empenho ${l._reDif}; o Equiplano diz ${l.re}. Vale o Equiplano (bate com o portal).`);
         if (l.res) item('Requisições de empenho', l.res);
         if (q) { const w = document.createElement('details'); w.className = 'req-pitens req-ano'; const sm = document.createElement('summary'); sm.textContent = `Itens e movimentos da requisição (Equiplano até ${(RQ.emitido || '').slice(0, 10)})`; w.appendChild(sm);
@@ -1640,7 +1652,7 @@ function drawReq() {
           q.m.forEach(m => { const r = document.createElement('tr'); td(r, (RQ.movimentos || {})[m[0]] || m[0]); td(r, m[1]); td(r, m[2]); td(r, brl.format(m[3]), 'r'); if (/^E/.test(m[0]) && m[0] !== 'EM') r.classList.add('estorno'); mv.tBodies[0].appendChild(r); });
           const tw2 = document.createElement('div'); tw2.className = 'tblwrap'; tw2.appendChild(mv); w.appendChild(tw2); dl.appendChild(w); } }
       const ac = document.createElement('div'); ac.className = 'req-acoes';
-      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
+      if (l.eLig) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = l.emps ? `Ver itens dos empenhos ${l.emps.join(' + ')}` : `Ver itens do empenho ${l.eLig}`; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(l.eLig, l.emp); }); ac.appendChild(b);
         const nfs = notasPorEmp()[l.eLig]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${l.eLig}`); }); ac.appendChild(n); } }
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
     tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });

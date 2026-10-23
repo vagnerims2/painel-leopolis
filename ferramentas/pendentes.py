@@ -129,6 +129,7 @@ def ler(texto):
 def main():
     args = [a for a in sys.argv[1:]]
     fonte = args[0] if args and args[0] != '-' else ''
+    texto = None
     saida = args[1] if len(args) > 1 else os.path.join(os.path.dirname(__file__), '..', 'data', 'pendentes.json')
     if fonte:
         dados, nome = open(fonte, 'rb').read(), os.path.basename(fonte)
@@ -136,15 +137,27 @@ def main():
         pasta = os.environ.get('PENDENTES_PASTA', '')
         if not pasta:
             print('Itens pendentes: pasta do Drive (PENDENTES_PASTA) não configurada; pulando.'); return
-        fid, nome, dados = achar_pdf(pasta, 'pend')
-        dados = dados or baixar_drive(fid)
+        rs = [r for r in relatorios(pasta) if r['tipo'] == 'pend']
+        if not rs:
+            print('Itens pendentes: nenhum relatório resumido na pasta; fica o atual.'); return
+        melhor = None
+        for r in rs:   # mais de um resumido na pasta: fica o de emissão mais recente
+            d = r['dados'] or baixar_drive(r['id'])
+            t = texto_pdf(d); m = None
+            for l in t.split('\n'):
+                if 'Emitido por' in l and (m := EMITIDO.search(l)): break
+            em = datetime.strptime(m.group(1), '%d/%m/%Y %H:%M:%S') if m else datetime.min
+            if melhor is None or em > melhor[0]: melhor = (em, r['nome'], d, t)
+        _, nome, dados, texto = melhor
         if not dados.startswith(b'%PDF'):
             raise SystemExit('Itens pendentes: o arquivo do Drive não veio como PDF (confira o compartilhamento).')
-    reqs, periodo, emitido = ler(texto_pdf(dados))
+    reqs, periodo, emitido = ler(texto if not fonte else texto_pdf(dados))
     try:
         velho = json.load(open(saida, encoding='utf-8'))
     except Exception:
         velho = {}
+    if velho.get('emitido') and emitido and datetime.strptime(emitido, '%d/%m/%Y %H:%M:%S') < datetime.strptime(velho['emitido'], '%d/%m/%Y %H:%M:%S'):
+        print(f"Itens pendentes: o relatório da pasta ({emitido}) é mais antigo que o atual ({velho['emitido']}); fica o atual."); return
     if velho.get('emitido') and emitido and velho.get('emitido') == emitido and velho.get('reqs') == reqs:
         print(f'Itens pendentes: relatório de {emitido} já lido ({len(reqs)} requisições).'); return
     if not reqs and len(dados) > 50000:
