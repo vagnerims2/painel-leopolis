@@ -12,7 +12,7 @@ Sem a senha da planilha ou sem os dados do Gmail, avisa e não envia (o resto da
 """
 import base64, csv, json, os, re, smtplib, ssl, sys
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date
 from email.message import EmailMessage
 
 from reportlab.lib import colors
@@ -52,7 +52,7 @@ def trilha(l, emp_map, tem_re, re_map):
         return ('Aguardando requisição de empenho' if (tem_re and not re_num) else 'Aguardando empenho'), e, re_num
     if not e: return 'Empenho não achado no portal', e, re_num
     if e['situacao'] == 'Anulado': return 'Empenho anulado', e, re_num
-    val, liq, pag, falta = N(e['valor']), N(e['liquidado']), N(e['pago']), N(e['falta_liquidar'])
+    _val, liq, pag, falta = N(e['valor']), N(e['liquidado']), N(e['pago']), N(e['falta_liquidar'])
     if liq <= 0.004: return 'Aguardando liquidação', e, re_num
     if falta > 0.004: return 'Liquidação parcial', e, re_num
     if pag <= 0.004: return 'Aguardando pagamento', e, re_num

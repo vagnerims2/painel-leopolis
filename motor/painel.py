@@ -1,13 +1,14 @@
 """Painel de Empenhos Leópolis — atualização automática.
 
 Roda em dois lugares:
-  * GitHub (principal): a automação "Atualizar painel" roda a cada 30 min nos dias úteis
-    (variáveis PAINEL_PASTA, PAINEL_SITE e PAINEL_SEM_GIT=1; quem envia é a própria automação).
-  * Notebook (reserva): só trabalha se o GitHub não tiver rodado com sucesso na última hora e 15 min.
+  * GitHub (principal): a automação "Atualizar painel" roda nos dias úteis, das 7h30 às 17h30: confere o portal
+    a cada 5 min e faz a rodada completa a cada 20 min (variáveis PAINEL_PASTA, PAINEL_SITE e PAINEL_SEM_GIT=1;
+    quem envia é a própria automação, pelo ferramentas/rodada.sh).
+  * Notebook (reserva): o Agendador de Tarefas do Windows roda este programa, mas ele só trabalha se o GitHub
+    não tiver atualizado na última 1h15. Aí ele mesmo coleta, recalcula, gera a planilha e envia para o GitHub.
 
-O Agendador de Tarefas do Windows roda este programa a cada 30 minutos nos dias úteis.
-Ele confere se o Portal da Transparência tem lançamento novo; se tiver, coleta, recalcula,
-gera a planilha Excel e envia tudo para o GitHub (os links do site se atualizam sozinhos).
+Em cada rodada: confere se o Portal da Transparência tem lançamento novo; se tiver, coleta, recalcula e gera
+os arquivos do site (data/, planilha Excel e, sexta à tarde, o resumo semanal).
 
 Uso:  python painel.py            (normal: só atualiza se houver novidade)
       python painel.py --forcar   (atualiza mesmo sem novidade)
@@ -201,19 +202,19 @@ def principal(forcar=False, arquivo_coleta=None):
     # 5) envia para o GitHub (no GitHub, quem envia é a automação)
     if SEM_GIT:
         log(f"Pronto para publicar: {resumo['empenhos']} empenhos, saldo a pagar R$ {resumo['saldo_portal']:,.2f}, {resumo['alertas_parados']} parados.")
-    elif rodar(['git', 'add', 'data', 'interno/planilha', 'interno/resumos'], cwd=SITE) is None:
-        pass
-    elif subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=SITE, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)).returncode != 0:
-        rodar(['git', 'commit', '--quiet', '-m', f'Dados de {agora}'], cwd=SITE)
-        try:
-            rodar(['git', 'push', '--quiet', 'origin', 'main'], cwd=SITE)
-        except RuntimeError:
-            # alguém publicou no site enquanto coletávamos (ex.: ajuste feito pelo Claude): junta e tenta de novo
-            rodar(['git', 'pull', '--quiet', '--rebase', '-X', 'theirs', 'origin', 'main'], cwd=SITE)
-            rodar(['git', 'push', '--quiet', 'origin', 'main'], cwd=SITE)
-        log(f"Publicado: {resumo['empenhos']} empenhos, saldo a pagar R$ {resumo['saldo_portal']:,.2f}, {resumo['alertas_parados']} parados.")
     else:
-        log('Nada mudou nos dados publicados.')
+        rodar(['git', 'add', 'data', 'interno/planilha', 'interno/resumos'], cwd=SITE)
+        if subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=SITE, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0)).returncode != 0:
+            rodar(['git', 'commit', '--quiet', '-m', f'Dados de {agora}'], cwd=SITE)
+            try:
+                rodar(['git', 'push', '--quiet', 'origin', 'main'], cwd=SITE)
+            except RuntimeError:
+                # alguém publicou no site enquanto coletávamos (ex.: ajuste feito pelo Claude): junta e tenta de novo
+                rodar(['git', 'pull', '--quiet', '--rebase', '-X', 'theirs', 'origin', 'main'], cwd=SITE)
+                rodar(['git', 'push', '--quiet', 'origin', 'main'], cwd=SITE)
+            log(f"Publicado: {resumo['empenhos']} empenhos, saldo a pagar R$ {resumo['saldo_portal']:,.2f}, {resumo['alertas_parados']} parados.")
+        else:
+            log('Nada mudou nos dados publicados.')
 
     if os.path.exists(P('reler.txt')):
         os.remove(P('reler.txt'))

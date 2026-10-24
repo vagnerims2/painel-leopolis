@@ -7,7 +7,7 @@ Também liga cada empenho do portal ao código do fornecedor, pela base do ano d
 
 Uso: python ferramentas/fornecedores.py [pasta data]
 """
-import csv, json, os, re, sys, unicodedata
+import json, os, re, sys, unicodedata
 from datetime import datetime, timezone, timedelta
 
 D = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), '..', 'data')

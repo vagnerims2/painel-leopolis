@@ -25,7 +25,8 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 ## Atualização automática
 - GitHub Actions (`.github/workflows/atualizar.yml`) é o principal; o notebook de casa é reserva (só roda se o GitHub falhar por mais de 1h15).
 - Dias úteis, das 7h30 às 17h30 (prefeitura funciona 7h30–17h). Nada fora desse horário.
-- Rodada completa a cada 20 minutos; o rodapé mostra só "Última atualização" com a hora da última leitura, mesmo sem novidade.
+- O portal é conferido a cada 5 minutos (publica só se houver novidade); rodada completa (planilha, Drive, XMLs, fornecedores) a cada 20 minutos. O rodapé mostra só "Última atualização" com a hora da última leitura completa, mesmo sem novidade.
+- Ajuste no robô gravado fora do horário não dispara rodada; a próxima rodada do turno já usa a versão nova.
 - Toda segunda, após a primeira atualização, envia por e-mail (Gmail do Vagner, só para ele) dois PDFs de requisições em atraso por fornecedor: 31–90 dias e mais de 90 dias.
 
 ## Regras de negócio

@@ -60,8 +60,6 @@ jobs:
             gunzip -c motor/semente/master.json.gz > motor/estado/master.json
             cp motor/semente/alertas.json motor/semente/reler.txt motor/semente/ultima_coleta.txt motor/estado/
           fi
-          cp motor/painel.py motor/coleta.py motor/build.py motor/financas.py motor/estado/
-          rm -f motor/estado/painel.trava   # trava de rodada interrompida (cancelada) não pode bloquear as próximas
       - name: Rodadas (uma só em push/manual; no turno, portal a cada 5 min e completa a cada 20 min até 17h30)
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
@@ -78,12 +76,14 @@ jobs:
         run: |
           git config user.name "Painel Leopolis (GitHub)"
           git config user.email "vagnerims2@users.noreply.github.com"
+          no_horario() { [ "$(date +%u)" -le 5 ] && [ "$(date +%H%M)" -ge 0730 ] && [ "$(date +%H%M)" -lt 1730 ]; }
+          # ajuste no robô (push) fora do horário não publica: a próxima rodada do turno já usa a versão nova
+          if [ "$EVENTO" = "push" ] && ! no_horario; then echo "Ajuste gravado fora do horário (7h30 às 17h30, dias úteis): sem rodada agora."; exit 0; fi
           if [ "$EVENTO" != "schedule" ]; then bash ferramentas/rodada.sh $FORCAR || true; exit 0; fi
           # portal de 5 em 5 min (só publica se houver novidade); rodada completa (planilha, Drive, fornecedores) de 20 em 20 min
           inicio=$(date +%s); n=0; ultima_completa=0
           while :; do
-            agora=$(date +%H%M); dia=$(date +%u)
-            if [ "$dia" -gt 5 ] || [ "$agora" -lt 0730 ] || [ "$agora" -ge 1730 ]; then echo "Fora do horário (7h30 às 17h30, dias úteis): encerra o turno."; break; fi
+            if ! no_horario; then echo "Fora do horário (7h30 às 17h30, dias úteis): encerra o turno."; break; fi
             if [ $(( $(date +%s) - inicio )) -ge 19800 ]; then echo "Turno chegou a 5h30: encerra; o próximo disparo assume."; break; fi
             t0=$(date +%s); n=$((n+1))
             if [ $(( t0 - ultima_completa )) -ge $(( COMPLETA - 60 )) ]; then

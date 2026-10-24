@@ -311,7 +311,6 @@ def _pag_credor(tk):
     return {'forn': forn, 'sec': sec, 'hist': hist, 'cred': 1}
 
 
-# ---------- coleta ----------
 # ---------- documentos fiscais (notas) ----------
 def post_json(url, dados):
     """POST (mesma consulta que a própria página do portal faz para paginar a tabela)"""
@@ -360,6 +359,7 @@ def ler_documentos(desde, ate, ano=None, avisar=print):
         avisar(f'{len(out)} documentos fiscais lidos de {br(desde)} a {br(ate)}.')
     return out
 
+# ---------- coleta ----------
 def _q(ano):
     return f'formulario.codEntidade={ENT}&formulario.exercicio={ano}'
 
