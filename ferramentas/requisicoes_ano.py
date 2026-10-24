@@ -6,7 +6,7 @@ pelo conteúdo (tem os movimentos), lê e grava data/requisicoes_ano.json. Só r
 
 Uso: python ferramentas/requisicoes_ano.py [arquivo.pdf | -] [saida.json]
 """
-import io, json, os, re, sys
+import json, os, re, sys
 from datetime import datetime, timezone, timedelta
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import pendentes as P

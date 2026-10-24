@@ -57,7 +57,7 @@ def ler_xml(dados):
     """devolve ('nfe', chave, nota) | ('canc', chave, None) | (None, None, None)"""
     try:
         raiz = ET.fromstring(dados)
-    except ET.ParseError:
+    except (ET.ParseError, ValueError):
         return None, None, None
     ev = raiz.find(f'.//{NS}infEvento')
     if ev is not None and raiz.find(f'.//{NS}infNFe') is None:
@@ -71,7 +71,7 @@ def ler_xml(dados):
         p = det.find(f'{NS}prod')
         if p is None:
             continue
-        f = lambda k: float(t(p, k) or 0)
+        f = lambda k: float(t(p, k).replace(',', '.') or 0)
         itens.append([t(p, 'xProd'), t(p, 'uCom'), round(f('qCom'), 4), round(f('vUnCom'), 4), round(f('vProd'), 2)])
     nota = {'n': t(inf, 'ide/nNF'), 's': t(inf, 'ide/serie'), 'd': (t(inf, 'ide/dhEmi') or t(inf, 'ide/dEmi'))[:10],
             'cnpj': t(inf, 'emit/CNPJ') or t(inf, 'emit/CPF'), 'f': t(inf, 'emit/xNome'),
@@ -82,8 +82,11 @@ def ler_xml(dados):
 def abrir(dados):
     """um arquivo pode ser XML ou ZIP de XMLs"""
     if dados[:2] == b'PK':
-        with zipfile.ZipFile(io.BytesIO(dados)) as z:
-            return [z.read(n) for n in z.namelist() if n.lower().endswith('.xml')]
+        try:
+            with zipfile.ZipFile(io.BytesIO(dados)) as z:
+                return [z.read(n) for n in z.namelist() if n.lower().endswith('.xml')]
+        except (zipfile.BadZipFile, OSError):
+            return []   # ZIP com defeito: conta como arquivo não reconhecido
     return [dados]
 
 
@@ -123,7 +126,10 @@ def main():
     for ident, dados in novos:
         ok = False
         for x in abrir(dados):
-            tipo, chave, nota = ler_xml(x)
+            try:
+                tipo, chave, nota = ler_xml(x)
+            except ValueError:   # número fora do padrão no XML: pula este arquivo, segue com os outros
+                tipo = chave = nota = None
             if tipo == 'nfe' and chave:
                 notas[chave] = nota; n_nfe += 1; ok = True
             elif tipo == 'canc' and chave:

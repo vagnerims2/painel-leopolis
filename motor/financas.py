@@ -9,8 +9,7 @@ Uso:  python financas.py PASTA_SAIDA      (ou financas.gerar(pasta) a partir do 
 Os relatórios são os mesmos que qualquer cidadão baixa no portal (botão CSV). Nenhum dado interno.
 """
 import json, os, re, sys, time
-from datetime import date, datetime
-from urllib.parse import urlencode
+from datetime import date
 
 import coleta
 from coleta import BASE, num

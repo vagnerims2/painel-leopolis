@@ -1,18 +1,18 @@
 """Relatório semanal de requisições em atraso, por fornecedor, enviado por e-mail (dois PDFs: 31 a 90 dias e mais de 90 dias).
 
 Usa os mesmos dados e a mesma regra da aba Requisições da versão dos servidores:
-  - planilha de requisições: data/planilha.enc.json (aberta com a senha dos servidores, segredo PAINEL_SENHA)
+  - planilha de requisições: data/planilha.json
   - empenhos, liquidações e notas fiscais: data/*.csv (Portal da Transparência)
   - atraso = dias desde o envio marcado na planilha (ou desde a requisição, para as enviadas antes do controle),
     só para as requisições em aberto (não concluídas, não canceladas, já enviadas).
 
 Uso:  python ferramentas/relatorio_atraso.py <pasta_do_site> <pasta_saida> [--enviar]
 E-mail (segredos do GitHub): GMAIL_USUARIO, GMAIL_SENHA_APP, RELATORIO_PARA (vários separados por vírgula; padrão = GMAIL_USUARIO).
-Sem a senha da planilha ou sem os dados do Gmail, avisa e não envia (o resto da atualização continua normal).
+Sem a planilha ou sem os dados do Gmail, avisa e não envia (o resto da atualização continua normal).
 """
-import base64, csv, json, os, re, smtplib, ssl, sys
+import csv, json, os, re, smtplib, ssl, sys
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date
 from email.message import EmailMessage
 
 from reportlab.lib import colors
@@ -23,14 +23,6 @@ from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Space
 
 
 # ---------------------------------------------------------------- dados
-def decifrar(pacote, senha):
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-    from cryptography.hazmat.primitives import hashes
-    b = lambda k: base64.b64decode(pacote[k])
-    chave = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=b('sal'), iterations=int(pacote['iter'])).derive(senha.encode('utf-8'))
-    return json.loads(AESGCM(chave).decrypt(b('iv'), b('dados'), None).decode('utf-8'))
-
 N = lambda x: float(x or 0)
 semz = lambda v: re.sub(r'^0+(?=\d)', '', str(v or '').strip())
 def dmy(s):
@@ -52,7 +44,7 @@ def trilha(l, emp_map, tem_re, re_map):
         return ('Aguardando requisição de empenho' if (tem_re and not re_num) else 'Aguardando empenho'), e, re_num
     if not e: return 'Empenho não achado no portal', e, re_num
     if e['situacao'] == 'Anulado': return 'Empenho anulado', e, re_num
-    val, liq, pag, falta = N(e['valor']), N(e['liquidado']), N(e['pago']), N(e['falta_liquidar'])
+    _val, liq, pag, falta = N(e['valor']), N(e['liquidado']), N(e['pago']), N(e['falta_liquidar'])
     if liq <= 0.004: return 'Aguardando liquidação', e, re_num
     if falta > 0.004: return 'Liquidação parcial', e, re_num
     if pag <= 0.004: return 'Aguardando pagamento', e, re_num
@@ -60,12 +52,8 @@ def trilha(l, emp_map, tem_re, re_map):
     return 'Concluída', e, re_num
 
 
-def requisicoes_em_atraso(site, senha, hoje):
-    aberta = os.path.join(site, 'data', 'planilha.json')
-    if os.path.exists(aberta):                          # planilha publicada sem senha (desde 22/10/2026)
-        plan = json.load(open(aberta, encoding='utf-8'))
-    else:
-        plan = decifrar(json.load(open(os.path.join(site, 'data', 'planilha.enc.json'), encoding='utf-8')), senha)
+def requisicoes_em_atraso(site, hoje):
+    plan = json.load(open(os.path.join(site, 'data', 'planilha.json'), encoding='utf-8'))
     ler = lambda n: list(csv.DictReader(open(os.path.join(site, 'data', n), encoding='utf-8')))
     emps, notas = ler('empenhos.csv'), (ler('notas.csv') if os.path.exists(os.path.join(site, 'data', 'notas.csv')) else [])
     emp_map, re_map = {}, defaultdict(list)
@@ -189,11 +177,10 @@ def enviar(arquivos, assunto, corpo):
 
 def main():
     site, saida = sys.argv[1], sys.argv[2]; os.makedirs(saida, exist_ok=True)
-    senha = os.environ.get('PAINEL_SENHA', '')
-    if not senha and not os.path.exists(os.path.join(site, 'data', 'planilha.json')):
-        print('Sem PAINEL_SENHA: não dá para abrir a planilha; relatório não gerado.'); sys.exit(3)
+    if not os.path.exists(os.path.join(site, 'data', 'planilha.json')):
+        print('Sem data/planilha.json: relatório não gerado.'); sys.exit(3)
     hoje = date.today()
-    lista, plan_atual = requisicoes_em_atraso(site, senha, hoje)
+    lista, plan_atual = requisicoes_em_atraso(site, hoje)
     f1 = [r for r in lista if 31 <= r['atraso'] <= 90]
     f2 = [r for r in lista if r['atraso'] > 90]
     a1 = os.path.join(saida, f'requisicoes_atraso_31a90_{hoje.isoformat()}.pdf')

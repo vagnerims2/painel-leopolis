@@ -324,12 +324,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .motivo{font-weight:400;font-size:11px;color:#1F4E8C;background:#eaf2fc;border-radius:6px;padding:1px 6px;margin-top:3px;display:inline-block}
 
 /* ---------- Requisições: trilha requisição → empenho → liquidação → pagamento ---------- */
-#dash-root .req-trava{display:flex;flex-wrap:wrap;gap:var(--cds-gap-sm);align-items:center;padding:var(--cds-pad-md);border:1px dashed var(--color-border-line);border-radius:10px;background:color-mix(in srgb,var(--color-fg) 3%,transparent)}
-#dash-root .req-trava[hidden]{display:none}
-#dash-root .req-trava label{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);font-weight:600;width:100%}
-#dash-root .req-trava input{font:inherit;padding:8px 10px;border-radius:8px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);flex:1 1 12rem;min-width:0}
-#dash-root .req-trava .note{width:100%;margin:0}
-#dash-root .req-trava .erro{color:var(--color-bad)}
 #dash-root .req-resumo{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr));gap:var(--cds-gap-sm);margin-bottom:var(--cds-gap-md)}
 #dash-root .req-resumo button{font:inherit;text-align:left;cursor:pointer;padding:10px 12px;border-radius:10px;border:1px solid var(--color-border-line);background:var(--color-panel);color:var(--color-fg);display:flex;flex-direction:column;gap:2px;border-left:4px solid var(--p,var(--color-fg-muted))}
 #dash-root .req-resumo button[aria-pressed=true]{background:color-mix(in srgb,var(--p,var(--color-fg)) 10%,var(--color-panel));box-shadow:inset 0 0 0 1px var(--p,var(--color-fg))}
@@ -702,12 +696,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <div class="card" id="req-card">
       <h2>Requisições de compra</h2>
       <p class="note">Cada requisição da planilha de compras ligada ao empenho do portal, na ordem: requisição de compra, requisição de empenho, empenho, liquidação e pagamento. A etapa em vermelho é onde ela está parada. Os dados vêm da planilha interna (memorando, situação, telefone e e-mail do fornecedor).</p>
-      <form id="req-trava" class="req-trava" autocomplete="on" hidden>
-        <label for="req-senha">Senha dos servidores</label>
-        <input id="req-senha" name="senha" type="password" autocomplete="current-password" placeholder="Digite a senha">
-        <button type="submit" class="btn2" id="req-abrir">🔒 Ver dados</button>
-        <p class="note" id="req-msg">A senha fica guardada só nesta aba do navegador, até você fechá-la.</p>
-      </form>
+      <p class="note" id="req-msg">Carregando os dados da planilha…</p>
       <div id="req-aberto" hidden>
         <div class="req-resumo" id="req-resumo"></div>
         <div class="tools">
@@ -720,7 +709,6 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
           <select id="req-lic"><option value="">Todas as licitações</option></select>
           <label class="req-per">De <input type="date" id="req-de"></label>
           <label class="req-per">até <input type="date" id="req-ate"></label>
-          <button type="button" class="btn2" id="req-fechar" hidden>Fechar dados</button>
         </div>
         <p class="note" id="req-total"></p>
         <div class="tblwrap"><table id="t-req"><thead><tr>
@@ -1540,18 +1528,8 @@ dash.onData(() => {
 });
 
 
-// ---------- Requisições (planilha interna, criptografada com a senha dos servidores) ----------
-const REQ_ARQ = '../data/planilha.enc.json';
+// ---------- Requisições (planilha interna, lida sem senha desde 22/10/2026) ----------
 var REQ = { linhas: null, porEmp: {}, atualizado: '', filtro: '' };
-const b64u8 = (s) => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-async function abrirPlanilha(senha) {
-  const r = await fetch(REQ_ARQ + '?v=' + Date.now()); if (!r.ok) throw new Error('arquivo');
-  const p = await r.json();
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(senha), 'PBKDF2', false, ['deriveKey']);
-  const chave = await crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt: b64u8(p.sal), iterations: p.iter }, base, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
-  try { return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64u8(p.iv) }, chave, b64u8(p.dados)))); }
-  catch (e) { throw new Error('senha'); }
-}
 const dmy = (s) => { const m = String(s || '').match(/^(\d{2})\/(\d{2})\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
 const fone = (t) => { const d = String(t || '').replace(/\D/g, ''); if (d.length === 11) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`; if (d.length === 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`; return t || ''; };
 const ETAPAS = ['Aguardando requisição de empenho', 'Aguardando empenho', 'Aguardando liquidação', 'Liquidação parcial', 'Aguardando pagamento', 'Pagamento parcial', 'Concluída', 'Cancelada', 'Empenho anulado', 'Empenho não achado no portal'];
@@ -1841,29 +1819,16 @@ function juntarAno(linhas) {
 function mostrarReq(dados) {
   REQ._dados = dados; REQ.linhas = juntarAno(dados.linhas || []); REQ.atualizado = dados.atualizado || ''; REQ.porEmp = {};
   REQ.linhas.forEach(l => { if (l.e) { const k = semZeros(l.e); (REQ.porEmp[k] = REQ.porEmp[k] || []).push(l); } });
-  document.getElementById('req-trava').hidden = true; document.getElementById('req-aberto').hidden = false; document.getElementById('req-atual').textContent = REQ.atualizado || '—';
+  document.getElementById('req-msg').hidden = true; document.getElementById('req-aberto').hidden = false; document.getElementById('req-atual').textContent = REQ.atualizado || '—';
   ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable();
 }
-async function tentarSenha(senha, silencioso) {
-  const msg = document.getElementById('req-msg'), bt = document.getElementById('req-abrir');
-  if (!senha) { msg.textContent = 'Digite a senha dos servidores.'; msg.className = 'note erro'; return; }
-  bt.disabled = true; if (!silencioso) { msg.textContent = 'Abrindo…'; msg.className = 'note'; }
-  try { const dados = await abrirPlanilha(senha); try { sessionStorage.setItem('req-senha', senha); } catch (e) {} mostrarReq(dados); }
-  catch (e) { try { sessionStorage.removeItem('req-senha'); } catch (x) {}
-    if (!silencioso) { msg.className = 'note erro'; msg.textContent = e.message === 'senha' ? 'Senha incorreta. Confira e tente de novo.' : e.message === 'arquivo' ? 'Os dados da planilha ainda não foram publicados.' : 'Este navegador não conseguiu abrir os dados. Tente atualizar a página.'; } }
-  finally { bt.disabled = false; }
-}
-document.getElementById('req-trava').addEventListener('submit', (ev) => { ev.preventDefault(); tentarSenha(document.getElementById('req-senha').value); });
-document.getElementById('req-fechar').addEventListener('click', () => { REQ.linhas = null; REQ.porEmp = {}; try { sessionStorage.removeItem('req-senha'); } catch (e) {}
-  document.getElementById('req-senha').value = ''; document.getElementById('req-trava').hidden = false; document.getElementById('req-aberto').hidden = true;
-  document.getElementById('req-msg').className = 'note'; document.getElementById('req-msg').textContent = 'Dados fechados.'; if (typeof drawTable === 'function') drawTable(); });
 document.getElementById('req-busca').addEventListener('input', drawReq);
 REQ.ord = { k: 'rec', dir: -1 };
 document.getElementById('req-forn').addEventListener('input', drawReq);
 document.querySelectorAll('#t-req .req-ord').forEach(b => b.addEventListener('click', () => { const k = b.dataset.ro; if (REQ.ord.k === k) REQ.ord.dir *= -1; else REQ.ord = { k, dir: -1 }; drawReq(); }));
 ['req-parada', 'req-sec', 'req-atraso', 'req-tempo', 'req-lic', 'req-de', 'req-ate'].forEach(id => document.getElementById(id).addEventListener('change', drawReq));
 dash.onData(() => { if (REQ.linhas) { if (REQ._dados) REQ.linhas = juntarAno(REQ._dados.linhas || []); ligarReq(); drawReq(); if (typeof drawTable === 'function') drawTable(); } });
-/* sem senha: abre direto */ fetch('../data/planilha.json?v=' + Date.now()).then(r => r.json()).then(mostrarReq).catch(e => { document.getElementById('req-msg').textContent = 'Não consegui carregar os dados da planilha.'; });
+/* sem senha: abre direto */ fetch('../data/planilha.json?v=' + Date.now()).then(r => r.json()).then(mostrarReq).catch(e => { const m = document.getElementById('req-msg'); m.hidden = false; m.textContent = 'Não consegui carregar os dados da planilha. Tente atualizar a página.'; });
 // ---------- Receitas: relatório de uma ou mais receitas (IPTU, ISS…) por período, do Anexo 10 do portal ----------
 (function () {
   const $ = (id) => document.getElementById(id);

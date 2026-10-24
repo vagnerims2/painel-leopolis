@@ -6,7 +6,7 @@ Uso: python3 build.py MASTER.json COLETA.json SAIDA_DIR [itens_requisicoes.csv]
 """
 import csv, json, os, re, sys, unicodedata, statistics
 from collections import defaultdict
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 
 master_p, coleta_p, out = sys.argv[1], sys.argv[2], sys.argv[3]
 req_p = sys.argv[4] if len(sys.argv) > 4 else None
@@ -124,16 +124,16 @@ for p in P.values():
     if (p.get('l') in liq_ok) if p.get('l') else _mesma_dot(p): pag_e[p['e']].append(p)
 # nomes de produto completos: coletas antigas guardavam só a última linha do nome (ex.: "MTR" em vez de
 # "PAPEL HIGIENICO FOLHA DUPLA - 30 MTR"); completa pelo relatório de requisições do Equiplano quando houver
-_req0 = defaultdict(list)
+req = defaultdict(list)   # empenho -> itens do relatório de requisições (usado também na lista de itens)
 if req_p and os.path.exists(req_p):
     for x in csv.DictReader(open(req_p, encoding='utf-8')):
         for en in re.split(r'\s*,\s*', x['empenhos']):
-            if en: _req0[en].append(x)
+            if en: req[en].append(x)
 nomes_corrigidos = 0
 for n, e in E.items():
     for i in e['items']:
         b = norm(i['p'])
-        for x in _req0.get(n, []):
+        for x in req.get(n, []):
             try: vu = float(x['valor_unitario'] or 0)
             except ValueError: continue
             a = norm(x['produto'])
@@ -293,11 +293,6 @@ def rotulo_embalagem(nome, desc):
     trechos = [nome or ''] + [x.group(0) for x in _RE_EMB.finditer(norm(desc or ''))]
     return medidas(*trechos)[1]
 
-req = defaultdict(list)
-if req_p and os.path.exists(req_p):
-    for x in csv.DictReader(open(req_p, encoding='utf-8')):
-        for en in re.split(r'\s*,\s*', x['empenhos']):
-            if en: req[en].append(x)
 itens = []
 for n, e in E.items():
     r = rows[n]
@@ -385,7 +380,6 @@ for n, e in E.items():
 lr.sort(key=lambda x: (x['data'], int(x['liquidacao'] or 0)), reverse=True)
 wcsv('liquidacoes.csv', lr, ['liquidacao', 'data', 'empenho', 'fornecedor', 'secretaria', 'tipo_despesa', 'fonte', 'valor', 'documento', 'vencimento', 'pago'])
 
-# ---------- saldo por fonte (oficial) ----------
 # ---------- documentos fiscais (link do PDF no portal e chave de acesso) ----------
 dr = []
 for x in M.get('docs', {}).values():
@@ -395,6 +389,8 @@ for x in M.get('docs', {}).values():
                    serie=x['serie'], data_documento=x['dd'], valor=round(x['v'], 2), chave=x['chave'], link=x.get('link', ''), restos_a_pagar='Sim' if x.get('ano') != str(hoje.year) else ''))
 dr.sort(key=lambda r: (r['data_liquidacao'], int(r['liquidacao'] or 0) if str(r['liquidacao']).isdigit() else 0), reverse=True)
 wcsv('notas.csv', dr, ['id', 'liquidacao', 'data_liquidacao', 'empenho', 'fornecedor', 'cpf_cnpj', 'tipo', 'numero', 'serie', 'data_documento', 'valor', 'chave', 'link', 'restos_a_pagar'])
+
+# ---------- saldo por fonte (oficial) ----------
 wcsv('saldo_fontes.csv', sorted([dict(fonte=f['fonte'], codigo=f['cod'], saldo_a_pagar=round(f['v'], 2)) for f in M['fontes']], key=lambda x: -x['saldo_a_pagar']), ['fonte', 'codigo', 'saldo_a_pagar'])
 
 # ---------- dotações: saldo atual e necessidade do mês ----------

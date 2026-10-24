@@ -1,23 +1,15 @@
 """Resumo semanal em PDF (uma página) para a chefia, a partir dos CSVs gerados pelo build.py.
 Uso: python3 resumo_semanal.py <pasta_saida_do_build> <arquivo.pdf>
 """
-import csv, io, json, os, re, statistics, sys, unicodedata
+import csv, io, os, re, statistics, sys, unicodedata
 from collections import defaultdict
 from datetime import date, timedelta
 
-try:
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import ParagraphStyle
-    from reportlab.lib.units import mm
-    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
-except ImportError:  # instala na hora se faltar
-    os.system(f'{sys.executable} -m pip install -q --break-system-packages reportlab matplotlib')
-    from reportlab.lib import colors
-    from reportlab.lib.pagesizes import A4
-    from reportlab.lib.styles import ParagraphStyle
-    from reportlab.lib.units import mm
-    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -83,7 +75,7 @@ story.append(Paragraph(f'Empenhos sem nenhuma liquidação: {len(par)} — {fx(1
 top = sorted(par, key=lambda r: -f(r['saldo_a_pagar']))[:8]
 story.append(tabela([['Empenho', 'Data', 'Dias', 'Fornecedor', 'Secretaria', 'Saldo']] + [[r['empenho'], br(r['data']), r['dias'], corta(r['fornecedor'], 38), corta(r['secretaria'], 28), brl(f(r['saldo_a_pagar']))] for r in top],
                     [16 * mm, 18 * mm, 11 * mm, 70 * mm, 50 * mm, W - 165 * mm], alinhar_dir=(2, 5)))
-story.append(Paragraph('Os 8 de maior valor. A lista completa está na aba Alertas do painel.', PS))
+story.append(Paragraph('Os 8 de maior valor. A lista completa está na planilha Excel do painel (aba Empenhos).', PS))
 
 # dotações
 dm = sorted([r for r in DOT if r['recorrente'] == 'Sim' and f(r['falta_fechar_mes']) > 0], key=lambda r: -f(r['falta_fechar_mes']))
