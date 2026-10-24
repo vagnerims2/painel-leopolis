@@ -42,12 +42,12 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 - "Preços acima do padrão" só compara itens com mesmo código CATMAT (ou nome), mesma unidade e mesma embalagem.
 
 ## Abas atuais
-- Ativas nos links oficiais: Empenhos (com quadro do fornecedor), Produtos (busca por empenho ou por nota fiscal), Requisições, Receitas, Indicadores LRF, Para o cidadão.
-- Removidas: Alertas e Dia e semana. Relatório automático em PDF do painel: fora por enquanto.
+- Ativas no link dos servidores (o Vagner usa todas): Visão geral, Dotações, Empenhos (com quadro do fornecedor e notas fiscais), Requisições (sem senha), Produtos (busca por empenho ou por nota fiscal), Licitações, Receitas, Indicadores LRF, Para o cidadão, Relatórios (produtos e fornecedores por período; CISNOP e Santa Casa pela data do pagamento).
+- Removidas do menu: Alertas e Dia e semana (o código continua na página, escondido). Relatório automático em PDF do painel: fora por enquanto.
 
 ## Ideias futuras
 - Painel tributário (IPTU, ISS, ITBI, taxas, transferências, dívida ativa), receita prevista × arrecadada, só com dados do portal.
-- Relatório periódico para a Saúde do gasto com CISNOP e Santa Casa, contado pela data do pagamento (não do empenho).
+- Relatório periódico para a Saúde do gasto com CISNOP e Santa Casa, contado pela data do pagamento (não do empenho). A aba Relatórios já faz isso na tela; falta só o envio periódico.
 
 ## Estrutura
 - `motor/`: coleta do portal e cálculo (`painel.py`, `coleta.py`, `financas.py`, `build.py`); estado inicial em `motor/semente/`.

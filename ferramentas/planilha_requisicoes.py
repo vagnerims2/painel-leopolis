@@ -1,18 +1,15 @@
-"""Lê a planilha de requisições (Google Sheets "Espelho Fornecedores") e grava data/planilha.enc.json criptografado.
+"""Lê a planilha de requisições (Google Sheets "Espelho Fornecedores") e grava data/planilha.json (sem senha).
 
-Os dados da planilha são internos (memorando, etapa, telefone, e-mail, observações), por isso só vão para o site
-criptografados com a senha dos servidores (AES-256-GCM, chave derivada por PBKDF2-SHA256). A página interna
-pede a senha no botão "Ver dados" e abre tudo no próprio navegador.
+Desde 22/10/2026 a aba Requisições é só dos servidores e abre sem senha (o modo antigo, criptografado em
+data/planilha.enc.json, foi tirado em 24/10/2026).
 
-Uso:  python ferramentas/planilha_requisicoes.py [arquivo.csv] [saida.json]
-  sem arquivo: baixa a planilha do endereço em PLANILHA_URL (segredo do GitHub)
-  senha: variável PAINEL_SENHA (segredo do GitHub)
-Se faltar a senha ou o endereço, não faz nada (o resto da atualização continua normal).
+Uso:  python ferramentas/planilha_requisicoes.py [--aberto] [arquivo.csv | -] [saida.json]
+  sem arquivo (ou "-"): baixa a planilha do endereço em PLANILHA_URL (segredo do GitHub)
+  --aberto: aceito por compatibilidade (é o único modo)
+Se faltar o endereço, não faz nada (o resto da atualização continua normal).
 """
-import base64, csv, io, json, os, re, sys, unicodedata, urllib.request
+import csv, io, json, os, re, sys, unicodedata, urllib.request
 from datetime import datetime, timezone, timedelta
-
-ITER = 310000
 
 
 def norm(s):
@@ -89,15 +86,6 @@ def ler(texto):
     return out
 
 
-def decifrar(pacote, senha):
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-    from cryptography.hazmat.primitives import hashes
-    d = lambda x: base64.b64decode(x)
-    chave = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=d(pacote['sal']), iterations=pacote['iter']).derive(senha.encode('utf-8'))
-    return json.loads(AESGCM(chave).decrypt(d(pacote['iv']), d(pacote['dados']), None))
-
-
 ENVIADO = re.compile(r'ENVIAD', re.I)
 DATA_TXT = re.compile(r'(\d{1,2})/(\d{1,2})(?:/(\d{2,4}))?')
 
@@ -120,27 +108,8 @@ def datas_de_envio(linhas, anteriores, hoje, primeira_vez):
         r['env'] = anteriores.get(r['r']) or ('antes' if primeira_vez else hoje.strftime('%Y-%m-%d'))
 
 
-def cifrar(dados, senha):
-    from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-    from cryptography.hazmat.primitives import hashes
-    sal, iv = os.urandom(16), os.urandom(12)
-    chave = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=sal, iterations=ITER).derive(senha.encode('utf-8'))
-    ct = AESGCM(chave).encrypt(iv, json.dumps(dados, ensure_ascii=False, separators=(',', ':')).encode('utf-8'), None)
-    b = lambda x: base64.b64encode(x).decode()
-    return {'v': 1, 'kdf': 'PBKDF2-SHA256', 'iter': ITER, 'sal': b(sal), 'iv': b(iv), 'dados': b(ct)}
-
-
-def velho_inicio(saida, senha):
-    try:
-        return decifrar(json.load(open(saida, encoding='utf-8')), senha).get('controle_envio')
-    except Exception:
-        return None
-
-
 def main_aberto(fonte, saida):
-    """Versão sem senha (pedido de 22/10/2026: a aba Requisições é só de funcionários). Grava JSON aberto, no mesmo
-    formato de data/planilha.json. Se a planilha vier vazia ou bem menor que a anterior, não troca o arquivo."""
+    """Grava a planilha em JSON aberto (data/planilha.json). Se ela vier vazia ou bem menor que a anterior, não troca o arquivo."""
     texto = baixar(fonte) if fonte.startswith('http') else open(fonte, encoding='utf-8-sig').read()
     linhas = ler(texto)
     hoje = datetime.now(timezone(timedelta(hours=-3)))
@@ -164,45 +133,12 @@ def main_aberto(fonte, saida):
 
 
 def main():
-    if '--aberto' in sys.argv:
-        args = [a for a in sys.argv[1:] if a != '--aberto']
-        fonte = args[0] if args and args[0] != '-' else os.environ.get('PLANILHA_URL', '')
-        saida = args[1] if len(args) > 1 else os.path.join(os.path.dirname(__file__), '..', 'data', 'planilha_previa.json')
-        if not fonte:
-            print('Planilha de requisições: endereço (PLANILHA_URL) não configurado; pulando.'); return
-        return main_aberto(fonte, saida)
-    senha = os.environ.get('PAINEL_SENHA', '')
-    fonte = sys.argv[1] if len(sys.argv) > 1 and sys.argv[1] != '-' else os.environ.get('PLANILHA_URL', '')
-    saida = sys.argv[2] if len(sys.argv) > 2 else os.path.join(os.path.dirname(__file__), '..', 'data', 'planilha.enc.json')
-    if not senha or not fonte:
-        print('Planilha de requisições: sem senha ou endereço configurado; pulando.')
-        return
-    texto = baixar(fonte) if fonte.startswith('http') else open(fonte, encoding='utf-8-sig').read()
-    linhas = ler(texto)
-    hoje = datetime.now(timezone(timedelta(hours=-3)))
-    agora = hoje.strftime('%d/%m/%Y %H:%M')
-    # datas de envio já anotadas nas rodadas anteriores (ficam dentro do próprio arquivo criptografado)
-    anteriores, primeira_vez = {}, True
-    try:
-        velho = decifrar(json.load(open(saida, encoding='utf-8')), senha)
-        anteriores = {l['r']: l['env'] for l in velho.get('linhas', []) if l.get('env')}
-        primeira_vez = not velho.get('controle_envio')
-    except Exception:
-        pass
-    datas_de_envio(linhas, anteriores, hoje, primeira_vez)
-    pacote = cifrar({'atualizado': agora, 'controle_envio': (velho_inicio(saida, senha) or hoje.strftime('%Y-%m-%d')), 'linhas': linhas}, senha)
-    # só regrava se o conteúdo mudou (evita commit a cada rodada por causa do sal novo)
-    marca = __import__('hashlib').sha256(json.dumps(linhas, ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:16]
-    pacote['marca'] = marca
-    try:
-        if json.load(open(saida, encoding='utf-8')).get('marca') == marca:
-            print(f'Planilha de requisições: {len(linhas)} linhas, sem mudança.')
-            return
-    except Exception:
-        pass
-    os.makedirs(os.path.dirname(os.path.abspath(saida)), exist_ok=True)
-    json.dump(pacote, open(saida, 'w', encoding='utf-8'))
-    print(f'Planilha de requisições: {len(linhas)} linhas gravadas em {saida}.')
+    args = [a for a in sys.argv[1:] if a != '--aberto']
+    fonte = args[0] if args and args[0] != '-' else os.environ.get('PLANILHA_URL', '')
+    saida = args[1] if len(args) > 1 else os.path.join(os.path.dirname(__file__), '..', 'data', 'planilha_previa.json')
+    if not fonte:
+        print('Planilha de requisições: endereço (PLANILHA_URL) não configurado; pulando.'); return
+    return main_aberto(fonte, saida)
 
 
 if __name__ == '__main__':
