@@ -536,7 +536,15 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .sd-forn-campo input{width:100%;box-sizing:border-box}
 #dash-root .sd-linha{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;font-size:13px;margin:0 0 10px}
 #dash-root .sd-linha label{display:flex;gap:6px;align-items:center}
-#dash-root #sd-atalhos{display:flex;flex-wrap:wrap;gap:6px}
+#dash-root .sd-bloco-f{margin:0 0 12px;font-size:13.5px}
+#dash-root .sd-bloco-f>small{color:#6b7280}
+#dash-root #sd-desd-box[hidden]{display:none}
+#dash-root #sd-atalhos,#dash-root .sd-dg{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;align-items:center}
+#dash-root .sd-dg-t{font-size:12.5px;font-weight:600;color:#14284b;margin-right:2px}
+#dash-root .sd-dg-n{color:#6b7280}
+#dash-root #sd-atalhos small,#dash-root .sd-dg small{opacity:.7;font-size:11px}
+#dash-root .sd-dg button{font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px dashed #b9cbe6;background:#fff;color:#1F4E8C;cursor:pointer}
+#dash-root .sd-dg button[aria-pressed=true]{background:#2E6BB8;color:#fff;border:1px solid #2E6BB8}
 #dash-root #sd-atalhos button{font:inherit;font-size:12.5px;padding:4px 10px;border-radius:999px;border:1px solid #b9cbe6;background:#fff;color:#1F4E8C;cursor:pointer}
 #dash-root #sd-atalhos button[aria-pressed=true]{background:#1F4E8C;color:#fff;border-color:#1F4E8C}
 #dash-root .sd-nat{border:1px solid var(--color-border-line);border-radius:10px;margin:0 0 10px;background:#fff}
@@ -964,8 +972,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <p class="note">Tudo o que a secretaria pagou no período. Escolha as naturezas da despesa e, se quiser, um fornecedor (nome, CNPJ ou CPF) ou um empenho. Sem filtro, entra tudo. Esta parte não sai na impressão.</p>
       <select id="sd-sec" hidden></select>
       <p class="note" style="margin-top:-4px"><b>Relatório por pagamento:</b> conta só o que foi efetivamente pago, pela data de emissão do pagamento, já descontados os estornos.</p>
-      <div class="sd-linha"><b>Atalhos:</b> <span id="sd-atalhos"></span></div>
-      <details class="sd-nat" id="sd-nat"><summary id="sd-nat-res">Natureza da despesa: todas</summary><div class="sd-nat-acoes"><button type="button" class="btn2" id="sd-nat-todas">Marcar todas</button> <button type="button" class="btn2" id="sd-nat-limpar">Limpar (todas entram)</button></div><div id="sd-nat-lista"></div></details>
+      <div class="sd-bloco-f"><b>Natureza da despesa</b> <small>(sem escolher, entram todas)</small><div id="sd-atalhos"></div></div>
+      <div class="sd-bloco-f" id="sd-desd-box" hidden><b>Desdobramento</b> <small>(opcional: escolha para ver só uma parte; sem escolher, entra a natureza inteira)</small><div id="sd-desd"></div></div>
       <div class="tools"><div class="rl-campo sd-forn-campo"><input id="sd-forn" type="search" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="search" placeholder="Fornecedor: digite o nome, CNPJ ou CPF"><ul class="rl-sug" id="sd-forn-sug" role="listbox" hidden></ul></div><input id="sd-emp" type="search" autocomplete="off" placeholder="Nº do empenho" style="flex:0 1 11rem"><button type="button" class="btn2" id="sd-limpar">Limpar filtros</button></div>
     </div>
     <div class="card sd-busca sd-so-cis">
@@ -2485,10 +2493,12 @@ const REC_ARQ = '../data/receitas.json';
   const TODAS = '*';
   const infoSec = (s) => s === TODAS ? ['Prefeitura inteira', 'Todas as secretarias', 'da Prefeitura'] : SECRETARIAS[s] || [cap(String(s).toLowerCase()), cap(String(s).toLowerCase()), 'de ' + cap(String(s).toLowerCase())];
   const natDe = (sub) => String(sub || '').split('.').slice(0, 4).join('.');
-  const ATALHOS = [['Pessoal (salários e encargos)', s => /^3\.1\./.test(s)], ['Diárias', s => /^3\.3\.90\.14/.test(s)], ['Material de consumo', s => /^3\.3\.90\.30/.test(s)],
-    ['Medicamentos', s => /^3\.3\.90\.30\.09|^3\.3\.90\.32/.test(s)], ['Serviços de pessoa jurídica', s => /^3\.3\.90\.39/.test(s)], ['Serviços de pessoa física', s => /^3\.3\.90\.36/.test(s)],
-    ['Consórcios', s => /^3\.3\.71\.70/.test(s)], ['Equipamentos e veículos', s => /^4\.4\.90\.52/.test(s)], ['Obras e instalações', s => /^4\.4\.90\.51/.test(s)]];
-  let G = null; const SEL = new Set();
+  // filtro de natureza: botões das naturezas principais (ex.: 3.3.90.30 Material de consumo) e, embaixo, os desdobramentos
+  // da natureza escolhida (ex.: Material farmacológico). Sem desdobramento escolhido, entra a natureza inteira.
+  let G = null; const SEL = new Set(), NAT = new Set(), SUBSEL = new Set();
+  function calcSel() { SEL.clear(); NAT.forEach(n => { const ss = Object.keys(G.subs).filter(s => natDe(s) === n), esc = ss.filter(s => SUBSEL.has(s)); (esc.length ? esc : ss).forEach(s => SEL.add(s)); }); }
+  function limparNat() { NAT.clear(); SUBSEL.clear(); SEL.clear(); }
+  const frase = (t) => { t = String(t || '').toLowerCase(); return t.charAt(0).toUpperCase() + t.slice(1); };
   // a folha de pagamento aparece no portal com o próprio Município como fornecedor
   const nomeFornG = (f) => /MUNICIPIO DE LEOPOLIS/.test(semAc(f)) ? 'Folha de pagamento dos servidores (Município de Leópolis)' : f;
   function prepGeral() {
@@ -2505,29 +2515,25 @@ const REC_ARQ = '../data/receitas.json';
   const daSec = () => { const s = $('sd-sec').value; return s === TODAS ? G.pag : G.pag.filter(p => p.sec === s); };
   const nomeSub = (s) => (G && G.subNome[s]) || NATUREZAS[natDe(s)] || s || 'Natureza não informada';
   const nomeNat = (n) => NATUREZAS[n] || n || 'Natureza não informada';
-  // caixa de seleção das naturezas (agrupadas: natureza > tipo de despesa) e atalhos
+  // botões das naturezas principais da secretaria (só as que tiveram gasto)
   function montarFiltros() {
     G.subs = {}; daSec().forEach(p => { G.subs[p.sub] = (G.subs[p.sub] || 0) + p.v; });
-    const lista = $('sd-nat-lista'); lista.replaceChildren(); const grupos = {};
-    Object.keys(G.subs).sort().forEach(s => { (grupos[natDe(s)] = grupos[natDe(s)] || []).push(s); });
-    Object.entries(grupos).forEach(([n, ss]) => { const g = el('div', 'sd-ng'), lb = el('label'), cb = el('input'); cb.type = 'checkbox'; cb.dataset.nat = n;
-      lb.append(cb, document.createTextNode(`${n} – ${nomeNat(n)}`)); g.appendChild(lb);
-      cb.addEventListener('change', () => { ss.forEach(s => cb.checked ? SEL.add(s) : SEL.delete(s)); desenhar(); });
-      ss.forEach(s => { const l = el('label', 'sd-ns'), c = el('input'); c.type = 'checkbox'; c.dataset.sub = s; l.append(c, document.createTextNode(`${s.split('.').slice(4).join('.') || s} – ${nomeSub(s)}`), el('small', null, compacto(G.subs[s]))); g.appendChild(l);
-        c.addEventListener('change', () => { c.checked ? SEL.add(s) : SEL.delete(s); desenhar(); }); });
-      lista.appendChild(g); });
+    const porNat = {}; Object.entries(G.subs).forEach(([s, v]) => { porNat[natDe(s)] = (porNat[natDe(s)] || 0) + v; });
     const at = $('sd-atalhos'); at.replaceChildren();
-    ATALHOS.forEach(([nome, f]) => { const ss = Object.keys(G.subs).filter(f); if (!ss.length) return; const b = el('button', null, nome); b.type = 'button'; b.dataset.at = nome;
-      b.addEventListener('click', () => { const todos = ss.every(s => SEL.has(s)); ss.forEach(s => todos ? SEL.delete(s) : SEL.add(s)); desenhar(); }); at.appendChild(b); });
+    Object.keys(porNat).filter(n => Math.abs(porNat[n]) > 0.004).sort().forEach(n => { const b = el('button', null, nomeNat(n)); b.type = 'button'; b.dataset.nat = n; b.appendChild(el('small', null, ' ' + n)); b.title = `${n} · ${brl.format(porNat[n])} pagos no ano`;
+      b.addEventListener('click', () => { if (NAT.has(n)) { NAT.delete(n); Object.keys(G.subs).forEach(s => { if (natDe(s) === n) SUBSEL.delete(s); }); } else NAT.add(n); calcSel(); desenhar(); }); at.appendChild(b); });
     const cp = cnpjPorNome(), soma0 = {}; daSec().forEach(p => { if (p.forn) soma0[p.forn] = (soma0[p.forn] || 0) + p.v; });
     G.fornLista = Object.keys(soma0).map(n => { const c = cp[nomeChave(n)] || ''; return { n, doc: c ? fmtDoc(c) : '', d: c, k: semAc(n), v: soma0[n] }; });
   }
   function marcarFiltros() {
-    document.querySelectorAll('#sd-nat-lista input[data-sub]').forEach(c => { c.checked = SEL.has(c.dataset.sub); });
-    document.querySelectorAll('#sd-nat-lista input[data-nat]').forEach(c => { const ss = Object.keys(G.subs).filter(s => natDe(s) === c.dataset.nat), n = ss.filter(s => SEL.has(s)).length; c.checked = n === ss.length && n > 0; c.indeterminate = n > 0 && n < ss.length; });
-    document.querySelectorAll('#sd-atalhos button').forEach(b => { const f = ATALHOS.find(a => a[0] === b.dataset.at)[1], ss = Object.keys(G.subs).filter(f); b.setAttribute('aria-pressed', String(ss.length > 0 && ss.every(s => SEL.has(s)))); });
-    const ns = [...new Set([...SEL].map(natDe))];
-    $('sd-nat-res').textContent = !SEL.size ? 'Natureza da despesa: todas (toque para escolher)' : `Natureza da despesa: ${SEL.size} ${SEL.size === 1 ? 'tipo escolhido' : 'tipos escolhidos'} em ${ns.length} ${ns.length === 1 ? 'natureza' : 'naturezas'} (toque para ver)`;
+    document.querySelectorAll('#sd-atalhos button').forEach(b => b.setAttribute('aria-pressed', String(NAT.has(b.dataset.nat))));
+    // desdobramentos das naturezas escolhidas
+    const box = $('sd-desd'); box.replaceChildren(); $('sd-desd-box').hidden = !NAT.size;
+    [...NAT].sort().forEach(n => { const ss = Object.keys(G.subs).filter(s => natDe(s) === n && Math.abs(G.subs[s]) > 0.004).sort((a, b) => G.subs[b] - G.subs[a]); if (!ss.length) return;
+      const g = el('div', 'sd-dg'); g.appendChild(el('span', 'sd-dg-t', nomeNat(n) + ':'));
+      ss.forEach(s => { const b = el('button', null, frase(nomeSub(s))); b.type = 'button'; b.appendChild(el('small', null, ' ' + (s.split('.').slice(3).join('.').replace(/(\.00)+$/, '') || s))); b.title = `${s} · ${brl.format(G.subs[s])} pagos no ano`;
+        b.setAttribute('aria-pressed', String(SUBSEL.has(s))); b.addEventListener('click', () => { SUBSEL.has(s) ? SUBSEL.delete(s) : SUBSEL.add(s); calcSel(); desenhar(); }); g.appendChild(b); });
+      if (ss.length === 1) g.appendChild(el('small', 'sd-dg-n', '(só tem este)')); box.appendChild(g); });
   }
   function desenharGeral() {
     const g = prepGeral(), rel = $('sd-rel'); if (!g) { rel.replaceChildren(el('div', 'sd-vazio', 'Carregando os pagamentos…')); return; }
@@ -2617,10 +2623,8 @@ const REC_ARQ = '../data/receitas.json';
     else if (ev.key === 'Enter' && selF >= 0) { ev.preventDefault(); escolherForn(lis[selF].firstChild.textContent); }
     else if (ev.key === 'Escape') $('sd-forn-sug').hidden = true; });
   { let t; ['sd-forn', 'sd-emp'].forEach(id => $(id).addEventListener('input', () => { if (id === 'sd-forn') sugerirForn(); clearTimeout(t); t = setTimeout(desenhar, 400); })); }
-  $('sd-nat-todas').addEventListener('click', () => { if (G) Object.keys(G.subs).forEach(s => SEL.add(s)); desenhar(); });
-  $('sd-nat-limpar').addEventListener('click', () => { SEL.clear(); desenhar(); });
-  $('sd-sec').addEventListener('change', () => { SEL.clear(); $('sd-forn').value = ''; $('sd-emp').value = ''; if (G) montarFiltros(); desenhar(); });
-  $('sd-limpar').addEventListener('click', () => { SEL.clear(); $('sd-forn').value = ''; $('sd-emp').value = ''; desenhar(); });
+  $('sd-sec').addEventListener('change', () => { limparNat(); $('sd-forn').value = ''; $('sd-emp').value = ''; if (G) montarFiltros(); desenhar(); });
+  $('sd-limpar').addEventListener('click', () => { limparNat(); $('sd-forn').value = ''; $('sd-emp').value = ''; desenhar(); });
   // ---------- aba Relatórios: lista (um relatório por secretaria) e, ao escolher, o relatório ----------
   const SAUDE = 'SAUDE - SEMUS';
   function montarLista() {
@@ -2634,7 +2638,7 @@ const REC_ARQ = '../data/receitas.json';
       const c = el('button', null, x.t); c.type = 'button'; c.dataset.relSec = x.s; c.addEventListener('click', () => { irPara('relatorios'); abrirRel(x.s); }); sub.appendChild(c); });
     atualizarSub(); }
   function abrirRel(sec) {
-    $('sd-sec').value = sec; SEL.clear(); $('sd-forn').value = ''; $('sd-emp').value = ''; if (G) montarFiltros();
+    $('sd-sec').value = sec; limparNat(); $('sd-forn').value = ''; $('sd-emp').value = ''; if (G) montarFiltros();
     const ehS = sec === SAUDE; $('sd-modo-box').hidden = !ehS;
     if (!ehS && modo !== 'geral') { modo = 'geral'; document.querySelectorAll('[data-sdm]').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.sdm === 'geral'))); $('sd-rel').closest('.tab').classList.add('modo-geral'); }
     $('sd-titulo-sec').textContent = sec === TODAS ? 'Relatório geral (todas as secretarias)' : 'Relatório ' + infoSec(sec)[2];
