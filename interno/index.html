@@ -503,6 +503,68 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root #rr-card{margin-bottom:16px}
 #dash-root .tab[data-tab=receitas].rr-so>:not(#rr-card){display:none!important}
 @media print{body.imprimir-rr #dash-root .tab[data-tab=receitas]>:not(#rr-card){display:none!important}body.imprimir-rr #dash-root #rr-card .rl-tools,body.imprimir-rr #dash-root #rr-imprimir{display:none!important}}
+/* ---------- Relatório da Saúde: CISNOP e Santa Casa (pela data do pagamento) ---------- */
+#dash-root .tabs button[data-go=saude]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 2h6v7h7v6h-7v7H9v-7H2V9h7z'/%3E%3C/svg%3E")}
+#dash-root .sd-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#dash-root .sd-tools .btn2[aria-pressed=true]{background:#1F4E8C;color:#fff;border-color:#1F4E8C}
+#dash-root .sd-tools label{display:flex;align-items:center;gap:6px;font-size:13px}
+#dash-root .sd-tools .sd-imp{margin-left:auto;background:#1F4E8C;color:#fff;border-color:#1F4E8C}
+#dash-root #sd-rel{background:#fff;color:#1f2937;max-width:940px;width:100%;margin:0 auto;padding:34px 40px;border-radius:12px;border:1px solid var(--color-border-line);box-shadow:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.06);font-size:13.5px;line-height:1.5}
+#dash-root .sd-cab{border-bottom:3px solid #1F4E8C;padding-bottom:14px;margin-bottom:18px}
+#dash-root .sd-cab .sd-org{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;font-weight:600}
+#dash-root .sd-cab h2{font-size:24px;line-height:1.2;margin:6px 0 4px;color:#14284b;font-weight:700}
+#dash-root .sd-cab h2::before{display:none}
+#dash-root .sd-cab .sd-per{font-size:15px;color:#1F4E8C;font-weight:600}
+#dash-root .sd-cab .sd-gerado{font-size:11.5px;color:#6b7280;margin-top:4px}
+#dash-root .sd-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 16px}
+#dash-root .sd-kpi{border:1px solid #e5e7eb;border-left:5px solid var(--k,#1F4E8C);border-radius:8px;padding:10px 12px;min-width:0}
+#dash-root .sd-kpi .l{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:#4b5563;font-weight:600}
+#dash-root .sd-kpi .n{font-size:21px;font-weight:700;color:#111827;margin:4px 0 2px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#dash-root .sd-kpi .s{font-size:11.5px;color:#6b7280}
+#dash-root .sd-resumo{background:#f3f6fb;border-radius:8px;padding:12px 14px;margin:0 0 18px;font-size:14px}
+#dash-root .sd-bloco{margin:0 0 20px}
+#dash-root .sd-bloco h3{font-size:15.5px;margin:0 0 3px;color:#14284b}
+#dash-root .sd-bloco .sd-sub{font-size:12px;color:#6b7280;margin:0 0 8px}
+#dash-root .sd-leg{display:flex;gap:16px;font-size:12px;color:#374151;margin:0 0 4px;flex-wrap:wrap}
+#dash-root .sd-leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+#dash-root .sd-graf svg{display:block;width:100%;height:auto}
+#dash-root .sd-graf text{font-family:inherit}
+#dash-root .sd-tab{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+#dash-root .sd-tab th{position:static;background:#eef2f7;color:#14284b;text-transform:none;letter-spacing:0;font-size:11.5px;font-weight:700;padding:6px 7px;border-bottom:1px solid #c9d3e3;white-space:normal;text-align:left;vertical-align:bottom}
+#dash-root .sd-tab td{padding:5px 7px;border-bottom:1px solid #edf0f4;vertical-align:top}
+#dash-root .sd-tab .r{text-align:right;white-space:nowrap}
+#dash-root .sd-tab tbody tr:nth-child(even){background:#fafbfc}
+#dash-root .sd-tab tbody tr:hover{background:#eef4fb}
+#dash-root .sd-tab tfoot td{position:static;background:#fff;font-weight:700;border-top:2px solid #94a3b8;border-bottom:0;padding:6px 7px}
+#dash-root .sd-mes th{font-size:11px}
+#dash-root .sd-tab .sd-hist{font-size:11px;color:#4b5563}
+#dash-root .sd-dois{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+#dash-root .sd-glos{display:grid;grid-template-columns:1fr 1fr;gap:8px 18px;font-size:12.5px}
+#dash-root .sd-glos b{display:block;color:#14284b}
+#dash-root .sd-glos p{margin:0}
+#dash-root .sd-nota{font-size:11.5px;color:#4b5563;border-top:1px solid #e5e7eb;padding-top:10px;margin-top:6px}
+#dash-root .sd-vazio{padding:30px;text-align:center;color:#6b7280}
+@media (max-width:760px){#dash-root #sd-rel{padding:18px 14px}#dash-root .sd-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}#dash-root .sd-dois,#dash-root .sd-glos{grid-template-columns:1fr}#dash-root .sd-kpi .n{font-size:17px}#dash-root .sd-tab{font-size:11.5px}#dash-root .sd-larga{overflow-x:auto}}
+@media print{
+  body.imprimir-saude>*:not(#dash-root){display:none!important}
+  body.imprimir-saude #dash-root .pg>*:not(.tab[data-tab=saude]),body.imprimir-saude #dash-root .tab[data-tab=saude]>.card,body.imprimir-saude #dash-root .sd-busca,body.imprimir-saude #print-head,body.imprimir-saude #dash-root .sd-tools{display:none!important}
+  body.imprimir-saude #dash-root .tab[data-tab=saude]{display:block!important;padding:0!important}
+  body.imprimir-saude #dash-root #sd-rel{max-width:none;border:0;box-shadow:none;padding:0;border-radius:0;font-size:11.5px}
+  body.imprimir-saude #dash-root .sd-kpi .n{font-size:17px}
+  body.imprimir-saude #dash-root .sd-tab{font-size:10.5px}
+  body.imprimir-saude #dash-root .sd-tab td,body.imprimir-saude #dash-root .sd-tab th{padding:3px 5px}
+  body.imprimir-saude #dash-root .sd-tab thead{display:table-header-group}
+  body.imprimir-saude #dash-root .sd-tab tr,body.imprimir-saude #dash-root .sd-kpis,body.imprimir-saude #dash-root .sd-graf,body.imprimir-saude #dash-root .sd-resumo,body.imprimir-saude #dash-root .sd-glos>div{break-inside:avoid}
+  body.imprimir-saude #dash-root .sd-bloco h3{break-after:avoid}
+  body.imprimir-saude #dash-root .sd-junto{break-inside:avoid}
+  body.imprimir-saude #dash-root .sd-larga{overflow:visible}
+  body.imprimir-saude #dash-root .sd-mes{font-size:9px;table-layout:fixed}
+  body.imprimir-saude #dash-root .sd-mes td,body.imprimir-saude #dash-root .sd-mes th{padding:3px 2px;overflow-wrap:anywhere}
+  body.imprimir-saude #dash-root .sd-mes th{white-space:normal!important;overflow-wrap:normal;line-height:1.2}
+  body.imprimir-saude #dash-root .sd-mes th:first-child,body.imprimir-saude #dash-root .sd-mes td:first-child{width:9%}
+  body.imprimir-saude #dash-root .sd-quebra{break-before:page}
+  @page{size:A4 portrait;margin:12mm}
+}
 </style>
 </head>
 <body>
@@ -529,6 +591,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <button data-go="indicadores" aria-selected="false">Indicadores LRF</button>
     <button data-go="cidadao" aria-selected="false">Para o cidadão</button>
     <button data-go="relatorios" aria-selected="false">Relatórios</button>
+    <button data-go="saude" aria-selected="false">Relatório da Saúde</button>
   </nav>
 
   <div id="nf-modal" class="nf-modal" hidden><div class="nf-caixa" role="dialog" aria-modal="true" aria-labelledby="nf-tit">
@@ -649,7 +712,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <h2>Empenhos</h2>
       <p class="note">Todos os empenhos de 2026. Marque "Só com saldo a pagar" para ver apenas o que está em aberto, ou "Só com estorno/anulação" para ver os empenhos com empenho anulado, liquidação ou pagamento estornado (aparecem abaixo da situação). Dias em amarelo: 31 a 90; vermelho: mais de 90 (só para os abertos).</p>
       <div class="tools">
-        <input id="busca" type="search" placeholder="Nº do empenho ou da nota fiscal (exato), ou nome do fornecedor…">
+        <input id="busca" type="search" placeholder="Nº do empenho ou da nota fiscal (exato), valor com vírgula (ex.: 3.380,62) ou nome do fornecedor…">
         <label><input id="so-saldo" type="checkbox" checked> Só com saldo a pagar</label>
         <label><input id="so-est" type="checkbox"> Só com estorno/anulação</label>
         <select id="f-sit"><option value="">Todas as situações</option><option>Falta liquidar</option><option>Liquidado em parte</option><option>Liquidado, a pagar</option><option>Pago</option><option>Anulado</option></select>
@@ -830,6 +893,30 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <div class="cid-regras" id="cid-regras"></div>
     </div>
     <div class="card"><p class="note" id="cid-fonte"></p></div>
+  </section>
+
+  <!-- ============ RELATÓRIO DA SAÚDE (CISNOP e Santa Casa) ============ -->
+  <section class="tab" data-tab="saude" hidden>
+    <div class="card">
+      <div class="sd-tools">
+        <button type="button" class="btn2" data-sdq="1">1º quadrimestre</button>
+        <button type="button" class="btn2" data-sdq="2">2º quadrimestre</button>
+        <button type="button" class="btn2" data-sdq="3">3º quadrimestre</button>
+        <button type="button" class="btn2" data-sdq="ano">Ano todo</button>
+        <label>De <select id="sd-ini"></select></label>
+        <label>até <select id="sd-fim"></select></label>
+        <label><input type="checkbox" id="sd-semas"> incluir a Assistência Social (CISNOP: Casa Lar e convênios)</label>
+        <button type="button" class="btn2 sd-imp" id="sd-imprimir">Imprimir relatório</button>
+      </div>
+      <p class="note" style="margin:8px 0 0">Escolha o período e toque em <b>Imprimir relatório</b>. Para salvar em PDF, escolha "Salvar como PDF" na janela de impressão. Os valores são os pagamentos publicados no Portal da Transparência, pela data em que foram pagos.</p>
+    </div>
+    <div class="card sd-busca">
+      <h2>Conferir um pagamento</h2>
+      <p class="note">Digite o valor (ex.: 3.380,62), o nº do empenho ou uma palavra do histórico. Procura em todos os pagamentos do ano ao CISNOP e à Santa Casa. Esta parte não sai na impressão.</p>
+      <div class="tools"><input id="sd-q" type="search" autocomplete="off" placeholder="Ex.: 3.380,62 · 8925 · samu · convênio 10948"></div>
+      <div id="sd-res"></div>
+    </div>
+    <article id="sd-rel"><div class="sd-vazio">Carregando os pagamentos…</div></article>
   </section>
 
   <!-- ============ RELATÓRIOS ============ -->
@@ -1182,7 +1269,20 @@ let sortK = 'dias', sortDir = -1;
 // busca: número → o empenho com aquele número e os que têm nota fiscal com esse número; texto → nome do fornecedor
 const semZeros = (v) => String(v || '').replace(/^0+(?=\d)/, '');
 const ehNumero = (q) => /^\d+(\/\d{2,4})?$/.test(q);
+// busca por valor (com vírgula, ex.: 3.380,62): acha o empenho pelo valor empenhado, liquidado, pago ou da nota fiscal
+function valorBusca(q) { const t = String(q || '').replace(/^r\$\s*/, '').replace(/\s+/g, '');
+  if (!/^\d{1,3}(\.\d{3})+(,\d{1,2})?$|^\d+,\d{1,2}$/.test(t)) return null; return Number(t.replace(/\./g, '').replace(',', '.')); }
+function valoresDoEmpenho(emp) { const dp = dash.data('pagamentos'), dl = dash.data('liquidacoes'), dn = dash.data('notas'), de = dash.data('empenhos');
+  const chave = [dp.data, dl.data, dn.data, de.data]; if (!window.__vde || window.__vde.chave.some((x, i) => x !== chave[i])) { const m = {}, add = (e, x) => { (m[semZeros(e)] = m[semZeros(e)] || []).push(x); };
+    const ano = ((de.data || []).map(r => r.data).sort().pop() || '').slice(0, 4);
+    (de.data || []).forEach(r => { add(r.empenho, { v: N(r.valor), txt: '' }); if (N(r.anulado)) add(r.empenho, { v: N(r.valor) - N(r.anulado), txt: `valor do empenho sem a anulação, ${brl2.format(N(r.valor) - N(r.anulado))}` }); });
+    (dp.data || []).forEach(p => { if (p.empenho && (!p.ano_empenho || p.ano_empenho === ano)) add(p.empenho, { v: Math.abs(N(p.valor)), txt: `${N(p.valor) < 0 ? 'estorno de pagamento' : 'pagamento'} de ${brl2.format(Math.abs(N(p.valor)))} em ${br(p.data)}` }); });
+    (dl.data || []).forEach(l => { if (/^\d+$/.test(String(l.empenho))) add(l.empenho, { v: Math.abs(N(l.valor)), txt: `liquidação ${l.liquidacao || ''} de ${brl2.format(Math.abs(N(l.valor)))} em ${br(l.data)}` }); });
+    (dn.data || []).forEach(n => { if (n.empenho) add(n.empenho, { v: N(n.valor), txt: `${n.tipo || 'nota'} nº ${n.numero} de ${brl2.format(N(n.valor))}` }); });
+    window.__vde = { chave, m }; }
+  return window.__vde.m[semZeros(emp)] || []; }
 function casaBusca(r, q) { r._motivo = '';
+  { const qv = valorBusca(q); if (qv != null) { const x = valoresDoEmpenho(r.empenho).find(y => Math.abs(y.v - qv) < 0.005); if (!x) return false; r._motivo = x.txt ? 'achado pelo valor: ' + x.txt : ''; return true; } }
   if (ehNumero(q)) { const n = semZeros(q.split('/')[0]);
     if (semZeros(r.empenho) === n) return true;
     const nf = (notasPorEmp()[r.empenho] || []).find(x => semZeros(String(x.numero).split('/')[0]) === n);
@@ -1790,6 +1890,8 @@ function detalheEmpenho(r, tr) {
   else item('Requisição de compra', 'Nenhuma requisição de compra ligada a este empenho.');
   if (r.grupo_itens) item('Compra dividida', `Empenhos ${r.grupo_itens.split(',').join(' + ')}`);
   item('No portal hoje', situacaoPortal({ emp: r }) ? situacaoPortal({ emp: r }).txt : '');
+  { const dp = dash.data('pagamentos'), ano = String(r.data).slice(0, 4), ps = dp.status === 'ok' ? (dp.data || []).filter(p => semZeros(p.empenho) === semZeros(r.empenho) && (!p.ano_empenho || p.ano_empenho === ano)).sort((a, b) => a.data < b.data ? -1 : 1) : [];
+    if (ps.length) item(ps.length > 1 ? 'Pagamentos' : 'Pagamento', ps.map(p => `${br(p.data)} · ${brl2.format(N(p.valor))}${p.estorno === 'Sim' ? ' (estorno)' : ''} — ${String(p.historico || '').replace(/^Pagamento\s+/i, '').replace(/\s*Justificati.*$/i, '').slice(0, 220)}`).join('\n')); }
   const ac = document.createElement('div'); ac.className = 'req-acoes';
   { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = 'Ver itens do empenho'; b.addEventListener('click', (ev) => { ev.stopPropagation(); abrirItens(semZeros(r.empenho), r); }); ac.appendChild(b); }
   { const nfs = notasPorEmp()[r.empenho]; if (nfs && nfs.length) { const n = document.createElement('button'); n.type = 'button'; n.className = 'btn2'; n.textContent = nfs.length > 1 ? `Ver as ${nfs.length} notas fiscais` : 'Ver a nota fiscal'; n.addEventListener('click', (ev) => { ev.stopPropagation(); abrirNotas(nfs, `Notas fiscais do empenho ${r.empenho}`); }); ac.appendChild(n); } }
@@ -2330,6 +2432,258 @@ const REC_ARQ = '../data/receitas.json';
   ['rl-ini', 'rl-fim', 'rl-sec', 'rl-cons', 'rl-base'].forEach(id => $(id).addEventListener('change', desenhar));
   document.querySelectorAll('[data-rl]').forEach(b => b.addEventListener('click', () => { const n = b.dataset.rl; periodo(n === 'ano' ? 'ano' : Number(n)); desenhar(); }));
   $('rl-imprimir').addEventListener('click', () => { irPara('relatorios'); setTimeout(() => window.print(), 100); });
+  dash.onData(desenhar);
+})();
+
+// ---------- Relatório da Saúde: CISNOP e Santa Casa, pela data do pagamento, pronto para imprimir ----------
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const MESN = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  const MESA = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const COR_CIS = '#2E6BB8', COR_SC = '#C8741A', GRADE = '#e5e7eb', TXT = '#374151', TXT2 = '#6b7280';
+  const semAc = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ');
+  const ehCis = (f) => /CISNOP/.test(semAc(f)), ehSC = (f) => /MISERICORDIA|SANTA CASA/.test(semAc(f));
+  const ehSaude = (s) => /SAUDE|SEMUS/.test(semAc(s));
+  const pct = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const mesNome = (m) => `${MESN[Number(m.slice(5, 7)) - 1]} de ${m.slice(0, 4)}`;
+  const mesCurto = (m) => `${MESA[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`;
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const nf2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const compacto = (v) => v >= 1e6 ? 'R$ ' + pct.format(v / 1e6) + ' mi' : v >= 1e3 ? 'R$ ' + Math.round(v / 1e3).toLocaleString('pt-BR') + ' mil' : brl.format(v);
+
+  // tipo de cada pagamento (as mesmas linhas da planilha de controle da Saúde)
+  const TIPOS = ['SAMU', 'Mensalidade do CISNOP', 'Extra cota', 'Saúde mental', 'Convênios e emendas', 'Outros', 'Assistência Social', 'Santa Casa'];
+  function tipoDe(p) {
+    if (ehSC(p.fornecedor)) return 'Santa Casa';
+    if (!ehSaude(p.secretaria)) return 'Assistência Social';
+    const t = semAc(p.historico);
+    if (/SAMU/.test(t)) return 'SAMU';
+    if (/MENSALIDADE/.test(t)) return 'Mensalidade do CISNOP';
+    if (/SAUDE MENTAL/.test(t)) return 'Saúde mental';
+    if (/CONVENIO|EMENDA|PROVIGIA/.test(t)) return 'Convênios e emendas';
+    if (/EXTRA\W*COTA/.test(t)) return 'Extra cota';
+    // conta custeio 57936-X (fonte 1018, emendas) sem descrição: é extra cota (confirmado pelo Vagner em 24/10/2026)
+    if (/57936/.test(t)) return 'Extra cota';
+    return 'Outros';
+  }
+  // convênio ou programa (para a tabela de convênios)
+  const NOMES_CONV = { '2141': 'Programa Saúde na Escola (PSE)', '746': 'Procedimentos odontológicos', '1948': 'Dietas' };
+  function convenioDe(p) {
+    const t = semAc(p.historico), n = (t.match(/CONVENIO\W*(?:N\W*)?(\d{3,6})/) || [])[1], em = (t.match(/EMENDA(?: PARLAMENTAR)?\W*(?:N\W*)?(\d{5,})/) || [])[1];
+    if (/PROVIGIA/.test(t)) return { k: 'PROVIGIA', nome: 'Convênio Provigia', em: '' };
+    if (/ATENCAO PRIMARIA/.test(t)) return { k: 'AP', nome: 'Convênio Atenção Primária', em: em || '' };
+    if (n) return { k: n, nome: `Convênio nº ${n}` + (NOMES_CONV[n] ? ' · ' + NOMES_CONV[n] : ''), em: em || '' };
+    return { k: 'em' + (em || '?'), nome: em ? `Emenda parlamentar nº ${em}` : 'Convênio sem número no portal', em: '' };
+  }
+  function detalheAS(p) { const t = semAc(p.historico);
+    if (/CASA LAR|ABRIGO/.test(t)) return 'Casa Lar / abrigo institucional regional';
+    if (/ABA\b|TERAPIAS/.test(t)) return 'Consultas especializadas e terapias ABA';
+    if (/CEDCA|ASSISTEN/.test(t)) return 'Convênio da Assistência Social (CEDCA)';
+    return 'Outros da Assistência Social'; }
+  // mês a que o pagamento se refere (competência), quando o histórico informa
+  function competencia(h) { const t = semAc(h);
+    let m = t.match(/(?:REF\.?:?|REFERENCIA|COMPETENCIA)\s*(\d{1,2})\/(\d{4})/); if (m) return `${m[1].padStart(2, '0')}/${m[2]}`;
+    m = t.match(/(?:REF\.?:?)\s*(JANEIRO|FEVEREIRO|MARCO|ABRIL|MAIO|JUNHO|JULHO|AGOSTO|SETEMBRO|OUTUBRO|NOVEMBRO|DEZEMBRO)\s+(?:DE\s+)?(\d{4})/);
+    if (m) return `${String(['JANEIRO', 'FEVEREIRO', 'MARCO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'].indexOf(m[1]) + 1).padStart(2, '0')}/${m[2]}`;
+    return ''; }
+  const FONTES = { '0': 'Recursos livres do Município', '303': 'Recursos próprios da Saúde (mínimo de 15%)', '370': 'Repasse do SUS para custeio da saúde', '494': 'Repasse do SUS para custeio da saúde',
+    '1017': 'Emendas de bancada', '1018': 'Emendas parlamentares individuais', '817': 'Garantia de direitos de crianças e adolescentes' };
+  function nomeFonte(c, mapa) { return FONTES[c] || (mapa[c] ? mapa[c].replace(/^\d+\s*-\s*/, '') : c ? 'Fonte ' + c : 'Fonte não informada'); }
+  const limpaHist = (h) => String(h || '').replace(/^Pagamento\s+/i, '').replace(/^DESPESA EMPENHADA REFERENTE (?:AO?S?|AS?)?\s*/i, '').replace(/\s*Justificati.*$/i, '').trim();
+
+  let PAGS = null, MESES = [], ULT = '', fonteMapa = {}, pronto = false;
+  function preparar() {
+    const dp = dash.data('pagamentos'), de = dash.data('empenhos'); if (dp.status !== 'ok' || !dp.data || !dp.data.length) return false;
+    if (de.status === 'ok') de.data.forEach(e => { const c = String(e.fonte || '').split(' - ')[0]; if (c && !fonteMapa[c]) fonteMapa[c] = e.fonte; });
+    PAGS = dp.data.filter(p => ehCis(p.fornecedor) || ehSC(p.fornecedor)).map(p => ({ ...p, v: N(p.valor), mes: String(p.data).slice(0, 7), tipo: tipoDe(p), comp: competencia(p.historico) }));
+    ULT = dp.data.map(p => p.data).sort().pop() || '';
+    const ano = ULT.slice(0, 4); MESES = []; for (let i = 1; i <= Number(ULT.slice(5, 7)); i++) MESES.push(`${ano}-${String(i).padStart(2, '0')}`);
+    [$('sd-ini'), $('sd-fim')].forEach(s => { s.replaceChildren(); MESES.forEach(m => { const o = document.createElement('option'); o.value = m; o.textContent = cap(mesNome(m)); s.appendChild(o); }); });
+    // começa no último quadrimestre fechado (ou no atual, se nenhum fechou ainda)
+    const mUlt = Number(ULT.slice(5, 7)), qAtual = Math.ceil(mUlt / 4), fechado = mUlt % 4 === 0 && ULT.slice(8) >= '28';
+    quad(fechado || qAtual === 1 ? qAtual : qAtual - 1); pronto = true; return true;
+  }
+  function quad(q) { const ano = ULT.slice(0, 4);
+    if (q === 'ano') { $('sd-ini').value = MESES[0]; $('sd-fim').value = MESES[MESES.length - 1]; }
+    else { const a = (q - 1) * 4 + 1, b = Math.min(q * 4, MESES.length); if (a > MESES.length) return;
+      $('sd-ini').value = `${ano}-${String(a).padStart(2, '0')}`; $('sd-fim').value = `${ano}-${String(b).padStart(2, '0')}`; }
+    marcarBotoes(); }
+  function qualQuad() { const i = $('sd-ini').value, f = $('sd-fim').value, ano = ULT.slice(0, 4);
+    if (i === MESES[0] && f === MESES[MESES.length - 1] && MESES.length > 4) return 'ano';
+    for (let q = 1; q <= 3; q++) { const a = `${ano}-${String((q - 1) * 4 + 1).padStart(2, '0')}`, b = `${ano}-${String(Math.min(q * 4, MESES.length)).padStart(2, '0')}`; if (i === a && f === b) return String(q); }
+    return ''; }
+  function marcarBotoes() { const q = qualQuad(); document.querySelectorAll('[data-sdq]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.sdq === q))); }
+
+  // ---------- gráficos (SVG: imprime nítido) ----------
+  const NS = 'http://www.w3.org/2000/svg';
+  const sv = (tag, at, txt) => { const e = document.createElementNS(NS, tag); Object.entries(at || {}).forEach(([k, v]) => e.setAttribute(k, v)); if (txt != null) e.textContent = txt; return e; };
+  function topoArredondado(x, y, w, h, r) { r = Math.min(r, h, w / 2); return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`; }
+  function passo(max) { const bruto = max / 4, p = Math.pow(10, Math.floor(Math.log10(bruto || 1))); return [1, 2, 2.5, 5, 10].map(k => k * p).find(s => s >= bruto) || bruto; }
+  // colunas de um só pagador (CISNOP ou Santa Casa), com o valor em cima de cada coluna; cada gráfico tem a sua escala
+  function graficoUm(box, meses, vals, cor, nome, W) {
+    box.replaceChildren(); const H = 230, L = 46, R = 6, T = 22, B = 28, iw = W - L - R, ih = H - T - B;
+    const st = passo(Math.max(1, ...vals)), max = Math.ceil(Math.max(1, ...vals) / st) * st;
+    const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `Valor pago por mês: ${nome}` });
+    for (let v = 0; v <= max + 1e-6; v += st) { const y = T + ih - v / max * ih; s.appendChild(sv('line', { x1: L, x2: W - R, y1: y, y2: y, stroke: GRADE, 'stroke-width': 1 }));
+      s.appendChild(sv('text', { x: L - 6, y: y + 4, 'text-anchor': 'end', 'font-size': 10.5, fill: TXT2 }, v ? compacto(v).replace('R$ ', '') : '0')); }
+    const banda = iw / meses.length, bw = Math.min(meses.length <= 6 ? 40 : 30, banda * .6);
+    meses.forEach((m, i) => { const cx = L + banda * i + banda / 2, v = vals[i], h = Math.max(0, v) / max * ih, g = sv('g');
+      if (h > 0) g.appendChild(sv('path', { d: topoArredondado(cx - bw / 2, T + ih - h, bw, h, 4), fill: cor }));
+      g.appendChild(sv('rect', { x: L + banda * i, y: T, width: banda, height: ih, fill: 'transparent' }));
+      g.appendChild(sv('text', { x: cx, y: T + ih - h - 6, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 600, fill: TXT }, v > 0.004 ? compacto(v).replace('R$ ', '') : '—'));
+      g.appendChild(sv('text', { x: cx, y: H - 9, 'text-anchor': 'middle', 'font-size': 11.5, fill: TXT }, mesCurto(m)));
+      g.addEventListener('mousemove', ev => showTip(ev, `${nome} · ${mesNome(m)}`, [brl.format(v)])); g.addEventListener('mouseleave', hideTip); s.appendChild(g); });
+    s.appendChild(sv('line', { x1: L, x2: W - R, y1: T + ih, y2: T + ih, stroke: '#9ca3af', 'stroke-width': 1 }));
+    box.appendChild(s);
+  }
+  // divisão de cada mês: uma barra de 100% por mês (parte do CISNOP e da Santa Casa) e o total do mês na ponta
+  function graficoDivisao(box, meses, vc, vs, rotulos) {
+    box.replaceChildren(); const W = 720, lin = 30, L = 62, R = 128, T = 4, H = T + meses.length * lin + 2, iw = W - L - R;
+    const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Divisão de cada mês entre CISNOP e Santa Casa' });
+    meses.forEach((m, i) => { const y = T + i * lin, tot = Math.max(0, vc[i]) + Math.max(0, vs[i]), g = sv('g'), y0 = y + 5, bh = lin - 10;
+      const ultima = rotulos && i === meses.length - 1; if (ultima) g.appendChild(sv('line', { x1: 0, x2: W, y1: y + 1, y2: y + 1, stroke: '#94a3b8', 'stroke-width': 1 }));
+      g.appendChild(sv('text', { x: 0, y: y + lin / 2 + 4, 'font-size': 12, 'font-weight': ultima ? 700 : 400, fill: TXT }, rotulos ? rotulos[i] : mesCurto(m)));
+      if (tot > 0) { const pc = Math.max(0, vc[i]) / tot, ps = 1 - pc, wc = pc * iw, ws = ps * iw, gap = wc > 0 && ws > 0 ? 2 : 0;
+        if (wc > 0) g.appendChild(sv('path', { d: `M${L + 4},${y0}H${L + wc - gap}V${y0 + bh}H${L + 4}Q${L},${y0 + bh} ${L},${y0 + bh - 4}V${y0 + 4}Q${L},${y0} ${L + 4},${y0}Z`, fill: COR_CIS }));
+        if (ws > 0) { const x0 = L + wc; g.appendChild(sv('path', { d: `M${x0},${y0}H${L + iw - 4}Q${L + iw},${y0} ${L + iw},${y0 + 4}V${y0 + bh - 4}Q${L + iw},${y0 + bh} ${L + iw - 4},${y0 + bh}H${x0}Z`, fill: COR_SC })); }
+        const rot = (x, w, t) => { if (w >= 34) g.appendChild(sv('text', { x: x + w / 2, y: y0 + bh / 2 + 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 600, fill: '#fff' }, t)); };
+        rot(L, wc - gap, (wc - gap >= 130 ? 'CISNOP ' : '') + pct.format(pc * 100) + '%'); rot(L + wc, ws, (ws >= 150 ? 'Santa Casa ' : '') + pct.format(ps * 100) + '%'); }
+      g.appendChild(sv('text', { x: W, y: y + lin / 2 + 4, 'text-anchor': 'end', 'font-size': 12, 'font-weight': 600, fill: TXT }, brl.format(tot)));
+      g.appendChild(sv('rect', { x: 0, y, width: W, height: lin, fill: 'transparent' }));
+      g.addEventListener('mousemove', ev => showTip(ev, rotulos ? rotulos[i] : cap(mesNome(m)), [`CISNOP: ${brl.format(vc[i])} (${pct.format(tot ? vc[i] / tot * 100 : 0)}%)`, `Santa Casa: ${brl.format(vs[i])} (${pct.format(tot ? vs[i] / tot * 100 : 0)}%)`, `Total: ${brl.format(tot)}`]));
+      g.addEventListener('mouseleave', hideTip); s.appendChild(g); });
+    box.appendChild(s);
+  }
+  // barras deitadas: quanto foi para cada tipo de gasto
+  function graficoTipos(box, linhas, total) {
+    box.replaceChildren(); const W = 720, lin = 30, L = 250, R = 170, T = 4, H = T + linhas.length * lin + 4, iw = W - L - R, max = Math.max(1, ...linhas.map(x => x.v));
+    const s = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Valor pago por tipo de gasto' });
+    linhas.forEach((x, i) => { const y = T + i * lin, w = Math.max(2, x.v / max * iw), g = sv('g');
+      g.appendChild(sv('text', { x: L - 10, y: y + lin / 2 + 4, 'text-anchor': 'end', 'font-size': 12.5, fill: TXT }, x.nome));
+      g.appendChild(sv('path', { d: `M${L},${y + 6}H${L + w - 4}Q${L + w},${y + 6} ${L + w},${y + 10}V${y + lin - 10}Q${L + w},${y + lin - 6} ${L + w - 4},${y + lin - 6}H${L}Z`, fill: x.cor }));
+      g.appendChild(sv('text', { x: L + w + 8, y: y + lin / 2 + 4, 'font-size': 12, fill: TXT }, `${brl.format(x.v)} · ${pct.format(x.v / total * 100)}%`));
+      g.appendChild(sv('rect', { x: 0, y, width: W, height: lin, fill: 'transparent' }));
+      g.addEventListener('mousemove', ev => showTip(ev, x.nome, [brl.format(x.v), `${pct.format(x.v / total * 100)}% do total do período`, `${x.n} ${x.n === 1 ? 'pagamento' : 'pagamentos'}`])); g.addEventListener('mouseleave', hideTip);
+      s.appendChild(g); });
+    box.appendChild(s);
+  }
+
+  // ---------- tabelas ----------
+  const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  function tabela(cab, linhas, rodape, dir, cls) { const t = el('table', 'sd-tab' + (cls ? ' ' + cls : '')), th = t.createTHead().insertRow(), tb = t.createTBody();
+    cab.forEach((c, i) => { const x = el('th', dir.includes(i) ? 'r' : '', c); th.appendChild(x); });
+    linhas.forEach(l => { const tr = tb.insertRow(); l.forEach((c, i) => { const td0 = el('td', dir.includes(i) ? 'r' : ''); if (c instanceof Node) td0.appendChild(c); else td0.textContent = c; tr.appendChild(td0); }); });
+    if (rodape) { const tr = t.createTFoot().insertRow(); rodape.forEach((c, i) => tr.appendChild(el('td', dir.includes(i) ? 'r' : '', c))); }
+    return t; }
+  const bloco = (titulo, sub, cls) => { const b = el('section', 'sd-bloco' + (cls ? ' ' + cls : '')); b.appendChild(el('h3', null, titulo)); if (sub) b.appendChild(el('p', 'sd-sub', sub)); return b; };
+  const soma = (rs) => rs.reduce((a, r) => a + r.v, 0);
+  const dinheiro = (v) => v ? brl.format(v) : '—';
+
+  function desenhar() {
+    if (!pronto && !preparar()) return;
+    const ini = $('sd-ini').value, fim = $('sd-fim').value < ini ? ini : $('sd-fim').value, comAS = $('sd-semas').checked; marcarBotoes();
+    const meses = MESES.filter(m => m >= ini && m <= fim), rs = PAGS.filter(p => p.mes >= ini && p.mes <= fim && (comAS || p.tipo !== 'Assistência Social'));
+    const cis = rs.filter(p => ehCis(p.fornecedor)), sc = rs.filter(p => ehSC(p.fornecedor)), tCis = soma(cis), tSc = soma(sc), tot = tCis + tSc;
+    const q = qualQuad(), ano = ini.slice(0, 4), parcial = fim === ULT.slice(0, 7) ? ` · parcial, com pagamentos até ${br(ULT)}` : '';
+    const faixa = ini === fim ? mesNome(ini) : ini.slice(0, 4) === fim.slice(0, 4) ? `${MESN[Number(ini.slice(5)) - 1]} a ${MESN[Number(fim.slice(5)) - 1]} de ${ano}` : `${mesNome(ini)} a ${mesNome(fim)}`;
+    const periodo = (q === 'ano' ? `Ano de ${ano} (${faixa})` : q ? `${q}º quadrimestre de ${ano} (${faixa})` : cap(faixa)) + parcial;
+    const rel = $('sd-rel'); rel.replaceChildren();
+    // cabeçalho
+    { const c = el('header', 'sd-cab'); c.append(el('div', 'sd-org', 'Prefeitura Municipal de Leópolis · Secretaria Municipal de Saúde'), el('h2', null, 'Gastos com o CISNOP e a Santa Casa'), el('div', 'sd-per', periodo),
+        el('div', 'sd-gerado', `Valores pagos, pela data do pagamento · Fonte: Portal da Transparência do Município de Leópolis · Relatório gerado em ${new Date().toLocaleDateString('pt-BR')}`)); rel.appendChild(c); }
+    if (!rs.length) { rel.appendChild(el('div', 'sd-vazio', 'Nenhum pagamento ao CISNOP ou à Santa Casa neste período.')); return; }
+    // números principais
+    { const k = el('div', 'sd-kpis'); const card = (l, n, s, cor) => { const d = el('div', 'sd-kpi'); d.style.setProperty('--k', cor); d.append(el('div', 'l', l), el('div', 'n', n), el('div', 's', s)); k.appendChild(d); };
+      card('Total pago', brl.format(tot), `${rs.length} pagamentos em ${meses.length} ${meses.length === 1 ? 'mês' : 'meses'}`, '#14284b');
+      card('CISNOP', brl.format(tCis), `${pct.format(tot ? tCis / tot * 100 : 0)}% do total`, COR_CIS);
+      card('Santa Casa', brl.format(tSc), `${pct.format(tot ? tSc / tot * 100 : 0)}% do total`, COR_SC);
+      card('Média por mês', brl.format(tot / meses.length), 'CISNOP e Santa Casa juntos', '#64748b'); rel.appendChild(k); }
+    // resumo em texto
+    const porTipo = TIPOS.map(t => { const xs = rs.filter(p => p.tipo === t); return { nome: t === 'Santa Casa' ? 'Santa Casa (despesas hospitalares)' : t, t, v: soma(xs), n: xs.length, cor: t === 'Santa Casa' ? COR_SC : COR_CIS }; }).filter(x => Math.abs(x.v) > 0.004).sort((a, b) => b.v - a.v);
+    const porMes = meses.map(m => ({ m, v: soma(rs.filter(p => p.mes === m)) })), maior = porMes.slice().sort((a, b) => b.v - a.v)[0];
+    { const tc = porTipo.filter(x => x.t !== 'Santa Casa' && x.t !== 'Assistência Social')[0];
+      const p = el('p', 'sd-resumo'); p.textContent = `${ini === fim ? 'Em' : 'De'} ${faixa}, a Prefeitura de Leópolis pagou ${brl.format(tot)} ao consórcio CISNOP e à Santa Casa de Cornélio Procópio: ${brl.format(tCis)} ao CISNOP e ${brl.format(tSc)} à Santa Casa.`
+        + (tc ? ` No CISNOP, o maior gasto foi ${tc.t === 'Extra cota' ? 'a extra cota' : tc.t === 'Convênios e emendas' ? 'com convênios e emendas' : 'com ' + tc.t} (${brl.format(tc.v)}, ${pct.format(tCis ? tc.v / tCis * 100 : 0)}% do que foi pago ao consórcio).` : '')
+        + (meses.length > 1 && maior ? ` O mês com mais pagamentos foi ${MESN[Number(maior.m.slice(5)) - 1]} (${brl.format(maior.v)}).` : '')
+        + (comAS ? ' Este relatório inclui os pagamentos da Assistência Social ao CISNOP.' : ' Só entram os pagamentos da Secretaria de Saúde.'); rel.appendChild(p); }
+    // gráficos por mês: um do CISNOP e um da Santa Casa (lado a lado até 6 meses) e a divisão de cada mês
+    { const vc = meses.map(m => soma(cis.filter(p => p.mes === m))), vs = meses.map(m => soma(sc.filter(p => p.mes === m))), lado = meses.length <= 6;
+      const b = bloco('Quanto foi pago em cada mês', 'Pela data do pagamento, em reais. Cada gráfico tem a sua escala: o valor de cada mês está em cima da coluna.', 'sd-junto');
+      const par = el('div', lado ? 'sd-dois' : ''); [['CISNOP', COR_CIS, vc], ['Santa Casa', COR_SC, vs]].forEach(([n, c, vals]) => { const x = el('div', 'sd-um');
+        const t = el('div', 'sd-leg'); const sp = el('span'); const i = el('i'); i.style.background = c; sp.append(i, document.createTextNode(`${n} · total ${brl.format(vals.reduce((a, v) => a + v, 0))}`)); t.appendChild(sp); x.appendChild(t);
+        const g = el('div', 'sd-graf'); x.appendChild(g); par.appendChild(x); graficoUm(g, meses, vals, c, n, lado ? 360 : 720); });
+      b.appendChild(par); rel.appendChild(b);
+      const b2 = bloco('Divisão de cada mês', 'Quanto do mês foi para o CISNOP e quanto para a Santa Casa. Na ponta, o total pago no mês; na última linha, o período todo.', 'sd-junto');
+      const lg = el('div', 'sd-leg'); [['CISNOP', COR_CIS], ['Santa Casa', COR_SC]].forEach(([n, c]) => { const s2 = el('span'); const i = el('i'); i.style.background = c; s2.append(i, document.createTextNode(n)); lg.appendChild(s2); }); b2.appendChild(lg);
+      const g2 = el('div', 'sd-graf'); b2.appendChild(g2); rel.appendChild(b2);
+      graficoDivisao(g2, [...meses, 'total'], [...vc, tCis], [...vs, tSc], [...meses.map(mesCurto), 'Período']); }
+    // gráfico por tipo
+    { const b = bloco('Para onde foi o dinheiro', 'Total do período por tipo de gasto e a parte de cada um no total.', 'sd-junto'); const g = el('div', 'sd-graf'); b.appendChild(g); rel.appendChild(b); graficoTipos(g, porTipo, tot); }
+    // tabela mês a mês
+    { const cols = TIPOS.filter(t => t !== 'Santa Casa' && rs.some(p => p.tipo === t));
+      const b = bloco('Mês a mês', 'Valores pagos em cada mês, por tipo de gasto, em reais (R$).'); const w = el('div', 'sd-larga');
+      const CURTO = { 'Mensalidade do CISNOP': 'Mensalidade', 'Convênios e emendas': 'Convênios e emendas', 'Assistência Social': 'Assist. Social' };
+      const cab = ['Mês', ...cols.map(t => CURTO[t] || t), 'Total CISNOP', 'Santa Casa', 'Total'], dir = cab.map((_, i) => i).slice(1), n2 = (v) => v ? nf2.format(v) : '—';
+      const lin = meses.map(m => { const xm = rs.filter(p => p.mes === m); return [cap(MESN[Number(m.slice(5)) - 1]), ...cols.map(t => n2(soma(xm.filter(p => p.tipo === t)))), n2(soma(xm.filter(p => ehCis(p.fornecedor)))), n2(soma(xm.filter(p => ehSC(p.fornecedor)))), nf2.format(soma(xm))]; });
+      w.appendChild(tabela(cab, lin, ['Total', ...cols.map(t => n2(soma(rs.filter(p => p.tipo === t)))), nf2.format(tCis), nf2.format(tSc), nf2.format(tot)], dir, 'sd-mes')); b.appendChild(w); rel.appendChild(b); }
+    // convênios e Santa Casa lado a lado
+    { const dois = el('div', 'sd-dois');
+      { const cv = rs.filter(p => p.tipo === 'Convênios e emendas'), m = {}; cv.forEach(p => { const c = convenioDe(p); m[c.k] = m[c.k] || { ...c, v: 0, n: 0 }; m[c.k].v += p.v; m[c.k].n++; if (!m[c.k].em && c.em) m[c.k].em = c.em; });
+        const b = bloco('Convênios e emendas pagos ao CISNOP', 'Rateios de convênios e emendas parlamentares executados pelo consórcio.');
+        const ls = Object.values(m).sort((a, b) => b.v - a.v);
+        if (ls.length) b.appendChild(tabela(['Convênio', 'Pagamentos', 'Valor'], ls.map(x => [x.nome + (x.em ? ` · emenda ${x.em}` : ''), String(x.n), brl.format(x.v)]), ['Total', String(cv.length), brl.format(soma(cv))], [1, 2]));
+        else b.appendChild(el('p', 'sd-sub', 'Nenhum pagamento de convênio ou emenda neste período.'));
+        dois.appendChild(b); }
+      { const b = bloco('Santa Casa: despesas hospitalares', 'Casa de Misericórdia de Cornélio Procópio. A competência é o mês do atendimento.');
+        const ls = sc.slice().sort((a, b) => a.data < b.data ? -1 : 1);
+        if (ls.length) b.appendChild(tabela(['Pago em', 'Competência', 'Empenho', 'Valor'], ls.map(p => [br(p.data), p.comp || '—', p.empenho, brl.format(p.v)]), ['Total', '', '', brl.format(tSc)], [3]));
+        else b.appendChild(el('p', 'sd-sub', 'Nenhum pagamento à Santa Casa neste período.'));
+        dois.appendChild(b); }
+      rel.appendChild(dois); }
+    // Assistência Social (só quando incluída)
+    if (comAS) { const as = rs.filter(p => p.tipo === 'Assistência Social'), m = {}; as.forEach(p => { const k = detalheAS(p); m[k] = (m[k] || 0) + p.v; });
+      if (as.length) { const b = bloco('Assistência Social: pagamentos ao CISNOP', 'Secretaria de Assistência Social (não entram nos gastos da Saúde).');
+        b.appendChild(tabela(['Serviço', 'Valor'], Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, brl.format(v)]), ['Total', brl.format(soma(as))], [1])); rel.appendChild(b); } }
+    // fonte de recurso
+    { const m = {}; rs.forEach(p => { const k = nomeFonte(String(p.fonte || ''), fonteMapa); m[k] = (m[k] || 0) + p.v; });
+      const b = bloco('De onde veio o dinheiro', 'Fonte de recurso de cada pagamento, como informada no portal.');
+      b.appendChild(tabela(['Fonte de recurso', 'Valor', '% do total'], Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, v]) => [k, brl.format(v), pct.format(tot ? v / tot * 100 : 0) + '%']), ['Total', brl.format(tot), '100%'], [1, 2])); rel.appendChild(b); }
+    // o que é cada gasto
+    { const b = bloco('O que é cada gasto'); const g = el('div', 'sd-glos');
+      [['SAMU', 'Parcela mensal do Serviço de Atendimento Móvel de Urgência, mantido na região pelo CISNOP.'],
+       ['Mensalidade do CISNOP', 'Contribuição mensal do Município para manter o consórcio.'],
+       ['Extra cota', 'Consultas, exames e procedimentos especializados feitos pelo CISNOP além da cota fixa do Município. Costuma ser paga no mês seguinte ao atendimento.'],
+       ['Saúde mental', 'Rateio do programa regional de saúde mental do consórcio.'],
+       ['Convênios e emendas', 'Recursos de convênios e emendas parlamentares aplicados por meio do CISNOP, identificados pelo número do convênio.'],
+       ['Santa Casa', 'Despesas hospitalares de pacientes de Leópolis na Casa de Misericórdia de Cornélio Procópio, pagas depois do mês de atendimento (competência).']]
+        .forEach(([t, d]) => { const x = el('div'); x.append(el('b', null, t), el('p', null, d)); g.appendChild(x); }); b.appendChild(g); rel.appendChild(b); }
+    // anexo: todos os pagamentos
+    { const b = bloco('Anexo: lista dos pagamentos', `${rs.length} pagamentos, em ordem de data. Competência = mês a que o pagamento se refere, quando informado no portal.`, 'sd-quebra');
+      const ls = rs.slice().sort((a, b) => a.data < b.data ? -1 : a.data > b.data ? 1 : 0).map(p => { const h = el('div'); h.append(document.createTextNode(p.tipo === 'Santa Casa' ? 'Santa Casa' : p.tipo === 'Convênios e emendas' ? convenioDe(p).nome : p.tipo === 'Assistência Social' ? 'Assistência Social · ' + detalheAS(p) : p.tipo));
+        const s = el('div', 'sd-hist', limpaHist(p.historico).slice(0, 160)); h.appendChild(s);
+        return [br(p.data), p.empenho + (p.ano_empenho && p.ano_empenho !== String(p.data).slice(0, 4) ? '/' + p.ano_empenho : ''), ehSC(p.fornecedor) ? 'Santa Casa' : 'CISNOP', h, p.comp || '—', brl.format(p.v)]; });
+      const w = el('div', 'sd-larga'); w.appendChild(tabela(['Data', 'Empenho', 'Para', 'Tipo e histórico', 'Competência', 'Valor'], ls, ['Total', '', '', '', '', brl.format(tot)], [5])); b.appendChild(w); rel.appendChild(b); }
+    rel.appendChild(el('p', 'sd-nota', 'Fonte: Portal da Transparência do Município de Leópolis (notas de pagamento), lido automaticamente pelo Painel de Empenhos. Valores pagos, pela data do pagamento, já descontados os estornos; incluem restos a pagar de anos anteriores pagos no período. Em caso de divergência, vale o portal oficial.'));
+  }
+  // conferir um pagamento: por valor, nº do empenho ou palavra do histórico (o ano todo, só na tela)
+  function buscar() { const box = $('sd-res'); box.replaceChildren(); const q0 = $('sd-q').value.trim(); if (!q0 || (!pronto && !preparar())) return;
+    const qv = valorBusca(nz(q0)), qn = /^\d+$/.test(q0) ? semZeros(q0) : '', ws = semAc(q0).split(' ').filter(Boolean);
+    const achou = PAGS.filter(p => qv != null ? Math.abs(Math.abs(p.v) - qv) < 0.005 : qn ? semZeros(p.empenho) === qn : ws.every(w => semAc([p.historico, p.tipo, p.fornecedor].join(' ')).includes(w)))
+      .sort((a, b) => a.data < b.data ? -1 : 1);
+    if (!achou.length) { box.appendChild(el('p', 'note', 'Nenhum pagamento ao CISNOP ou à Santa Casa com essa busca.')); return; }
+    const t = el('table', 'sd-tab'), h = t.createTHead().insertRow(), tb = t.createTBody();
+    ['Data', 'Empenho', 'Para', 'Tipo, histórico e fonte', 'Competência', 'Valor', ''].forEach((c, i) => h.appendChild(el('th', i === 5 ? 'r' : '', c)));
+    achou.slice(0, 60).forEach(p => { const tr = tb.insertRow(); [br(p.data), p.empenho + (p.ano_empenho && p.ano_empenho !== String(p.data).slice(0, 4) ? '/' + p.ano_empenho : ''), ehSC(p.fornecedor) ? 'Santa Casa' : 'CISNOP'].forEach(x => tr.appendChild(el('td', '', x)));
+      const c = el('td'); c.append(el('div', null, p.tipo === 'Convênios e emendas' ? convenioDe(p).nome : p.tipo), el('div', 'sd-hist', limpaHist(p.historico)), el('div', 'sd-hist', 'Fonte: ' + nomeFonte(String(p.fonte || ''), fonteMapa) + (p.fonte ? ` (${p.fonte})` : ''))); tr.appendChild(c);
+      tr.appendChild(el('td', '', p.comp || '—')); tr.appendChild(el('td', 'r', brl.format(p.v)));
+      const cb = el('td'); if (p.empenho && (!p.ano_empenho || p.ano_empenho === String(p.data).slice(0, 4))) { const b = el('button', 'btn2', 'Ver o empenho'); b.type = 'button'; b.addEventListener('click', () => abrirEmpenhoNum(p.empenho)); cb.appendChild(b); } tr.appendChild(cb); });
+    box.appendChild(t); if (achou.length > 60) box.appendChild(el('p', 'note', `Mostrando 60 de ${achou.length}. Refine a busca.`)); }
+  { let t; $('sd-q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(buscar, 250); }); }
+  document.querySelectorAll('[data-sdq]').forEach(b => b.addEventListener('click', () => { if (!pronto && !preparar()) return; quad(b.dataset.sdq === 'ano' ? 'ano' : Number(b.dataset.sdq)); desenhar(); }));
+  ['sd-ini', 'sd-fim', 'sd-semas'].forEach(id => $(id).addEventListener('change', desenhar));
+  $('sd-imprimir').addEventListener('click', () => { irPara('saude'); desenhar(); document.body.classList.add('imprimir-saude'); setTimeout(() => { try { window.print(); } catch (e) {} document.body.classList.remove('imprimir-saude'); }, 150); });
+  window.addEventListener('beforeprint', () => { if (!$('sd-rel').closest('.tab').hidden) document.body.classList.add('imprimir-saude'); });
+  window.addEventListener('afterprint', () => document.body.classList.remove('imprimir-saude'));
   dash.onData(desenhar);
 })();
 </script>

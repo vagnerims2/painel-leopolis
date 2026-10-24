@@ -40,14 +40,16 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 - Telefone e e-mail funcionam como cadastro de fornecedores pelo código do fornecedor no Equiplano, atualizado pela planilha (não preso à requisição).
 - Saldo de dotação: usar o saldo real pelos últimos empenhos (já reflete decretos). O contador abre decreto de suplementação no fim de cada mês; alerta mensal das dotações recorrentes (diárias, consórcio, cota extra) que não cobrem o mês seguinte.
 - "Preços acima do padrão" só compara itens com mesmo código CATMAT (ou nome), mesma unidade e mesma embalagem.
+- Relatório da Saúde: conta só a Secretaria de Saúde (SEMUS), pela data do pagamento, igual à planilha de controle que a Saúde recebe (conferida centavo por centavo nos 1º e 2º quadrimestres de 2026). Tipos: SAMU, Mensalidade, Extra cota, Saúde mental, Convênios e emendas; Santa Casa = Casa de Misericórdia de Cornélio Procópio. Pagamento ao CISNOP da conta custeio 57936-X (fonte 1018) sem descrição é extra cota (confirmado pelo Vagner).
 
 ## Abas atuais
-- Ativas no link dos servidores (o Vagner usa todas): Visão geral, Dotações, Empenhos (com quadro do fornecedor e notas fiscais), Requisições (sem senha), Produtos (busca por empenho ou por nota fiscal), Licitações, Receitas, Indicadores LRF, Para o cidadão, Relatórios (produtos e fornecedores por período; CISNOP e Santa Casa pela data do pagamento).
+- Ativas no link dos servidores (o Vagner usa todas): Visão geral, Dotações, Empenhos (com quadro do fornecedor e notas fiscais), Requisições (sem senha), Produtos (busca por empenho ou por nota fiscal), Licitações, Receitas, Indicadores LRF, Para o cidadão, Relatórios (produtos e fornecedores por período; CISNOP e Santa Casa pela data do pagamento), Relatório da Saúde (CISNOP e Santa Casa por quadrimestre, pronto para imprimir e publicar).
+- Busca por valor: na aba Empenhos, valor com vírgula (ex.: 3.380,62) acha o empenho pelo valor empenhado, liquidado, pago ou da nota; na aba Relatório da Saúde, a caixa "Conferir um pagamento" (só na tela).
 - Removidas do menu: Alertas e Dia e semana (o código continua na página, escondido). Relatório automático em PDF do painel: fora por enquanto.
 
 ## Ideias futuras
 - Painel tributário (IPTU, ISS, ITBI, taxas, transferências, dívida ativa), receita prevista × arrecadada, só com dados do portal.
-- Relatório periódico para a Saúde do gasto com CISNOP e Santa Casa, contado pela data do pagamento (não do empenho). A aba Relatórios já faz isso na tela; falta só o envio periódico.
+- Envio periódico (e-mail) do Relatório da Saúde. A aba já existe; falta só o envio automático.
 
 ## Estrutura
 - `motor/`: coleta do portal e cálculo (`painel.py`, `coleta.py`, `financas.py`, `build.py`); estado inicial em `motor/semente/`.
