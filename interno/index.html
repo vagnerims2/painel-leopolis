@@ -694,9 +694,22 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .ac-tab tr.ac-bloq td:last-child{text-decoration:none}
 #dash-root .ac-tab td.ac-bts{display:flex;gap:6px;white-space:normal;min-width:15rem}
 #dash-root .ac-tab td.ac-bts small{color:#b7791f;white-space:normal}
-#dash-root .acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#dash-root .acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1 1 auto}
+#dash-root .acoes #btn-print{margin-left:auto;background:#2f7d4f;color:#fff}
+#dash-root .acoes #btn-print:hover{background:#25663f}
+#dash-root .acoes .ac-b{background:rgba(255,255,255,.72);color:var(--pbi-nav)}
+#dash-root .acoes .ac-b:hover{background:#fff}
+@media (max-width:640px){#dash-root .acoes{gap:6px}#dash-root .acoes button,#dash-root #ac-quem{padding:7px 10px;font-size:12.5px}#dash-root .acoes .pt-x{display:none}}
+#dash-root .acoes .sm{display:none}
+#dash-root .acoes button,#dash-root .acoes #ac-quem{box-sizing:border-box;height:34px;line-height:1.2;padding:0 14px;font-size:13px;border:0}
+@media (max-width:640px){#dash-root .acoes button,#dash-root .acoes #ac-quem{height:30px;font-size:12.5px;padding:0 10px}#dash-root .acoes #ac-quem{line-height:30px}}
+@media (max-width:440px){#dash-root .acoes button,#dash-root .acoes #ac-quem{height:28px;font-size:12px;padding:0 8px}#dash-root .acoes #ac-quem{line-height:28px}#dash-root .acoes #ac-quem::before{width:13px;height:13px;margin-right:5px}}
+@media (max-width:640px){#dash-root .acoes{flex:1 1 100%;flex-wrap:nowrap}#dash-root .acoes button{flex:0 0 auto}#dash-root #ac-quem{display:block;flex:0 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.25}#dash-root #ac-quem::before{display:inline-block;vertical-align:-3px;margin-right:6px}}
+@media (max-width:480px){#dash-root .acoes .lg{display:none}#dash-root .acoes .sm{display:inline}}
+@media (max-width:440px){#dash-root .acoes{gap:5px}#dash-root .acoes button,#dash-root #ac-quem{padding:6px 8px;font-size:12px}#dash-root .acoes #btn-print .pt-l{display:none}#dash-root .acoes #btn-print{gap:0;padding:6px 8px}#dash-root #ac-quem{gap:5px}#dash-root #ac-quem::before{width:14px;height:14px}}
 #dash-root .acoes .ac-b::before{display:none}
-#dash-root #ac-quem{color:#fff;font-size:13px;opacity:.9}
+#dash-root #ac-quem{display:inline-flex;align-items:center;gap:8px;background:#c8741a;color:#fff;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid #dd8a33}
+#dash-root #ac-quem::before{content:"";width:16px;height:16px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z'/%3E%3C/svg%3E") center/contain no-repeat}
 #dash-root #ac-quem[hidden],#dash-root .acoes .ac-b[hidden]{display:none}
 html.ac-trancado #dash-root .pg{visibility:hidden}
 @media print{#dash-root .ac-tela,#dash-root #ac-quem,#dash-root .ac-b{display:none!important}}
@@ -796,7 +809,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     const form = $a('ac-form'), btn = $a('ac-btn');
     // botões no topo da página: nome de quem entrou, Usuários (só para quem administra) e Sair
     const acoes = document.querySelector('#dash-root .acoes');
-    acoes.insertAdjacentHTML('afterbegin', '<span id="ac-quem" hidden></span><button type="button" class="ac-b" id="ac-usuarios" hidden>Usuários</button><button type="button" class="ac-b" id="ac-trocar" hidden>Trocar senha</button><button type="button" class="ac-b" id="ac-sair" hidden>Sair</button>');
+    acoes.insertAdjacentHTML('afterbegin', '<span id="ac-quem" hidden></span><button type="button" class="ac-b" id="ac-usuarios" hidden>Usuários</button><button type="button" class="ac-b" id="ac-trocar" hidden title="Trocar senha"><span class="lg">Trocar senha</span><span class="sm">Senha</span></button><button type="button" class="ac-b" id="ac-sair" hidden>Sair</button>');
     function modo(c) { criando = c; $a('ac-tit').textContent = c ? 'Criar acesso' : 'Entrar no painel'; $a('ac-rep-l').hidden = !c; $a('ac-rep').required = c;
       $a('ac-senha').autocomplete = c ? 'new-password' : 'current-password'; btn.textContent = c ? 'Criar acesso e entrar' : 'Entrar';
       $a('ac-troca-t').textContent = c ? 'Já tem acesso?' : 'Primeiro acesso?'; $a('ac-troca').textContent = c ? 'Entrar' : 'Criar acesso'; $a('ac-erro').textContent = ''; }
@@ -867,7 +880,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
 <div class="pg">
   <header class="hero">
     <div class="eyebrow">Prefeitura Municipal de Leópolis · Execução da despesa</div>
-    <div class="hero-top"><h1 id="titulo">Empenhos e liquidações — 2026</h1><div class="acoes"><button type="button" id="btn-print">Imprimir esta página</button></div></div>
+    <div class="hero-top"><h1 id="titulo">Empenhos e liquidações — 2026</h1><div class="acoes"><button type="button" id="btn-print" title="Imprimir esta página"><span><span class="pt-l">Imprimir</span><span class="pt-x"> esta página</span></span></button></div></div>
     <p class="lead" data-source="info" data-field="resumo" data-row="0">—</p>
   </header>
 
