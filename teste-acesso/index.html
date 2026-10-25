@@ -640,7 +640,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 <div id="ac-adm" class="ac-tela ac-adm" hidden role="dialog" aria-modal="true" aria-labelledby="ac-adm-tit">
   <div class="ac-caixa">
     <div class="linha-total"><h2 id="ac-adm-tit">Usuários do painel</h2><button type="button" class="btn2" id="ac-adm-fechar">Fechar</button></div>
-    <p class="ac-sub">Quem criou acesso, quando entrou pela última vez e quantas vezes. "Remover" tira o acesso da pessoa (ela não consegue mais entrar).</p>
+    <p class="ac-sub">Quem criou acesso, quando entrou pela última vez e quantas vezes. "Zerar senha" serve para quem esqueceu a senha: ela cadastra uma nova em "Criar acesso", com o mesmo nome. "Remover" tira o acesso da pessoa (ela não consegue mais entrar).</p>
     <div class="ac-tab"><table><thead><tr><th>Usuário</th><th>Criado em</th><th>Último acesso</th><th class="num">Entradas</th><th>Aparelho</th><th></th></tr></thead><tbody id="ac-adm-lista"></tbody></table></div>
   </div>
 </div>
@@ -671,6 +671,8 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .ac-tab .num{text-align:right}
 #dash-root .ac-tab tr.ac-bloq td{color:#9ca3af;text-decoration:line-through}
 #dash-root .ac-tab tr.ac-bloq td:last-child{text-decoration:none}
+#dash-root .ac-tab td.ac-bts{display:flex;gap:6px;white-space:normal;min-width:15rem}
+#dash-root .ac-tab td.ac-bts small{color:#b7791f;white-space:normal}
 #dash-root .acoes{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #dash-root .acoes .ac-b::before{display:none}
 #dash-root #ac-quem{color:#fff;font-size:13px;opacity:.9}
@@ -703,50 +705,64 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     const todos = () => ler('ac-demo-usuarios') || {};
     const hash = async (t) => { try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { return 'x' + t.length + t; } };
     const sessao = (k, manter) => { tirar('ac-sessao'); gravar('ac-sessao', k, manter ? localStorage : sessionStorage); };
-    const doUsuario = (k) => { const u = todos()[k]; if (!u) return null; if (u.bloqueado) throw erroAc('bloqueado'); return { nome: u.nome, chave: k, admin: k === DEMO_ADMIN }; };
+    const doUsuario = (k) => { const u = todos()[k]; if (!u) return null; if (u.zerada) throw erroAc('zerada'); if (u.bloqueado) throw erroAc('bloqueado'); return { nome: u.nome, chave: k, admin: k === DEMO_ADMIN }; };
     return {
       demo: true,
       async atual() { const k = ler('ac-sessao') || ler('ac-sessao', sessionStorage); if (!k) return null; try { return doUsuario(k); } catch (e) { tirar('ac-sessao'); throw e; } },
-      async entrar(nome, senha, manter) { const k = chave(nome), u = todos()[k]; if (!u || u.h !== await hash(k + ':' + senha)) throw erroAc('auth/invalid-credential');
+      async entrar(nome, senha, manter) { const k = chave(nome), u = todos()[k]; if (u && u.zerada) throw erroAc('zerada'); if (!u || u.h !== await hash(k + ':' + senha)) throw erroAc('auth/invalid-credential');
         const r = doUsuario(k); sessao(k, manter); return r; },
-      async criar(nome, senha, manter) { const k = chave(nome), t = todos(); if (t[k]) throw erroAc('auth/email-already-in-use');
-        t[k] = { nome: nome.trim(), h: await hash(k + ':' + senha), criado: Date.now(), entradas: 0, bloqueado: false }; gravar('ac-demo-usuarios', t); sessao(k, manter); return doUsuario(k); },
+      async criar(nome, senha, manter) { const k = chave(nome), t = todos(); if (t[k] && !t[k].zerada) throw erroAc('auth/email-already-in-use');
+        // senha zerada pelo administrador: a pessoa cria a nova senha com o mesmo nome (o histórico continua)
+        t[k] = t[k] ? { ...t[k], nome: nome.trim(), h: await hash(k + ':' + senha), zerada: false, bloqueado: false } : { nome: nome.trim(), h: await hash(k + ':' + senha), criado: Date.now(), entradas: 0, bloqueado: false };
+        gravar('ac-demo-usuarios', t); sessao(k, manter); return doUsuario(k); },
       async registrar(u) { const t = todos(); if (!t[u.chave]) return; Object.assign(t[u.chave], { ultimo: Date.now(), entradas: (t[u.chave].entradas || 0) + 1, aparelho: aparelho() }); gravar('ac-demo-usuarios', t); },
       async sair() { tirar('ac-sessao'); },
-      async lista() { return Object.entries(todos()).map(([k, u]) => ({ id: k, ...u })); },
-      async bloquear(id, sim) { const t = todos(); if (t[id]) { t[id].bloqueado = sim; gravar('ac-demo-usuarios', t); } }
+      async lista() { return Object.entries(todos()).map(([k, u]) => ({ id: k, chave: k, ...u, senhaZerada: !!u.zerada, admin: k === DEMO_ADMIN })); },
+      async bloquear(id, sim) { const t = todos(); if (t[id]) { t[id].bloqueado = sim; gravar('ac-demo-usuarios', t); } },
+      async zerar(u) { const t = todos(); if (t[u.id]) { t[u.id].zerada = true; gravar('ac-demo-usuarios', t); } }
     };
   }
 
-  // ---- Firebase (links oficiais): senhas guardadas pelo Google; usuários em "usuarios", entradas em "acessos"
+  // ---- Firebase (links oficiais): senhas guardadas pelo Google; usuários em "usuarios", entradas em "acessos" e, em "nomes",
+  //      cada nome de usuário (um só por pessoa). Zerar a senha libera o nome: a pessoa cria a nova senha com o mesmo nome
+  //      (vira uma conta nova no Google, com e-mail interno nome+2, nome+3...; a lista junta o histórico pelo nome)
   async function firebase(cfg) {
     const v = '10.12.2', u = (m) => `https://www.gstatic.com/firebasejs/${v}/firebase-${m}.js`;
     const [A, B, F] = await Promise.all([import(u('app')), import(u('auth')), import(u('firestore'))]);
     const app = A.initializeApp(cfg), auth = B.getAuth(app), db = F.getFirestore(app);
-    const email = (nome) => chave(nome) + '@usuarios.painel-leopolis.app';
+    const emailDe = (k, v) => (v > 1 ? k + '+' + v : k) + '@usuarios.painel-leopolis.app';
+    const nomeInfo = async (k) => { try { const s = await F.getDoc(F.doc(db, 'nomes', k)); return s.exists() ? s.data() : null; } catch (e) { console.warn('nomes', e); return null; } };
     async function perfil(user) { const s = await F.getDoc(F.doc(db, 'usuarios', user.uid)); const d = s.exists() ? s.data() : {};
-      if (d.bloqueado) { await B.signOut(auth); throw erroAc('bloqueado'); } return { nome: d.nome || user.displayName || '', chave: d.chave, admin: !!d.admin || user.email === email(DEMO_ADMIN), uid: user.uid }; }
+      if (d.bloqueado) { await B.signOut(auth); throw erroAc(d.senhaZerada ? 'zerada' : 'bloqueado'); } return { nome: d.nome || user.displayName || '', chave: d.chave, admin: !!d.admin || user.email === emailDe(DEMO_ADMIN, 1), uid: user.uid }; }
     const persist = (manter) => B.setPersistence(auth, manter ? B.browserLocalPersistence : B.browserSessionPersistence);
     return {
       async atual() { await auth.authStateReady(); return auth.currentUser ? perfil(auth.currentUser) : null; },
-      async entrar(nome, senha, manter) { await persist(manter); const c = await B.signInWithEmailAndPassword(auth, email(nome), senha); return perfil(c.user); },
-      async criar(nome, senha, manter) { await persist(manter); const c = await B.createUserWithEmailAndPassword(auth, email(nome), senha);
+      async entrar(nome, senha, manter) { const k = chave(nome), n = await nomeInfo(k); if (n && n.livre) throw erroAc('zerada');
+        await persist(manter); const c = await B.signInWithEmailAndPassword(auth, emailDe(k, n ? n.v : 1), senha); return perfil(c.user); },
+      async criar(nome, senha, manter) { const k = chave(nome), n = await nomeInfo(k); if (n && !n.livre) throw erroAc('auth/email-already-in-use');
+        const v = n ? n.v + 1 : 1;
+        await persist(manter); const c = await B.createUserWithEmailAndPassword(auth, emailDe(k, v), senha);
         await B.updateProfile(c.user, { displayName: nome.trim() });
-        await F.setDoc(F.doc(db, 'usuarios', c.user.uid), { nome: nome.trim(), chave: chave(nome), criado: F.serverTimestamp(), entradas: 0, bloqueado: false }); return perfil(c.user); },
+        await F.setDoc(F.doc(db, 'usuarios', c.user.uid), { nome: nome.trim(), chave: k, criado: F.serverTimestamp(), entradas: 0, bloqueado: false });
+        await F.setDoc(F.doc(db, 'nomes', k), { v, uid: c.user.uid, livre: false }).catch(e => console.warn('nomes', e)); return perfil(c.user); },
       async registrar(p) { const ap = aparelho();
         await Promise.all([F.addDoc(F.collection(db, 'acessos'), { uid: p.uid, nome: p.nome, quando: F.serverTimestamp(), aparelho: ap }),
           F.updateDoc(F.doc(db, 'usuarios', p.uid), { ultimo: F.serverTimestamp(), entradas: F.increment(1), aparelho: ap })]); },
       async sair() { await B.signOut(auth); },
       async lista() { const q = await F.getDocs(F.collection(db, 'usuarios')); const ms = (t) => t && t.toMillis ? t.toMillis() : null;
         return q.docs.map(d => { const x = d.data(); return { id: d.id, ...x, criado: ms(x.criado), ultimo: ms(x.ultimo) }; }); },
-      async bloquear(id, sim) { await F.updateDoc(F.doc(db, 'usuarios', id), { bloqueado: sim }); }
+      async bloquear(id, sim) { await F.updateDoc(F.doc(db, 'usuarios', id), { bloqueado: sim }); },
+      async zerar(u) { const n = await nomeInfo(u.chave);
+        await F.updateDoc(F.doc(db, 'usuarios', u.id), { bloqueado: true, senhaZerada: true });
+        await F.setDoc(F.doc(db, 'nomes', u.chave), { v: n ? n.v : 1, uid: u.id, livre: true }); }
     };
   }
 
   const MSG = { 'auth/invalid-credential': 'Usuário ou senha não conferem.', 'auth/wrong-password': 'Usuário ou senha não conferem.', 'auth/user-not-found': 'Usuário ou senha não conferem.',
     'auth/invalid-email': 'Usuário ou senha não conferem.', 'auth/email-already-in-use': 'Já existe um acesso com esse nome. Se for você, use "Entrar"; se não, acrescente o sobrenome.',
     'auth/weak-password': 'A senha precisa ter pelo menos 6 caracteres.', 'auth/too-many-requests': 'Muitas tentativas seguidas. Espere alguns minutos e tente de novo.',
-    'auth/network-request-failed': 'Sem conexão com a internet. Confira a rede e tente de novo.', 'bloqueado': 'Seu acesso foi removido. Se precisar, fale com o Vagner (setor de empenho e liquidação).' };
+    'auth/network-request-failed': 'Sem conexão com a internet. Confira a rede e tente de novo.', 'bloqueado': 'Seu acesso foi removido. Se precisar, fale com o Vagner (setor de empenho e liquidação).',
+    'zerada': 'Sua senha foi zerada pelo administrador. Toque em "Criar acesso" logo abaixo e cadastre uma nova senha usando o mesmo nome.' };
   const msg = (e) => MSG[e && e.code] || 'Não foi possível entrar agora. Tente de novo em instantes.';
 
   function iniciar() {
@@ -777,10 +793,22 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     // lista de usuários (administração)
     async function desenharLista() { const tb = $a('ac-adm-lista'); tb.replaceChildren(); let l = [];
       try { l = await B.lista(); } catch (e) { tb.innerHTML = '<tr><td colspan="6">Não foi possível carregar a lista.</td></tr>'; return; }
-      l.sort((a, b) => (b.ultimo || 0) - (a.ultimo || 0)).forEach(u => { const tr = document.createElement('tr'); if (u.bloqueado) tr.className = 'ac-bloq';
+      // uma linha por nome: quando a senha foi zerada e a pessoa criou outra, junta o histórico das contas do mesmo nome
+      const grupos = {}; l.forEach(u => { const k = u.chave || u.id; (grupos[k] = grupos[k] || []).push(u); });
+      l = Object.values(grupos).map(g => { g.sort((a, b) => (b.criado || 0) - (a.criado || 0)); const u = { ...g[0] };
+        u.entradas = g.reduce((s, x) => s + (x.entradas || 0), 0); u.ultimo = Math.max(0, ...g.map(x => x.ultimo || 0)) || null;
+        u.criado = Math.min(...g.map(x => x.criado || Infinity)); if (!isFinite(u.criado)) u.criado = null; u.admin = u.admin || u.chave === DEMO_ADMIN; return u; });
+      const botao = (txt, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = txt; b.addEventListener('click', fn); return b; };
+      l.sort((a, b) => (b.ultimo || 0) - (a.ultimo || 0)).forEach(u => { const tr = document.createElement('tr'); if (u.bloqueado && !u.senhaZerada) tr.className = 'ac-bloq';
         [u.nome + (u.admin ? ' (administrador)' : ''), quando(u.criado), quando(u.ultimo), String(u.entradas || 0), u.aparelho || '—'].forEach((t, i) => { const td = document.createElement('td'); td.textContent = t; if (i === 3) td.className = 'num'; tr.appendChild(td); });
-        const td = document.createElement('td'); if (!u.admin && u.id !== (eu.uid || eu.chave)) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = u.bloqueado ? 'Devolver acesso' : 'Remover';
-          b.addEventListener('click', async () => { if (!u.bloqueado && !confirm(`Remover o acesso de ${u.nome}? Ela não vai conseguir mais entrar no painel.`)) return; await B.bloquear(u.id, !u.bloqueado); desenharLista(); }); td.appendChild(b); }
+        const td = document.createElement('td'); td.className = 'ac-bts';
+        if (u.admin || u.id === (eu.uid || eu.chave)) td.textContent = '';
+        else if (u.senhaZerada) td.appendChild(Object.assign(document.createElement('small'), { textContent: 'Senha zerada: a pessoa cria a nova senha em "Criar acesso", com o mesmo nome.' }));
+        else {
+          if (!u.bloqueado) td.appendChild(botao('Zerar senha', async () => { if (!confirm(`Zerar a senha de ${u.nome}?\n\nA senha atual deixa de funcionar. A pessoa entra em "Criar acesso", escreve o mesmo nome e cadastra uma senha nova.`)) return;
+            try { await B.zerar(u); } catch (e) { console.warn(e); alert('Não foi possível zerar a senha agora.'); } desenharLista(); }));
+          td.appendChild(botao(u.bloqueado ? 'Devolver acesso' : 'Remover', async () => { if (!u.bloqueado && !confirm(`Remover o acesso de ${u.nome}? Ela não vai conseguir mais entrar no painel.`)) return; await B.bloquear(u.id, !u.bloqueado); desenharLista(); }));
+        }
         tr.appendChild(td); tb.appendChild(tr); });
       if (!l.length) tb.innerHTML = '<tr><td colspan="6">Ninguém criou acesso ainda.</td></tr>'; }
     $a('ac-usuarios').addEventListener('click', () => { $a('ac-adm').hidden = false; desenharLista(); });
