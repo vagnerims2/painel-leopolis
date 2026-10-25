@@ -686,7 +686,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
   // projeto "painel-leopolis" no Firebase do Vagner (estes dados não são senha: só dizem a qual projeto o painel se liga)
   const FIREBASE = { apiKey: 'AIzaSyDVMU0bRcr_IYaKwsQ8XjTCgNw-5v1x8FI', authDomain: 'painel-leopolis.firebaseapp.com', projectId: 'painel-leopolis',
     storageBucket: 'painel-leopolis.firebasestorage.app', messagingSenderId: '112413851832', appId: '1:112413851832:web:263cc53f4d253b5c73344d' };
-  const DEMO_ADMIN = 'vagner';
+  const DEMO_ADMIN = 'vagner';  // administrador: o usuário "Vagner" (cada nome só pode ser usado uma vez)
   document.documentElement.classList.add('ac-trancado');
   const $a = (id) => document.getElementById(id);
   const chave = (n) => String(n || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '.').replace(/^\.+|\.+$/g, '');
@@ -725,7 +725,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     const app = A.initializeApp(cfg), auth = B.getAuth(app), db = F.getFirestore(app);
     const email = (nome) => chave(nome) + '@usuarios.painel-leopolis.app';
     async function perfil(user) { const s = await F.getDoc(F.doc(db, 'usuarios', user.uid)); const d = s.exists() ? s.data() : {};
-      if (d.bloqueado) { await B.signOut(auth); throw erroAc('bloqueado'); } return { nome: d.nome || user.displayName || '', chave: d.chave, admin: !!d.admin, uid: user.uid }; }
+      if (d.bloqueado) { await B.signOut(auth); throw erroAc('bloqueado'); } return { nome: d.nome || user.displayName || '', chave: d.chave, admin: !!d.admin || user.email === email(DEMO_ADMIN), uid: user.uid }; }
     const persist = (manter) => B.setPersistence(auth, manter ? B.browserLocalPersistence : B.browserSessionPersistence);
     return {
       async atual() { await auth.authStateReady(); return auth.currentUser ? perfil(auth.currentUser) : null; },
