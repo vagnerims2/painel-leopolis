@@ -1362,7 +1362,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
   const DUR = 1.4;  // segundos para a linha atravessar o gráfico
   const esc = (t) => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   window.linhaAnimada = function (op) {
-    const W = op.W || 720, H = op.H || 260, top = 30, base = H - 34, x0 = op.eixo ? 66 : 22, x1 = W - 22, n = op.rotulos.length;
+    const W = op.W || 720, H = op.H || 260, top = op.top || 30, base = H - 34, x0 = op.eixo ? 66 : 22, x1 = W - 22, n = op.rotulos.length;
     const tinta = op.escuro ? '#e8edf6' : '#252423', fraca = op.escuro ? '#9fb0cf' : '#605e5c', grade = op.escuro ? '#24365a' : '#e6e4df', fundoPto = op.escuro ? '#14213a' : '#fff';
     const min = op.min || 0, max = op.max, dx = n > 1 ? (x1 - x0) / (n - 1) : 0;
     const X = (i) => x0 + i * dx, Y = (v) => base - ((v - min) / (max - min)) * (base - top);
@@ -1381,13 +1381,21 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
         s += `<g class="md-pto" style="animation-delay:${(n > 1 ? i / (n - 1) * DUR : 0).toFixed(2)}s"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.5" fill="${cp}" stroke="${fundoPto}" stroke-width="2"/>`;
         // nas pontas, o texto encosta para dentro do gráfico para não ser cortado
         const ax = i === 0 && !op.eixo ? ['start', x - 5] : i === n - 1 ? ['end', x + 5] : ['middle', x];
-        if (se.rot) s += `<text x="${ax[1].toFixed(1)}" y="${(emCima ? y - 10 : y + 18).toFixed(1)}" text-anchor="${ax[0]}" font-size="11" font-weight="600" fill="${se.corTexto || tinta}">${esc(se.rot(v))}</text>`;
-        s += `<title>${esc(op.tip ? op.tip(se, i, v) : se.nome + ' · ' + op.rotulos[i] + ': ' + v)}</title></g>`; }); });
+        if (se.rot && op.vertical) s += `<text x="${x.toFixed(1)}" y="${(y - 9).toFixed(1)}" transform="rotate(-90 ${x.toFixed(1)} ${(y - 9).toFixed(1)})" text-anchor="start" dominant-baseline="middle" font-size="10.5" font-weight="600" fill="${se.corTexto || tinta}">${esc(se.rot(v))}</text>`;
+        else if (se.rot) s += `<text x="${ax[1].toFixed(1)}" y="${(emCima ? y - 10 : y + 18).toFixed(1)}" text-anchor="${ax[0]}" font-size="11" font-weight="600" fill="${se.corTexto || tinta}">${esc(se.rot(v))}</text>`;
+        s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="14" fill="transparent" data-tip="${esc(op.tip ? op.tip(se, i, v) : se.nome + ' · ' + op.rotulos[i] + ': ' + v)}"/></g>`; }); });
     op.rotulos.forEach((r, i) => { const ax = i === 0 && !op.eixo ? ['start', X(i) - 8] : i === n - 1 ? ['end', X(i) + 8] : ['middle', X(i)]; s += `<text x="${ax[1].toFixed(1)}" y="${H - 12}" text-anchor="${ax[0]}" font-size="11.5" fill="${fraca}">${esc(r)}</text>`; });
     return s + '</svg>';
   };
   const obs = ('IntersectionObserver' in window) ? new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('md-vivo'); obs.unobserve(e.target); } }), { threshold: 0.35 }) : null;
   window.animarLinhas = function (caixa) { caixa = caixa || document; const els = [...caixa.querySelectorAll('.md-anim:not(.md-vivo)')]; if (caixa.matches && caixa.matches('.md-anim:not(.md-vivo)')) els.push(caixa); els.forEach(el => { if (obs) obs.observe(el); else el.classList.add('md-vivo'); }); };
+  // dica com o valor completo: passar o mouse ou tocar no ponto (o toque não abre a aba do cartão)
+  const dica = (ev) => { const a = ev.target.closest && ev.target.closest('[data-tip]'); if (!a || typeof showTip !== 'function') return false;
+    const p = a.getAttribute('data-tip').split(': '); showTip(ev, p[0], [p.slice(1).join(': ')]); return true; };
+  document.addEventListener('mouseover', (ev) => { if (ev.target.closest && ev.target.closest('[data-tip]')) dica(ev); });
+  let toque = 0;  // no celular, o toque gera um "mouseout" logo depois: a dica não some por causa dele
+  document.addEventListener('mouseout', (ev) => { if (Date.now() - toque > 800 && ev.target.closest && ev.target.closest('[data-tip]') && typeof hideTip === 'function') hideTip(); });
+  document.addEventListener('click', (ev) => { if (dica(ev)) { toque = Date.now(); ev.stopPropagation(); ev.preventDefault(); clearTimeout(window._dicaT); window._dicaT = setTimeout(() => typeof hideTip === 'function' && hideTip(), 3000); } }, true);
   // ao abrir uma aba, os gráficos dela andam de novo
   document.querySelectorAll('#dash-root .tabs button[data-go]').forEach(b => b.addEventListener('click', () => setTimeout(() => {
     const aba = document.querySelector(`#dash-root section.tab[data-tab="${b.dataset.go}"]`); if (!aba) return;
@@ -1543,7 +1551,7 @@ dash.calc('sem_licitacao', {
 const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2, maximumFractionDigits: 2 });   // sempre com centavos
 const brl2 = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 2 });
 const brlC = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', notation: 'compact', maximumFractionDigits: 2 });
-const intF = new Intl.NumberFormat('pt-BR'); const qtdF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 }); const d1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+const intF = new Intl.NumberFormat('pt-BR'); const qtdF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 3 }); const d1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
 const br = (d) => String(d || '').split('-').reverse().join('/');
 const nz = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -2271,7 +2279,7 @@ dash.onData(() => { if (REQ.linhas) { if (REQ._dados) REQ.linhas = juntarAno(REQ
   const MESA = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   const CORES = ['var(--serie0)', 'var(--serie2)', 'var(--serie1)', '#8e6bbf', '#c0507a'];
   const nz = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, ' ').trim();
-  const pctF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const pctF = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const APEL = { issqn: 'iss', 'imposto predial': 'iptu', 'iluminacao': 'cosip', 'cota parte': 'icms', fundo: 'fundeb' };
   let D = null, CATS = [], MESES = [], pronto = false;
   const anoMes = (k) => [Number(k.slice(0, 4)), Number(k.slice(5, 7))];
@@ -2356,7 +2364,7 @@ dash.onData(() => { if (REQ.linhas) { if (REQ._dados) REQ.linhas = juntarAno(REQ
 const REC_ARQ = '../data/receitas.json';
 // ---------- Receitas: Anexo 10 e arrecadação por mês, do portal ----------
 (function () {
-  const pct = (a, b) => b ? a / b * 100 : 0, pctF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const pct = (a, b) => b ? a / b * 100 : 0, pctF = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
   function tile(box, lbl, num, sub) { const c = document.createElement('div'); c.className = 'card tile';
     c.innerHTML = '<div class="lbl"></div><div class="num"></div><div class="sub"></div>'; c.children[0].textContent = lbl; c.children[1].textContent = num; c.children[2].textContent = sub || ''; box.appendChild(c); }
@@ -2399,8 +2407,8 @@ const REC_ARQ = '../data/receitas.json';
 // ---------- Indicadores LRF, dívida ativa e painel cidadão ----------
 (function () {
   const IND_ARQ = '../data/indicadores.json';
-  const pf = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
-  const p1 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const pf = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const p1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const nf = new Intl.NumberFormat('pt-BR');
   const $ = id => document.getElementById(id);
   const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
@@ -2462,7 +2470,7 @@ const REC_ARQ = '../data/receitas.json';
       h.innerHTML = window.linhaAnimada({ titulo: 'Gasto com pessoal sobre a receita corrente líquida ao longo do ano', W: innerWidth < 700 ? 430 : 760, H: innerWidth < 700 ? 300 : 280, min: Math.max(mn, 0), max: mx,
         rotulos: P.historico.map((x, i) => i === 0 ? x[0] : x[0].split('/')[0]),
         refs: [{ v: P.executivo.max, txt: 'máximo ' + pf.format(P.executivo.max) + '%', cor: 'var(--color-bad)' }, { v: P.executivo.alerta, txt: 'alerta ' + pf.format(P.executivo.alerta) + '%', cor: 'var(--color-warn)' }],
-        series: [{ nome: 'Pessoal', cor: 'var(--color-ok)', vals: vs, corPonto: cor, rot: v => (innerWidth < 700 ? v.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : pf.format(v)) + '%' }],
+        series: [{ nome: 'Pessoal', cor: 'var(--color-ok)', vals: vs, corPonto: cor, rot: v => pf.format(v) + '%' }], vertical: innerWidth < 700, top: innerWidth < 700 ? 64 : 30,
         tip: (se, i, v) => `${P.historico[i][0]}: ${pf.format(v)}% da receita corrente líquida (12 meses)` });
       window.animarLinhas(h); }
     const h0 = P.historico[0], h1 = P.historico[P.historico.length - 1];
@@ -2556,12 +2564,12 @@ const REC_ARQ = '../data/receitas.json';
   const semAc = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/\s+/g, ' ');
   const ehCis = (f) => /CISNOP/.test(semAc(f)), ehSC = (f) => /MISERICORDIA|SANTA CASA/.test(semAc(f));
   const ehSaude = (s) => /SAUDE|SEMUS/.test(semAc(s));
-  const pct = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
+  const pct = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), pctV = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 1 });
   const mesNome = (m) => `${MESN[Number(m.slice(5, 7)) - 1]} de ${m.slice(0, 4)}`;
   const mesCurto = (m) => `${MESA[Number(m.slice(5, 7)) - 1]}/${m.slice(2, 4)}`;
   const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
   const nf2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const compacto = (v) => v >= 1e6 ? 'R$ ' + pct.format(v / 1e6) + ' mi' : v >= 1e3 ? 'R$ ' + Math.round(v / 1e3).toLocaleString('pt-BR') + ' mil' : brl.format(v);
+  const compacto = (v) => v >= 1e6 ? 'R$ ' + pctV.format(v / 1e6) + ' mi' : v >= 1e3 ? 'R$ ' + Math.round(v / 1e3).toLocaleString('pt-BR') + ' mil' : brl.format(v);
 
   // tipo de cada pagamento (as mesmas linhas da planilha de controle da Saúde)
   const TIPOS = ['SAMU', 'Mensalidade do CISNOP', 'Extra cota', 'Saúde mental', 'Convênios e emendas', 'Outros', 'Assistência Social', 'Santa Casa'];
@@ -2645,7 +2653,7 @@ const REC_ARQ = '../data/receitas.json';
       g.appendChild(sv('rect', { x: L + banda * i, y: T, width: banda, height: ih, fill: 'transparent' }));
       g.appendChild(sv('text', { x: cx, y: T + ih - h - 6, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 600, fill: TXT }, v > 0.004 ? compacto(v).replace('R$ ', '') : '—'));
       g.appendChild(sv('text', { x: cx, y: H - 9, 'text-anchor': 'middle', 'font-size': 11.5, fill: TXT }, mesCurto(m)));
-      g.addEventListener('mousemove', ev => showTip(ev, `${nome} · ${mesNome(m)}`, [brl.format(v)])); g.addEventListener('mouseleave', hideTip); s.appendChild(g); });
+      g.addEventListener('mousemove', ev => showTip(ev, `${nome} · ${mesNome(m)}`, [brl.format(v)])); g.addEventListener('click', ev => showTip(ev, `${nome} · ${mesNome(m)}`, [brl.format(v)])); g.addEventListener('mouseleave', hideTip); s.appendChild(g); });
     s.appendChild(sv('line', { x1: L, x2: W - R, y1: T + ih, y2: T + ih, stroke: '#9ca3af', 'stroke-width': 1 }));
     box.appendChild(s);
   }
@@ -3049,7 +3057,7 @@ const REC_ARQ = '../data/receitas.json';
   const CD = ['#3d86d4', '#159a85', '#c47414'];
   const secNome = (s) => { s = String(s || '—').split(' - ')[0].toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); };
   const fonNome = (s) => { s = String(s || '—'); s = s.includes(' - ') ? s.split(' - ').slice(1).join(' - ') : s; return s.length > 40 ? s.slice(0, 38) + '…' : s; };
-  const hb = (nome, v, max, rot, cor) => `<div class="md-hb"><span title="${esc(nome)}">${esc(nome)}</span><div class="md-tr"><div style="width:${max > 0 ? (v / max * 100).toFixed(1) : 0}%;background:${cor}"></div></div><span>${esc(rot)}</span></div>`;
+  const hb = (nome, v, max, rot, cor) => `<div class="md-hb" title="${esc(nome)}: R$ ${f(v, 2)}"><span title="${esc(nome)}">${esc(nome)}</span><div class="md-tr"><div style="width:${max > 0 ? (v / max * 100).toFixed(1) : 0}%;background:${cor}"></div></div><span>${esc(rot)}</span></div>`;
   function dados() {
     const g = (id) => { const d = dash.data(id); return d.status === 'ok' ? d.data : null; };
     const t = g('totais'), a = g('alertas_resumo'), pm = g('por_mes'), mov = g('movimento'), fon = g('saldo_fontes'), sec = g('por_secretaria'), forn = g('top_forn');
@@ -3063,16 +3071,16 @@ const REC_ARQ = '../data/receitas.json';
   function modeloD(D) {
     const M = D.meses, a = D.a, tl = Number(a.d10) + Number(a.d20) + Number(a.d30), fm = Number(D.fon[0] ? D.fon[0].saldo_a_pagar : 1), sm = Number(D.sec[0] ? D.sec[0].valor : 1);
     const tot = D.sec.reduce((x, y) => x + Number(y.valor), 0);
-    const card = (k, nome, valor, nota, cor) => `<button type="button" class="md-c" data-ir="empenhos"><span class="md-l"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${cor};margin-right:8px"></i>${nome}</span><span style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="md-n">${valor}</span><span class="md-s">${nota}</span></span>${window.linhaAnimada({ titulo: nome + ' por mês', W: 340, H: 150, rotulos: M.map(m => MES[Number(String(m.mes).slice(5, 7)) - 1]), max: Math.max(...M.map(m => Number(m[k] || 0)), 1) * 1.12, escuro: true, series: [{ nome, cor, vals: M.map(m => Number(m[k] || 0)), rot: v => f(v / 1e6, 1) }], tip: (se, i, v) => nome + ' em ' + MES[Number(String(M[i].mes).slice(5, 7)) - 1] + ': ' + din(v) })}<span class="md-s" style="font-size:11.5px">valores de cada mês em R$ milhões</span></button>`;
+    const card = (k, nome, valor, nota, cor, cheio) => `<button type="button" class="md-c" data-ir="empenhos"><span class="md-l"><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:${cor};margin-right:8px"></i>${nome}</span><span style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="md-n" title="${esc(cheio)}">${valor}</span><span class="md-s">${nota}</span></span>${window.linhaAnimada({ titulo: nome + ' por mês', W: 340, H: 150, rotulos: M.map(m => MES[Number(String(m.mes).slice(5, 7)) - 1]), max: Math.max(...M.map(m => Number(m[k] || 0)), 1) * 1.12, escuro: true, series: [{ nome, cor, vals: M.map(m => Number(m[k] || 0)), rot: v => f(v / 1e6, 1) }], tip: (se, i, v) => nome + ' em ' + MES[Number(String(M[i].mes).slice(5, 7)) - 1] + ': R$ ' + f(v, 2) })}<span class="md-s" style="font-size:11.5px">valores de cada mês em R$ milhões</span></button>`;
     return `<div class="md-dark"><div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center"><div><span class="md-l" style="color:#8fa1c2">Leópolis · Visão geral</span><div class="md-n" style="font-size:24px">Execução da despesa ${D.ano}</div></div><span class="md-s" style="border:1px solid #24365a;border-radius:999px;padding:6px 12px">Portal até ${dataBR(D.ult)}</span></div>
       <div class="md-g" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px">
-      ${card('empenhado', 'Empenhado no ano', mi(D.t.empenhado), 'líquido', CD[0])}${card('liquidado', 'Liquidado no ano', mi(D.t.liquidado), 'inclui restos', CD[1])}${card('pago', 'Pago no ano', mi(D.t.pago), 'inclui restos', CD[2])}
+      ${card('empenhado', 'Empenhado no ano', mi(D.t.empenhado), 'líquido', CD[0], 'R$ ' + f(D.t.empenhado, 2))}${card('liquidado', 'Liquidado no ano', mi(D.t.liquidado), 'inclui restos', CD[1], 'R$ ' + f(D.t.liquidado, 2))}${card('pago', 'Pago no ano', mi(D.t.pago), 'inclui restos', CD[2], 'R$ ' + f(D.t.pago, 2))}
       <button type="button" class="md-c" data-ir="empenhos" style="gap:10px"><span class="md-l">Sem liquidar</span><span class="md-n">${tl} empenhos</span>
         <div class="md-seg"><div style="flex:${a.d10} 1 0;background:${CD[0]}"></div><div style="flex:${a.d20} 1 0;background:${CD[2]}"></div><div style="flex:${a.d30} 1 0;background:#c23b48"></div></div>
         <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;font-size:12px;color:#b7c3da"><span><b style="display:block;font-size:16px;color:#7fb3ea">${a.d10}</b>até 30 dias</span><span><b style="display:block;font-size:16px;color:#e8a65a">${a.d20}</b>31 a 90 dias</span><span><b style="display:block;font-size:16px;color:#f2808c">${a.d30}</b>mais de 90 dias</span></div>
         <span style="font-size:12.5px;color:#f2808c;font-weight:600">${a.dot_mes} dotações não fecham o mês</span></button>
       <div class="md-c" style="gap:10px"><span class="md-l">Saldo a pagar por fonte</span><span style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="md-n">${mi(D.t.saldo)}</span><span class="md-s">oficial do portal</span></span>${D.fon.slice(0, 5).map(x => hb(fonNome(x.fonte), Number(x.saldo_a_pagar), fm, din(Number(x.saldo_a_pagar)), CD[0])).join('')}</div>
-      <button type="button" class="md-c" data-ir="relatorios" style="gap:10px"><span class="md-l">Maiores secretarias (empenhado)</span><span style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="md-n">${esc(secNome(D.sec[0] && D.sec[0].secretaria))}</span><span class="md-s">${f(sm / (tot || 1) * 100, 1)}% do total</span></span>${D.sec.slice(0, 5).map(x => hb(secNome(x.secretaria), Number(x.valor), sm, din(Number(x.valor)), CD[0])).join('')}</button></div></div>`;
+      <button type="button" class="md-c" data-ir="relatorios" style="gap:10px"><span class="md-l">Maiores secretarias (empenhado)</span><span style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="md-n">${esc(secNome(D.sec[0] && D.sec[0].secretaria))}</span><span class="md-s">${f(sm / (tot || 1) * 100, 2)}% do total</span></span>${D.sec.slice(0, 5).map(x => hb(secNome(x.secretaria), Number(x.valor), sm, din(Number(x.valor)), CD[0])).join('')}</button></div></div>`;
   }
   function aplicar() {
     [...aba.children].forEach(el => { if (el.id !== 'mod-dash') el.style.display = 'none'; });
