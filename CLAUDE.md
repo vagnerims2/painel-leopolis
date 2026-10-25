@@ -5,7 +5,7 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 ## Quem usa e para quê
 - Vagner é agente administrativo na Prefeitura Municipal de Leópolis-PR, setor de empenho e liquidação (recebimento de notas). Usa o sistema Equiplano.
 - O painel controla empenhos, liquidações e pagamentos e já tem servidores usando todos os dias.
-- Site no GitHub Pages: `index.html` = link público; `interno/index.html` = link dos servidores (todos os funcionários têm acesso, sem senha).
+- Site no GitHub Pages: `index.html` = link público; `interno/index.html` = link dos servidores (todos os funcionários podem usar, com usuário e senha próprios; ver "Acesso").
 - **No momento o link público está desativado**; só o link dos servidores está ativo.
 
 ## Regra de ouro: prévia antes de publicar
@@ -21,6 +21,16 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
   4. PDF resumido de pendentes (fica na pasta do Drive no dia a dia).
 - Planilha "Espelho Fornecedores" (no Drive do Vagner, via IMPORTRANGE da planilha do colega) é lida a cada atualização automática.
 - XMLs das notas ficam na subpasta "XML Notas" do Drive; o robô lê os produtos deles.
+
+## Acesso (tela de entrada do link dos servidores)
+- Cada pessoa cria o próprio acesso (usuário = o seu nome + senha; sem aprovação). Nome único: maiúsculas, acentos e espaços não contam ("Maria Souza" = "maria  souza").
+- Firebase do Vagner, projeto `painel-leopolis` (Authentication e-mail/senha + Firestore em São Paulo, plano grátis Spark). Coleções: `usuarios` (nome, entradas, último acesso, aparelho, bloqueado), `acessos` (cada entrada), `nomes` (nome → conta atual). E-mail interno: `nome@usuarios.painel-leopolis.app` (depois de zerar a senha, `nome+2@...`, `nome+3@...`).
+- "Manter conectado neste navegador": marcado = entra direto até clicar em Sair; desmarcado = fechar o navegador desconecta. Atualizar a página não pede senha.
+- Todos: botão Trocar senha (senha atual + nova duas vezes) e Sair.
+- Administrador = o usuário "Vagner" (pelo e-mail interno; também aceita o campo `admin: true` no Firestore). Só ele vê o botão Usuários: lista de quem entra, quando e quantas vezes; Zerar senha (a pessoa cadastra outra em "Criar acesso" com o mesmo nome; o histórico continua junto) e Remover/Devolver acesso.
+- As regras de segurança ficam no Firebase (Firestore > Regras), coladas pelo Vagner; se mudar algo nas coleções, mandar as regras novas para ele colar.
+- Na prévia (Claude) o Firebase não carrega: funciona em demonstração, com usuários guardados só no navegador (crie "Vagner" para ver a lista).
+- Limite: a tela identifica quem usa; os arquivos de `data/` continuam num endereço aberto do GitHub.
 
 ## Atualização automática
 - GitHub Actions (`.github/workflows/atualizar.yml`) é o principal; o notebook de casa é reserva (só roda se o GitHub falhar por mais de 1h15).
