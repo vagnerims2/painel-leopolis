@@ -644,6 +644,21 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
     <div class="ac-tab"><table><thead><tr><th>Usuário</th><th>Criado em</th><th>Último acesso</th><th class="num">Entradas</th><th>Aparelho</th><th></th></tr></thead><tbody id="ac-adm-lista"></tbody></table></div>
   </div>
 </div>
+<div id="ac-ts" class="ac-tela ac-adm" hidden role="dialog" aria-modal="true" aria-labelledby="ac-ts-tit">
+  <div class="ac-caixa">
+    <div class="ac-marca">Painel de Empenhos</div>
+    <h2 id="ac-ts-tit">Trocar senha</h2>
+    <form id="ac-ts-form" autocomplete="on">
+      <input type="text" id="ac-ts-user" name="username" autocomplete="username" hidden>
+      <label>Senha atual<input id="ac-ts-atual" type="password" name="password" autocomplete="current-password" required></label>
+      <label>Senha nova<input id="ac-ts-nova" type="password" name="new-password" autocomplete="new-password" required minlength="6"></label>
+      <label>Repetir a senha nova<input id="ac-ts-rep" type="password" name="new-password2" autocomplete="new-password" required minlength="6"></label>
+      <p class="ac-erro" id="ac-ts-erro" role="alert"></p>
+      <button type="submit" id="ac-ts-btn" class="ac-btn">Trocar senha</button>
+      <p class="ac-troca"><button type="button" id="ac-ts-cancelar">Cancelar</button></p>
+    </form>
+  </div>
+</div>
 <style>
 #dash-root .ac-tela{position:fixed;inset:0;z-index:9999;background:var(--color-bg,#f5f4ef);display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto;font-family:Inter,system-ui,sans-serif}
 #dash-root .ac-tela[hidden]{display:none!important}
@@ -652,6 +667,12 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
 #dash-root .ac-adm .ac-caixa{max-width:860px}
 #dash-root .ac-marca{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;font-weight:600}
 #dash-root .ac-caixa h2{margin:6px 0 16px;font-size:22px;color:#14284b}
+#dash-root #ac-ts .ac-caixa{max-width:380px}
+#dash-root #ac-ts-user{display:none!important}
+#dash-root #ac-ts-form label{display:block;font-size:13px;font-weight:600;color:#14284b;margin:0 0 12px}
+#dash-root #ac-ts-form input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;margin-top:5px;font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border:1px solid #c9d3e3;border-radius:8px}
+#dash-root #ac-ts-btn{width:100%;font:inherit;font-size:15px;font-weight:600;padding:11px;border:0;border-radius:8px;background:#1F4E8C;color:#fff;cursor:pointer}
+#dash-root #ac-ts-btn:disabled{opacity:.6;cursor:wait}
 #dash-root #ac-form label{display:block;font-size:13px;font-weight:600;color:#14284b;margin:0 0 12px}
 #dash-root #ac-form label[hidden]{display:none}
 #dash-root #ac-form input:not([type=checkbox]){display:block;width:100%;box-sizing:border-box;margin-top:5px;font:inherit;font-size:15px;font-weight:400;padding:10px 12px;border:1px solid #c9d3e3;border-radius:8px}
@@ -719,7 +740,9 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
       async sair() { tirar('ac-sessao'); },
       async lista() { return Object.entries(todos()).map(([k, u]) => ({ id: k, chave: k, ...u, senhaZerada: !!u.zerada, admin: k === DEMO_ADMIN })); },
       async bloquear(id, sim) { const t = todos(); if (t[id]) { t[id].bloqueado = sim; gravar('ac-demo-usuarios', t); } },
-      async zerar(u) { const t = todos(); if (t[u.id]) { t[u.id].zerada = true; gravar('ac-demo-usuarios', t); } }
+      async zerar(u) { const t = todos(); if (t[u.id]) { t[u.id].zerada = true; gravar('ac-demo-usuarios', t); } },
+      async trocarSenha(atual, nova) { const k = ler('ac-sessao') || ler('ac-sessao', sessionStorage), t = todos(), u = t[k];
+        if (!u || u.h !== await hash(k + ':' + atual)) throw erroAc('auth/invalid-credential'); u.h = await hash(k + ':' + nova); gravar('ac-demo-usuarios', t); }
     };
   }
 
@@ -754,7 +777,10 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
       async bloquear(id, sim) { await F.updateDoc(F.doc(db, 'usuarios', id), { bloqueado: sim }); },
       async zerar(u) { const n = await nomeInfo(u.chave);
         await F.updateDoc(F.doc(db, 'usuarios', u.id), { bloqueado: true, senhaZerada: true });
-        await F.setDoc(F.doc(db, 'nomes', u.chave), { v: n ? n.v : 1, uid: u.id, livre: true }); }
+        await F.setDoc(F.doc(db, 'nomes', u.chave), { v: n ? n.v : 1, uid: u.id, livre: true }); },
+      // trocar a própria senha: o Google exige confirmar a senha atual antes
+      async trocarSenha(atual, nova) { const u = auth.currentUser; if (!u) throw erroAc('auth/requires-recent-login');
+        await B.reauthenticateWithCredential(u, B.EmailAuthProvider.credential(u.email, atual)); await B.updatePassword(u, nova); }
     };
   }
 
@@ -770,14 +796,14 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     const form = $a('ac-form'), btn = $a('ac-btn');
     // botões no topo da página: nome de quem entrou, Usuários (só para quem administra) e Sair
     const acoes = document.querySelector('#dash-root .acoes');
-    acoes.insertAdjacentHTML('afterbegin', '<span id="ac-quem" hidden></span><button type="button" class="ac-b" id="ac-usuarios" hidden>Usuários</button><button type="button" class="ac-b" id="ac-sair" hidden>Sair</button>');
+    acoes.insertAdjacentHTML('afterbegin', '<span id="ac-quem" hidden></span><button type="button" class="ac-b" id="ac-usuarios" hidden>Usuários</button><button type="button" class="ac-b" id="ac-trocar" hidden>Trocar senha</button><button type="button" class="ac-b" id="ac-sair" hidden>Sair</button>');
     function modo(c) { criando = c; $a('ac-tit').textContent = c ? 'Criar acesso' : 'Entrar no painel'; $a('ac-rep-l').hidden = !c; $a('ac-rep').required = c;
       $a('ac-senha').autocomplete = c ? 'new-password' : 'current-password'; btn.textContent = c ? 'Criar acesso e entrar' : 'Entrar';
       $a('ac-troca-t').textContent = c ? 'Já tem acesso?' : 'Primeiro acesso?'; $a('ac-troca').textContent = c ? 'Entrar' : 'Criar acesso'; $a('ac-erro').textContent = ''; }
     function trancar(erro) { eu = null; document.documentElement.classList.add('ac-trancado'); $a('ac-tela').hidden = false; $a('ac-carregando').hidden = true; form.hidden = false;
-      ['ac-quem', 'ac-usuarios', 'ac-sair'].forEach(i => $a(i).hidden = true); $a('ac-erro').textContent = erro || ''; setTimeout(() => $a('ac-user').focus(), 50); }
+      ['ac-quem', 'ac-usuarios', 'ac-trocar', 'ac-sair'].forEach(i => $a(i).hidden = true); $a('ac-ts').hidden = true; $a('ac-adm').hidden = true; $a('ac-erro').textContent = erro || ''; setTimeout(() => $a('ac-user').focus(), 50); }
     function liberar(p) { eu = p; document.documentElement.classList.remove('ac-trancado'); $a('ac-tela').hidden = true;
-      $a('ac-quem').textContent = p.nome; $a('ac-quem').hidden = false; $a('ac-sair').hidden = false; $a('ac-usuarios').hidden = !p.admin;
+      $a('ac-quem').textContent = p.nome; $a('ac-quem').hidden = false; $a('ac-sair').hidden = false; $a('ac-trocar').hidden = false; $a('ac-usuarios').hidden = !p.admin;
       // conta uma entrada por aba aberta (atualizar a página não conta de novo)
       let ja = null; try { ja = sessionStorage.getItem('ac-reg'); } catch (e) {}
       if (ja !== (p.uid || p.chave)) { try { sessionStorage.setItem('ac-reg', p.uid || p.chave); } catch (e) {} Promise.resolve(B.registrar(p)).catch(e => console.warn('acesso não registrado', e)); } }
@@ -790,6 +816,19 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
       try { const p = criando ? await B.criar(nome, senha, manter) : await B.entrar(nome, senha, manter); form.reset(); $a('ac-manter').checked = true; modo(false); liberar(p); }
       catch (e) { console.warn(e); $a('ac-erro').textContent = msg(e); } finally { btn.disabled = false; } });
     $a('ac-sair').addEventListener('click', async () => { try { await B.sair(); } catch (e) {} try { sessionStorage.removeItem('ac-reg'); } catch (e) {} modo(false); trancar(); });
+    // trocar a própria senha: senha atual + senha nova duas vezes
+    const tsForm = $a('ac-ts-form'), tsErro = $a('ac-ts-erro');
+    const fecharTs = () => { tsForm.reset(); tsErro.textContent = ''; $a('ac-ts').hidden = true; };
+    $a('ac-trocar').addEventListener('click', () => { tsForm.reset(); tsErro.textContent = ''; $a('ac-ts-user').value = eu ? eu.nome : ''; $a('ac-ts').hidden = false; setTimeout(() => $a('ac-ts-atual').focus(), 50); });
+    $a('ac-ts-cancelar').addEventListener('click', fecharTs);
+    tsForm.addEventListener('submit', async (ev) => { ev.preventDefault(); const atual = $a('ac-ts-atual').value, nova = $a('ac-ts-nova').value;
+      if (nova.length < 6) { tsErro.textContent = 'A senha nova precisa ter pelo menos 6 caracteres.'; return; }
+      if (nova !== $a('ac-ts-rep').value) { tsErro.textContent = 'As duas senhas novas não estão iguais.'; return; }
+      if (nova === atual) { tsErro.textContent = 'A senha nova precisa ser diferente da atual.'; return; }
+      $a('ac-ts-btn').disabled = true; tsErro.textContent = '';
+      try { await B.trocarSenha(atual, nova); fecharTs(); alert('Senha trocada. Da próxima vez, entre com a senha nova.'); }
+      catch (e) { console.warn(e); const c = e && e.code; tsErro.textContent = /invalid-credential|wrong-password/.test(c || '') ? 'A senha atual não confere.' : msg(e); }
+      finally { $a('ac-ts-btn').disabled = false; } });
     // lista de usuários (administração)
     async function desenharLista() { const tb = $a('ac-adm-lista'); tb.replaceChildren(); let l = [];
       try { l = await B.lista(); } catch (e) { tb.innerHTML = '<tr><td colspan="6">Não foi possível carregar a lista.</td></tr>'; return; }
