@@ -1,4 +1,6 @@
 pagamento,data,empenho,ano_empenho,liquidacao,valor,estorno,estorna_pagamento,fornecedor,secretaria,fonte,elemento,historico
+9778,2026-10-26,8784,2026,8892,1118.94,,,ELETRO FAL LTDA.,ESPORTE E LAZER - SEMEL,0,3.3.90.39.99.99,Limpeza e higienização - ar-condicionado de 12.000 btu's; Instalação - ar-condicionado de 12.000 btu's; Carga de gás - ar-condicionado de 12.000 btu's.; Troca de capacitor - ar-con
+9777,2026-10-26,8783,2026,8893,482.29,,,ELETRO FAL LTDA.,"AGRICULTURA, PECUARIA E MEIO AMBIENTE",0,3.3.90.39.99.99,Desinstalação- ar-condicionado de 18.000 btu's (mão de obra); Instalação - ar-condicionado de 18.000 btu's
 9776,2026-10-26,9098,2026,8909,496.76,,,TAINARA BIANCA DINIZ,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,0,3.3.90.32.05.00,LARANJA PERA; BETERRABA; MELÃO AMARELO; MANGA TOMY
 9775,2026-10-26,8865,2026,8900,31.68,,,TAINARA BIANCA DINIZ,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,0,3.3.90.30.07.99,LARANJA PERA
 9774,2026-10-26,8864,2026,8901,158.4,,,TAINARA BIANCA DINIZ,ASSISTENCIA SOCIAL - SEMAS,0,3.3.90.30.07.99,LARANJA PERA
