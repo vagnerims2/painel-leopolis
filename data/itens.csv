@@ -1,4 +1,12 @@
 chave,empenho,data,fornecedor,secretaria,licitacao,produto,marca,quantidade,valor_unitario,valor_total,situacao,unidade,codigo,embalagem,comparar,descricao
+9107-1,9107,2026-10-23,POSTO PASSAGNOLO LTDA,DESENVOLVIMENTO IND. COMERC E TURISMO - SEMUD,Inexigibilidade 7/2023,DIESEL,,369.46,7.19,2656.4,Falta liquidar,LT,,,DIESEL|LT|,
+9106-1,9106,2026-10-23,POSTO PASSAGNOLO LTDA,SAUDE - SEMUS,Inexigibilidade 7/2023,DIESEL S10,,262.62,7.7,2022.19,Falta liquidar,LT,,,DIESEL S10|LT|,
+9105-1,9105,2026-10-23,POSTO PASSAGNOLO LTDA,SAUDE - SEMUS,Inexigibilidade 7/2023,GASOLINA,,215.89,6.69,1444.32,Falta liquidar,LT,,,GASOLINA|LT|,
+9104-1,9104,2026-10-23,POSTO PASSAGNOLO LTDA,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,Inexigibilidade 7/2023,DIESEL S10,,483.69,7.7,3724.42,Falta liquidar,LT,,,DIESEL S10|LT|,
+9103-1,9103,2026-10-23,POSTO PASSAGNOLO LTDA,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,Inexigibilidade 7/2023,GASOLINA,,34.08,6.69,227.99,Falta liquidar,LT,,,GASOLINA|LT|,
+9102-1,9102,2026-10-23,POSTO PASSAGNOLO LTDA,DESENVOLVIMENTO IND. COMERC E TURISMO - SEMUD,Inexigibilidade 7/2023,DIESEL S10,,911.92,7.7,7021.8,Falta liquidar,LT,,,DIESEL S10|LT|,
+9101-1,9101,2026-10-23,POSTO PASSAGNOLO LTDA,DESENVOLVIMENTO IND. COMERC E TURISMO - SEMUD,Inexigibilidade 7/2023,GASOLINA,,25.0,6.69,167.25,"Liquidado, a pagar",LT,,,GASOLINA|LT|,
+9100-1,9100,2026-10-23,POSTO PASSAGNOLO LTDA,DESENVOLVIMENTO IND. COMERC E TURISMO - SEMUD,Inexigibilidade 7/2023,ETANOL,,43.56,3.99,173.8,"Liquidado, a pagar",LT,,,ETANOL|LT|,
 9098-1,9098,2026-10-22,TAINARA BIANCA DINIZ,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,Pregão 31/2025,LARANJA PERA,PRÓPRIA,50.0,2.19,109.5,"Liquidado, a pagar",KG,,,LARANJA PERA|KG|,"In natura, de 1ª qualidade, tamanho médio, selecionado, fresco, firme, aroma e cor típicos da espécie, em perfeito estado de desenvolvimento, isenta de sujidade"
 9098-2,9098,2026-10-22,TAINARA BIANCA DINIZ,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,Pregão 31/2025,BETERRABA,PRÓPRIA,40.0,2.16,86.4,"Liquidado, a pagar",KG,,,BETERRABA|KG|,"In natura, de 1ª qualidade, tamanho médio, selecionada, fresca, firme, aroma e cor típicos da espécie, em perfeito estado de desenvolvimento, isenta de sujidade"
 9098-3,9098,2026-10-22,TAINARA BIANCA DINIZ,EDUCAÇÃO E CULTURA - FUNDO MUNICIPAL DE,Pregão 31/2025,MELÃO AMARELO,PRÓPRIA,74.0,1.99,147.26,"Liquidado, a pagar",KG,,,MELAO AMARELO|KG|,"Tamanho de médio, de 1ª qualidade, com aroma e cor típicos da variedade, sem machucados internos ou externos, apresentando grau de maturação tal que lhe permita"
