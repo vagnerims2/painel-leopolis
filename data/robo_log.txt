@@ -1,4 +1,3 @@
-26/10/2026 15:58:56  Coleta: 158 empenhos, 74 liquidações, 74 pagamentos, 268 saldos, 129 documentos fiscais, 0 erros
 26/10/2026 15:58:59  1 empenhos com itens que não batem com o valor: ficam fora dos relatórios de produto até a releitura acertar.
 26/10/2026 15:59:06  Pronto para publicar: 9107 empenhos, saldo a pagar R$ 1,813,615.57, 251 parados.
 26/10/2026 15:59:45  Novidade no portal. Coletando desde 2026-10-23…
@@ -58,3 +57,4 @@
 26/10/2026 16:43:12  Coleta: 10 empenhos, 74 liquidações, 82 pagamentos, 268 saldos, 129 documentos fiscais, 0 erros
 26/10/2026 16:43:14  1 empenhos com itens que não batem com o valor: ficam fora dos relatórios de produto até a releitura acertar.
 26/10/2026 16:43:22  Pronto para publicar: 9109 empenhos, saldo a pagar R$ 1,800,022.54, 251 parados.
+26/10/2026 16:44:43  Sem lançamento novo no portal.
