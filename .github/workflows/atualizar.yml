@@ -6,6 +6,7 @@ name: Atualizar painel
 # se já houver turno rodando, o próximo fica na fila e assume quando ele terminar; fora do horário, encerra na hora.
 on:
   schedule:
+    - cron: '5 10 * * 1-5'    # 7h05: entra cedo e espera dar 7h30 (o GitHub costuma atrasar o disparo)
     - cron: '31 10-20 * * 1-5'
   workflow_dispatch:
     inputs:
@@ -80,6 +81,10 @@ jobs:
           if [ "$EVENTO" = "push" ] && ! no_horario; then echo "Ajuste gravado fora do horário (7h30 às 17h30, dias úteis): sem rodada agora."; exit 0; fi
           if [ "$EVENTO" != "schedule" ]; then bash ferramentas/rodada.sh $FORCAR || true; exit 0; fi
           # portal de 5 em 5 min (só publica se houver novidade); rodada completa (planilha, Drive, fornecedores) de 20 em 20 min
+          # disparo antes das 7h30: espera dar 7h30 (dia útil) em vez de encerrar
+          if [ "$(date +%u)" -le 5 ] && [ "$(date +%H%M)" -lt 0730 ] && [ "$(date +%H%M)" -ge 0600 ]; then
+            falta=$(( $(date -d '07:30' +%s) - $(date +%s) )); echo "Esperando dar 7h30 ($(( falta / 60 )) min)…"; sleep $falta
+          fi
           inicio=$(date +%s); n=0; ultima_completa=0
           while :; do
             if ! no_horario; then echo "Fora do horário (7h30 às 17h30, dias úteis): encerra o turno."; break; fi
