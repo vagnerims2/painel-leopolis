@@ -1,7 +1,3 @@
-27/10/2026 12:04:51  Sem lançamento novo no portal.
-27/10/2026 12:12:23  ERRO: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by ConnectTimeoutError(<HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300) at 0x7f194d87b0b0>, 'Connection to leopolispr.equiplano.com.br timed out. (connect timeout=60)'))
-27/10/2026 12:12:23  requests.exceptions.ConnectTimeout: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by ConnectTimeoutError(<HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300) at 0x7f194d87b0b0>, 'Connection to leopolispr.equiplano.com.br timed out. (connect timeout=60)'))
-27/10/2026 12:14:22  ERRO: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by NewConnectionError("HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300): Failed to establish a new connection: [Errno 111] Connection refused"))
 27/10/2026 12:14:22  requests.exceptions.ConnectionError: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by NewConnectionError("HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300): Failed to establish a new connection: [Errno 111] Connection refused"))
 27/10/2026 12:19:23  ERRO: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by NewConnectionError("HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300): Failed to establish a new connection: [Errno 111] Connection refused"))
 27/10/2026 12:19:23  requests.exceptions.ConnectionError: HTTPSConnectionPool(host='leopolispr.equiplano.com.br', port=7300): Max retries exceeded with url: /transparencia/despesaEmpenhada/listaData?formulario.codEntidade=300&formulario.exercicio=2026&formulario.nrMes=9 (Caused by NewConnectionError("HTTPSConnection(host='leopolispr.equiplano.com.br', port=7300): Failed to establish a new connection: [Errno 111] Connection refused"))
@@ -58,3 +54,7 @@
 27/10/2026 16:15:18  Sem lançamento novo no portal.
 27/10/2026 16:20:18  Sem lançamento novo no portal.
 27/10/2026 16:25:17  Sem lançamento novo no portal.
+27/10/2026 16:30:17  Sem lançamento novo no portal.
+27/10/2026 16:35:20  Sem lançamento novo no portal.
+27/10/2026 16:40:19  Sem lançamento novo no portal.
+27/10/2026 16:45:19  Sem lançamento novo no portal.
