@@ -1,7 +1,3 @@
-28/10/2026 11:37:30  Sem lançamento novo no portal.
-28/10/2026 11:42:30  Sem lançamento novo no portal.
-28/10/2026 11:47:30  Sem lançamento novo no portal.
-28/10/2026 11:52:29  Sem lançamento novo no portal.
 28/10/2026 11:57:29  Sem lançamento novo no portal.
 28/10/2026 12:02:29  Sem lançamento novo no portal.
 28/10/2026 12:07:29  Sem lançamento novo no portal.
@@ -58,3 +54,7 @@
 28/10/2026 16:22:54  Sem lançamento novo no portal.
 28/10/2026 16:27:54  Sem lançamento novo no portal.
 28/10/2026 16:32:56  Sem lançamento novo no portal.
+28/10/2026 16:37:56  Sem lançamento novo no portal.
+28/10/2026 16:42:55  Sem lançamento novo no portal.
+28/10/2026 16:47:58  Sem lançamento novo no portal.
+28/10/2026 16:52:54  Sem lançamento novo no portal.
