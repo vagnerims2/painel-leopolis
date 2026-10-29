@@ -1,14 +1,13 @@
 fonte,codigo,saldo_a_pagar
-0 - Recursos Ordinários (Livres),0,411122.9
-829 - Fundo do Esporte Investimento,829,341640.01
+0 - Recursos Ordinários (Livres),0,407966.5
 371 - Bloco de Investimento na Rede de Serviços Públicos de Saúde,371,341000.0
-1018 - Emendas Individuais Impositivas - transferência com finalidade definida - (Inciso II do Art. 166-A da E.C. 105/20...,1018,118517.42
+1018 - Emendas Individuais Impositivas - transferência com finalidade definida - (Inciso II do Art. 166-A da E.C. 105/20...,1018,117563.49
 1040 - Transferências do FUNDEB - Complementação da União - VAAR,1040,113512.95
-104 - Demais Impostos Vinculados à Educação Básica,104,103375.82
+104 - Demais Impostos Vinculados à Educação Básica,104,94238.72
 501 - Receitas de Alienações de Ativos,501,84503.24
-303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,47610.74
 103 - 5% sobre Transferências Constitucionais FUNDEB,103,45841.28
 "507 - COSIP - Contribuição de Iluminação Pública, Art. 149-A, CF",507,45262.98
+303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,39570.1
 107 - Salário-Educação,107,37497.24
 370 - Bloco de Custeio das Ações e Serviços Públicos de Saúde,370,37014.79
 494 - Bloco de Custeio das Ações e Serviços Públicos de Saúde,494,28046.78
@@ -23,4 +22,5 @@ fonte,codigo,saldo_a_pagar
 143 - Repasse Escola Tempo Integral,143,1280.02
 934 - Bloco de Financiamento da Proteção Social Básica - SUAS,934,999.54
 1016 - Emendas Individuais Impositivas - transferência especial - (Inciso I do Art. 169-A da E.C. 105/2019),1016,738.0
+829 - Fundo do Esporte Investimento,829,640.01
 830 - Fundo do Esporte Material Esportivo,830,531.57
