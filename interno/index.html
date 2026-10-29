@@ -634,7 +634,7 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
       <p class="ac-troca"><span id="ac-troca-t">Primeiro acesso?</span> <button type="button" id="ac-troca">Criar acesso</button></p>
     </form>
     <p class="ac-aviso">Seu nome e os horários de entrada ficam registrados só para o controle de uso do painel.</p>
-    <p class="ac-demo" id="ac-demo" hidden>Prévia: nesta demonstração os usuários ficam guardados só neste navegador.</p>
+    <p class="ac-demo" id="ac-demo" hidden>Prévia (demonstração): aqui a senha do painel oficial não funciona. Toque em "Criar acesso" e cadastre um nome e uma senha só para testar; eles ficam guardados só neste navegador. <button type="button" id="ac-demo-zerar">Esqueceu a senha de teste? Apagar os acessos de teste</button></p>
   </div>
 </div>
 <div id="ac-adm" class="ac-tela ac-adm" hidden role="dialog" aria-modal="true" aria-labelledby="ac-adm-tit">
@@ -733,16 +733,18 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
 
   // ---- demonstração (prévia): contas no próprio navegador
   function demo() {
-    const ler = (k, s) => { try { return JSON.parse((s || localStorage).getItem(k)); } catch (e) { return null; } };
-    const gravar = (k, v, s) => { try { (s || localStorage).setItem(k, JSON.stringify(v)); } catch (e) {} };
-    const tirar = (k) => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} };
+    const mem = {};  // quando o navegador não deixa guardar (algumas prévias bloqueiam), os acessos de teste ficam na memória da página
+    const st = (s) => s === 's' ? sessionStorage : localStorage;  // só dentro do try: tocar no armazenamento bloqueado já dá erro
+    const ler = (k, s) => { try { const v = st(s).getItem(k); if (v != null) return JSON.parse(v); } catch (e) {} return k in mem ? JSON.parse(mem[k]) : null; };
+    const gravar = (k, v, s) => { mem[k] = JSON.stringify(v); try { st(s).setItem(k, JSON.stringify(v)); } catch (e) {} };
+    const tirar = (k) => { delete mem[k]; try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} };
     const todos = () => ler('ac-demo-usuarios') || {};
     const hash = async (t) => { try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); } catch (e) { return 'x' + t.length + t; } };
-    const sessao = (k, manter) => { tirar('ac-sessao'); gravar('ac-sessao', k, manter ? localStorage : sessionStorage); };
+    const sessao = (k, manter) => { tirar('ac-sessao'); gravar('ac-sessao', k, manter ? 'l' : 's'); };
     const doUsuario = (k) => { const u = todos()[k]; if (!u) return null; if (u.zerada) throw erroAc('zerada'); if (u.bloqueado) throw erroAc('bloqueado'); return { nome: u.nome, chave: k, admin: k === DEMO_ADMIN }; };
     return {
       demo: true,
-      async atual() { const k = ler('ac-sessao') || ler('ac-sessao', sessionStorage); if (!k) return null; try { return doUsuario(k); } catch (e) { tirar('ac-sessao'); throw e; } },
+      async atual() { const k = ler('ac-sessao') || ler('ac-sessao', 's'); if (!k) return null; try { return doUsuario(k); } catch (e) { tirar('ac-sessao'); throw e; } },
       async entrar(nome, senha, manter) { const k = chave(nome), u = todos()[k]; if (u && u.zerada) throw erroAc('zerada'); if (!u || u.h !== await hash(k + ':' + senha)) throw erroAc('auth/invalid-credential');
         const r = doUsuario(k); sessao(k, manter); return r; },
       async criar(nome, senha, manter) { const k = chave(nome), t = todos(); if (t[k] && !t[k].zerada) throw erroAc('auth/email-already-in-use');
@@ -754,7 +756,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
       async lista() { return Object.entries(todos()).map(([k, u]) => ({ id: k, chave: k, ...u, senhaZerada: !!u.zerada, admin: k === DEMO_ADMIN })); },
       async bloquear(id, sim) { const t = todos(); if (t[id]) { t[id].bloqueado = sim; gravar('ac-demo-usuarios', t); } },
       async zerar(u) { const t = todos(); if (t[u.id]) { t[u.id].zerada = true; gravar('ac-demo-usuarios', t); } },
-      async trocarSenha(atual, nova) { const k = ler('ac-sessao') || ler('ac-sessao', sessionStorage), t = todos(), u = t[k];
+      async trocarSenha(atual, nova) { const k = ler('ac-sessao') || ler('ac-sessao', 's'), t = todos(), u = t[k];
         if (!u || u.h !== await hash(k + ':' + atual)) throw erroAc('auth/invalid-credential'); u.h = await hash(k + ':' + nova); gravar('ac-demo-usuarios', t); }
     };
   }
@@ -891,6 +893,7 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     <button data-go="requisicoes" aria-selected="false">Requisições</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
+    <button data-go="frotas" aria-selected="false">Frotas</button>
     <button data-go="receitas" aria-selected="false">Receitas</button>
     <button data-go="indicadores" aria-selected="false">Indicadores LRF</button>
     <button data-go="cidadao" aria-selected="false">Para o cidadão</button>
@@ -1328,6 +1331,71 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
       <div class="tools"><input id="cl-busca" type="search" placeholder="Buscar nº da licitação, fornecedor, secretaria…"><select id="cl-mod"><option value="">Todas as modalidades</option></select></div>
       <div class="tblwrap"><table id="t-cl"><thead><tr><th>Licitação</th><th class="r">Empenhado no ano</th><th class="r">Empenhos</th><th class="hide-sm">Secretarias</th><th class="hide-sm">Fornecedores</th><th class="r hide-sm">Último</th></tr></thead><tbody></tbody>
         <tfoot><tr><td id="cl-qtd">Total</td><td class="r" id="cl-tot">—</td><td class="r" id="cl-n">—</td><td class="hide-sm"></td><td class="hide-sm"></td><td class="hide-sm"></td></tr></tfoot></table></div>
+    </div>
+  </section>
+
+  <!-- ============ FROTAS ============ -->
+  <section class="tab" data-tab="frotas" hidden>
+    <div class="card" id="fr-topo">
+      <h2>Frota do município</h2>
+      <p class="note" id="fr-fonte">Carregando o relatório de abastecimento…</p>
+      <div class="tools">
+        <select id="fr-sec"><option value="">Todas as secretarias</option></select>
+        <select id="fr-comb"><option value="">Todos os combustíveis</option></select>
+        <select id="fr-mes"><option value="">Período todo</option></select>
+        <select id="fr-tipo"><option value="">Veículos e máquinas</option><option value="km">Só veículos (km)</option><option value="h">Só máquinas e equipamentos</option></select>
+        <select id="fr-sit"><option value="">Ativos</option><option value="sem">Ativos sem abastecimento</option><option value="baixados">Baixados</option><option value="todos">Todos do cadastro</option></select>
+      </div>
+    </div>
+    <section class="tiles">
+      <div class="card tile"><div class="lbl">Veículos e máquinas</div><div class="num" id="fr-n">—</div><div class="sub" id="fr-n-sub">&nbsp;</div></div>
+      <div class="card tile"><div class="lbl">Gasto com combustível</div><div class="num" id="fr-gasto">—</div><div class="sub" id="fr-gasto-sub">&nbsp;</div></div>
+      <div class="card tile"><div class="lbl">Abastecimentos</div><div class="num" id="fr-qt">—</div><div class="sub" id="fr-qt-sub">&nbsp;</div></div>
+      <div class="card tile"><div class="lbl">Preço médio do litro</div><div class="num" id="fr-preco">—</div><div class="sub" id="fr-preco-sub">&nbsp;</div></div>
+    </section>
+    <section class="grid">
+      <div class="card" id="fr-mensal">
+        <h2>Gasto com combustível por mês</h2>
+        <p class="note">Valor dos abastecimentos de cada mês, por combustível.</p>
+        <div class="legend" id="fr-leg"></div>
+        <div id="fr-mes-chart" class="cols"></div>
+      </div>
+      <div class="card" id="fr-secs">
+        <h2>Gasto por secretaria</h2>
+        <p class="note">Toque numa secretaria para ver só os veículos dela.</p>
+        <div id="fr-sec-chart" style="min-height:200px;max-height:360px;overflow:auto;padding-right:6px"></div>
+      </div>
+    </section>
+    <section class="grid">
+      <div class="card" id="fr-precos">
+        <h2>Preço médio do litro por mês</h2>
+        <p class="note">Média ponderada pelos litros abastecidos em cada mês.</p>
+        <div id="fr-preco-chart"></div>
+      </div>
+      <div class="card" id="fr-atencao">
+        <h2>Pontos de atenção</h2>
+        <p class="note">Lançamentos do sistema de Frotas que merecem conferência.</p>
+        <div id="fr-alertas"></div>
+      </div>
+    </section>
+    <div class="card" id="fr-veic">
+      <h2>Veículos e máquinas</h2>
+      <p class="note">Cadastro do Portal da Transparência (Relação da Frota Municipal) com os abastecimentos do sistema de Frotas. Toque num veículo para abrir a ficha. Consumo: veículos em km por litro; máquinas em litros por hora trabalhada (só entre leituras válidas do hodômetro ou horímetro). O nº da frota só existe no sistema de Frotas: quem não abasteceu no período aparece sem ele.</p>
+      <div class="tools"><input id="fr-busca" type="search" placeholder="Buscar nº da frota, placa, modelo, secretaria…"></div>
+      <div class="tblwrap"><table id="t-fr"><thead><tr>
+        <th data-k="frota"><button type="button">Frota</button></th><th data-k="placa"><button type="button">Placa</button></th><th data-k="modelo"><button type="button">Veículo</button></th>
+        <th class="hide-sm" data-k="sec"><button type="button">Secretaria</button></th><th class="r" data-k="n"><button type="button">Abast.</button></th><th class="r hide-sm" data-k="lit"><button type="button">Litros</button></th>
+        <th class="r" data-k="val"><button type="button">Gasto</button></th><th class="r hide-sm" data-k="rod"><button type="button">Rodado</button></th><th class="r" data-k="cons"><button type="button">Consumo</button></th>
+        <th class="r hide-sm" data-k="ult"><button type="button">Último</button></th></tr></thead><tbody></tbody>
+        <tfoot><tr><td colspan="4" id="fr-tot-n">Total</td><td class="r" id="fr-tot-q">—</td><td class="r hide-sm" id="fr-tot-l">—</td><td class="r" id="fr-tot-v">—</td><td class="hide-sm"></td><td></td><td class="hide-sm"></td></tr></tfoot></table></div>
+    </div>
+    <div class="card" id="fr-ficha" hidden>
+      <div class="linha-total"><h2 id="fr-f-tit">Veículo</h2><button type="button" class="btn2" id="fr-f-fechar">Fechar</button></div>
+      <p class="note" id="fr-f-info"></p>
+      <section class="tiles" id="fr-f-tiles"></section>
+      <div id="fr-f-chart" class="cols" style="margin-top:12px"></div>
+      <div class="tblwrap" style="margin-top:12px"><table id="t-fr-f"><thead><tr><th>Data</th><th>Combustível</th><th class="r">Litros</th><th class="r hide-sm">Preço/L</th><th class="r">Valor</th>
+        <th class="r hide-sm">Hodômetro</th><th class="r hide-sm">Rodado</th><th>Nota e empenho</th><th class="hide-sm">Posto</th><th class="hide-sm" id="fr-th-mot">Motorista</th></tr></thead><tbody></tbody></table></div>
     </div>
   </section>
 
@@ -3089,6 +3157,269 @@ const REC_ARQ = '../data/receitas.json';
   }
   box.addEventListener('click', (e) => { const b = e.target.closest('[data-ir]'); if (b && typeof irPara === 'function') irPara(b.dataset.ir); });
   dash.onData(aplicar);
+})();
+</script>
+<style>
+#dash-root .tabs button[data-go=frotas]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M5 11l1.5-4.5A2 2 0 0 1 8.4 5h7.2a2 2 0 0 1 1.9 1.5L19 11h1a1 1 0 0 1 1 1v5h-2v2h-3v-2H8v2H5v-2H3v-5a1 1 0 0 1 1-1zm2.1 0h9.8l-1-3.2a1 1 0 0 0-1-.8H9.1a1 1 0 0 0-1 .8zM7 13.5a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm10 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z'/%3E%3C/svg%3E")}
+#dash-root .fr-stk{display:flex;flex-direction:column-reverse;width:100%;max-width:26px;height:100%}
+#dash-root .fr-stk div{width:100%}
+#dash-root .fr-al h3{font-size:13px;margin:12px 0 4px;display:flex;justify-content:space-between;gap:8px}
+#dash-root .fr-al h3:first-child{margin-top:0}
+#dash-root .fr-al ul{margin:0;padding-left:18px;font-size:12.5px;line-height:1.45}
+#dash-root .fr-al li{margin:3px 0}
+#dash-root .fr-al li button{all:unset;cursor:pointer;color:var(--acc);text-decoration:underline}
+#dash-root .fr-al .mais{all:unset;cursor:pointer;color:var(--acc);font-size:12px;margin:2px 0 0 18px;display:inline-block}
+#dash-root #t-fr tbody tr{cursor:pointer}
+#dash-root #t-fr-f td{white-space:nowrap}
+#dash-root #t-fr-f td.fr-nf{white-space:normal;min-width:9rem}
+#dash-root .fr-ok{color:var(--color-fg-muted)}
+#dash-root #fr-fonte.fr-dev{display:flex;align-items:center;gap:8px;font-weight:600;color:#c8741a}
+#dash-root #fr-fonte.fr-dev::before{content:"";width:10px;height:10px;border-radius:50%;background:#e8891c;flex:none;box-shadow:0 0 0 0 rgba(232,137,28,.6)}
+@media (prefers-reduced-motion:no-preference){#dash-root #fr-fonte.fr-dev::before{animation:fr-pulsa 1.8s ease-out infinite}}
+@keyframes fr-pulsa{0%{box-shadow:0 0 0 0 rgba(232,137,28,.6)}70%{box-shadow:0 0 0 8px rgba(232,137,28,0)}100%{box-shadow:0 0 0 0 rgba(232,137,28,0)}}
+</style>
+<script>
+/* Aba Frotas: lê data/frotas.json (relatório de abastecimento do sistema de Frotas, gerado por ferramentas/frotas.py)
+   e liga a nota fiscal de cada abastecimento às notas, liquidações e empenhos do portal (data/notas.csv, data/empenhos.csv). */
+(function () {
+  const $ = (id) => document.getElementById(id);
+  if (!$('fr-n')) return;
+  const MES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+  const COR = { DIESEL: '#1F4E8C', GASOLINA: '#D9822B', ETANOL: '#3E9B6A' };
+  const cor = (c) => COR[c] || '#7a7a7a';
+  const L0 = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }), L1 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const D2 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }), P3 = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  const R = (v) => brl.format(v), RC = (v) => brlC.format(v);
+  const mesTxt = (m) => MES[Number(m.slice(5, 7)) - 1] + '/' + m.slice(2, 4);
+  const secCurta = (o) => String(o || 'Sem secretaria').replace(/^\d+ - /, '').replace(/^SECRETARIA MUNIC\. DE /, '').replace(/ - FUNDO MUNICIPAL DE /, ' / FUNDO ');
+  const LIM = { km: 3000, h: 150 };  // acima disso entre dois abastecimentos, a leitura do hodômetro/horímetro é tratada como erro de digitação
+  let F = null, A = [], V = [], porV = [], medPreco = {}, sortK = 'val', sortDir = -1, fichaV = null;
+
+  fetch('../data/frotas.json?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => { F = d; preparar(); desenhar(); })
+    .catch(e => { console.error('frotas', e); $('fr-fonte').textContent = 'O relatório da frota ainda não foi lido. Salve o "Relatório de Abastecimento de Veículos" do sistema de Frotas na pasta Frotas do Drive.'; });
+
+  function preparar() {
+    // ativo: pelo cadastro do portal (sem cadastro, quem está no relatório de abastecimento conta como ativo)
+    V = F.veiculos.map((v, i) => ({ ...v, i, sec: secCurta(v.orgao), ativo: v.portal ? v.portal.ativo : true }));
+    const k = F.campos.reduce((o, c, i) => (o[c] = i, o), {});
+    A = F.abastecimentos.map(x => ({ v: V[x[k.veiculo]], d: x[k.data], dia: x[k.data].slice(0, 10), mes: x[k.data].slice(0, 7), comb: F.combustiveis[x[k.combustivel]],
+      lit: x[k.litros], pre: x[k.preco], val: x[k.valor], hod: x[k.hod], nf: String(x[k.nf] || ''), ord: x[k.ordem], posto: F.postos[x[k.posto]],
+      mot: x[k.motorista] != null && F.motoristas ? F.motoristas[x[k.motorista]] : '' }));
+    // leituras do hodômetro/horímetro: diferença para o abastecimento anterior do mesmo veículo
+    porV = V.map(() => []); A.forEach(a => porV[a.v.i].push(a));
+    porV.forEach(xs => { xs.sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : 0); let ant = null;
+      xs.forEach(a => { if (a.hod == null) return; if (ant != null) { const dl = a.hod - ant; if (dl > 0 && dl <= LIM[a.v.medida]) a.rod = dl; else a.inc = dl <= 0 ? 'voltou' : 'saltou'; } ant = a.hod; }); });
+    // preço de referência: mediana do mesmo combustível no mesmo mês
+    const g = {}; A.forEach(a => (g[a.comb + a.mes] = g[a.comb + a.mes] || []).push(a.pre));
+    Object.entries(g).forEach(([c, xs]) => { xs.sort((a, b) => a - b); medPreco[c] = xs[Math.floor(xs.length / 2)]; });
+    fillSelect($('fr-sec'), [...new Set(V.map(v => v.sec))].sort((a, b) => a.localeCompare(b, 'pt-BR')));
+    fillSelect($('fr-comb'), F.combustiveis, c => c.charAt(0) + c.slice(1).toLowerCase());
+    fillSelect($('fr-mes'), [...new Set(A.map(a => a.mes))].sort(), m => MES[Number(m.slice(5, 7)) - 1] + ' de ' + m.slice(0, 4));
+    const rel = F.relatorios[F.relatorios.length - 1] || {};
+    $('fr-fonte').textContent = 'Módulo em desenvolvimento.'; $('fr-fonte').classList.add('fr-dev');
+    ['fr-sec', 'fr-comb', 'fr-mes', 'fr-tipo', 'fr-sit'].forEach(id => $(id).addEventListener('change', desenhar));
+    $('fr-busca').addEventListener('input', tabela);
+    document.querySelectorAll('#t-fr th[data-k] button').forEach(b => b.addEventListener('click', () => { const k = b.parentElement.dataset.k;
+      sortDir = sortK === k ? -sortDir : (['frota', 'placa', 'modelo', 'sec'].includes(k) ? 1 : -1); sortK = k; tabela(); }));
+    $('fr-f-fechar').addEventListener('click', () => { $('fr-ficha').hidden = true; fichaV = null; });
+    // a aba Empenhos e as notas do portal chegam depois: quando chegarem, refaz os pontos de atenção e a ficha aberta
+    dash.onData(() => { if (dash.data('notas').status === 'ok') { notasIdx = null; alertas(); if (fichaV) ficha(fichaV, false); } });
+  }
+
+  const filtro = () => ({ sec: $('fr-sec').value, comb: $('fr-comb').value, mes: $('fr-mes').value, tipo: $('fr-tipo').value, sit: $('fr-sit').value });
+  // situação: "Ativos" mostra também quem abasteceu mesmo constando como baixado (para não sumir gasto)
+  const naSit = (v, s) => s === 'todos' || (s === 'baixados' ? !v.ativo : s === 'sem' ? v.ativo && !porV[v.i].length : v.ativo || porV[v.i].length > 0);
+  const passaV = (v, f) => (!f.sec || v.sec === f.sec) && (!f.tipo || (f.tipo === 'km' ? v.medida === 'km' : v.medida !== 'km')) && naSit(v, f.sit);
+  const passaA = (a, f) => passaV(a.v, f) && (!f.comb || a.comb === f.comb) && (!f.mes || a.mes === f.mes);
+
+  // ---- resumo de um conjunto de abastecimentos
+  function resumo(xs) { const r = { n: xs.length, lit: 0, val: 0, rod: 0, litRod: 0, ult: '' };
+    xs.forEach(a => { r.lit += a.lit; r.val += a.val; if (a.rod) { r.rod += a.rod; r.litRod += a.lit; } if (a.d > r.ult) r.ult = a.d; }); return r; }
+  const consumo = (v, r) => !r.rod || !r.litRod ? null : v.medida === 'h' ? r.litRod / r.rod : r.rod / r.litRod;
+  const nomeV = (v) => `${v.frota ? 'Frota ' + v.frota : 'Sem nº de frota'}${v.placa ? ' · ' + v.placa : ''} · ${v.modelo}`;
+  const consTxt = (v, c) => c == null ? '—' : v.medida === 'h' ? D2.format(c) + ' L/h' : D2.format(c) + ' km/l';
+
+  function desenhar() { const f = filtro(), xs = A.filter(a => passaA(a, f)), vs = V.filter(v => passaV(v, f));
+    const r = resumo(xs), comAb = new Set(xs.map(a => a.v.i));
+    const nKm = vs.filter(v => v.medida === 'km').length;
+    $('fr-n').textContent = L0.format(vs.length); $('fr-n-sub').textContent = `${nKm} veículos · ${vs.length - nKm} máquinas e equipamentos · ${comAb.size} abasteceram`;
+    $('fr-gasto').textContent = RC(r.val); $('fr-gasto').title = R(r.val); $('fr-gasto-sub').textContent = L0.format(r.lit) + ' litros';
+    $('fr-qt').textContent = L0.format(r.n); $('fr-qt-sub').textContent = comAb.size ? 'média de ' + L1.format(r.lit / r.n) + ' litros por abastecimento' : ' ';
+    const pc = {}; xs.forEach(a => { pc[a.comb] = pc[a.comb] || [0, 0]; pc[a.comb][0] += a.val; pc[a.comb][1] += a.lit; });
+    const ord = Object.keys(pc).sort((a, b) => pc[b][1] - pc[a][1]);
+    $('fr-preco').textContent = ord.length ? 'R$ ' + D2.format(pc[ord[0]][0] / pc[ord[0]][1]) : '—';
+    $('fr-preco-sub').textContent = ord.map(c => c.toLowerCase() + ' R$ ' + D2.format(pc[c][0] / pc[c][1])).join(' · ');
+    porMes(xs); porSec(xs); precos(xs); alertas(); tabela();
+    if (fichaV) ficha(fichaV, false); }
+
+  // ---- colunas lado a lado: uma barra por combustível em cada mês (só os combustíveis que aparecem no filtro)
+  function colunas(el, meses, xs, onTip) { el.replaceChildren(); el.style.position = 'relative'; el.style.paddingLeft = '46px';
+    const tot = meses.map(m => { const o = { m, t: 0 }; xs.forEach(a => { if (a.mes === m) { o[a.comb] = (o[a.comb] || 0) + a.val; o.t += a.val; } }); return o; });
+    const combs = F.combustiveis.filter(c => tot.some(o => o[c])), max = Math.max(1, ...tot.flatMap(o => combs.map(c => o[c] || 0)));
+    [1, .75, .5, .25, 0].forEach(p => { const a = document.createElement('span'); a.className = 'yax'; a.style.bottom = `calc(${p} * (100% - 22px) + 22px)`; a.textContent = brlC.format(max * p).replace('R$', '').trim(); el.appendChild(a); });
+    tot.forEach(o => { const col = document.createElement('div'); col.className = 'col'; const p = document.createElement('div'); p.className = 'pair';
+      combs.forEach(c => { const d = document.createElement('div'); d.style.background = cor(c); d.style.height = ((o[c] || 0) / max * 100) + '%'; p.appendChild(d); });
+      const l = document.createElement('div'); l.className = 'clbl'; l.textContent = mesTxt(o.m); col.append(p, l);
+      hoverable(col, ev => showTip(ev, onTip ? onTip(o) : MES[Number(o.m.slice(5, 7)) - 1] + ' de ' + o.m.slice(0, 4), ['Total: ' + R(o.t)].concat(combs.filter(c => o[c]).map(c => c.charAt(0) + c.slice(1).toLowerCase() + ': ' + R(o[c])))));
+      el.appendChild(col); }); }
+
+  function porMes(xs) { const meses = [...new Set(A.map(a => a.mes))].sort().filter(m => !$('fr-mes').value || m === $('fr-mes').value);
+    const leg = $('fr-leg'); leg.replaceChildren(); F.combustiveis.forEach(c => { const s = document.createElement('span'); const i = document.createElement('i'); i.className = 'sw'; i.style.background = cor(c); s.append(i, c.charAt(0) + c.slice(1).toLowerCase()); leg.appendChild(s); });
+    colunas($('fr-mes-chart'), meses, xs); }
+
+  function porSec(xs) { const el = $('fr-sec-chart'); el.replaceChildren(); const g = {};
+    xs.forEach(a => { const s = g[a.v.sec] = g[a.v.sec] || { val: 0, lit: 0, v: new Set() }; s.val += a.val; s.lit += a.lit; s.v.add(a.v.i); });
+    const rs = Object.entries(g).sort((a, b) => b[1].val - a[1].val), max = Math.max(1, ...rs.map(r => r[1].val));
+    if (!rs.length) { el.textContent = 'Nenhum abastecimento com estes filtros.'; return; }
+    rs.forEach(([s, o]) => barRow(el, s, RC(o.val), o.val / max, C0, ev => showTip(ev, s, [R(o.val), L0.format(o.lit) + ' litros', o.v.size + ' veículos e máquinas']),
+      () => { $('fr-sec').value = $('fr-sec').value === s ? '' : s; desenhar(); })); }
+
+  function precos(xs) { const el = $('fr-preco-chart'); const meses = [...new Set(A.map(a => a.mes))].sort();
+    const combs = F.combustiveis.filter(c => !$('fr-comb').value || c === $('fr-comb').value);
+    // preço do mês com todos os veículos do filtro, mas sempre o ano inteiro (o filtro de mês não esconde a linha)
+    const f = { ...filtro(), mes: '' }, ys = A.filter(a => passaA(a, f));
+    const series = combs.map(c => ({ nome: c.charAt(0) + c.slice(1).toLowerCase(), cor: cor(c), vals: meses.map(m => { let v = 0, l = 0; ys.forEach(a => { if (a.comb === c && a.mes === m) { v += a.val; l += a.lit; } }); return l ? v / l : null; }), rot: v => D2.format(v) }))
+      .filter(s => s.vals.some(v => v != null));
+    if (!series.length) { el.textContent = 'Nenhum abastecimento com estes filtros.'; return; }
+    const todos = series.flatMap(s => s.vals.filter(v => v != null)), mx = Math.max(...todos), mn = Math.min(...todos);
+    el.innerHTML = window.linhaAnimada({ titulo: 'Preço médio do litro por mês', W: innerWidth < 700 ? 430 : 720, H: 270, rotulos: meses.map(mesTxt), min: Math.max(0, mn - 1), max: mx + .8,
+      series: series.length > 1 ? series.map(s => ({ ...s, rot: null })) : series, tip: (s, i, v) => `${s.nome} em ${mesTxt(meses[i])}: R$ ${P3.format(v)} por litro` });
+    if (series.length > 1) { const lg = document.createElement('div'); lg.className = 'legend'; series.forEach(s => { const sp = document.createElement('span'); const i = document.createElement('i'); i.className = 'sw'; i.style.background = s.cor; sp.append(i, s.nome); lg.appendChild(sp); }); el.prepend(lg); }
+    window.animarLinhas(el); }
+
+  // ---- notas fiscais do portal: número → notas (para ligar o abastecimento à liquidação e ao empenho)
+  let notasIdx = null;
+  function notas() { if (notasIdx) return notasIdx; const dn = dash.data('notas'); if (dn.status !== 'ok') return null;
+    const de = dash.data('empenhos').data || [], emp = {}; de.forEach(e => { emp[e.empenho] = e; });
+    const postos = new Set(F.postos.map(p => nz(p).split(' ').filter(w => w.length > 3 && !['posto', 'ltda', 'auto'].includes(w))[0]).filter(Boolean));
+    notasIdx = { porNum: {}, postoComNota: new Set(), emp };
+    dn.data.forEach(n => { const nf = nz(n.fornecedor); const p = [...postos].find(w => nf.includes(w)); if (!p) return;
+      notasIdx.postoComNota.add(p); const k = p + '|' + String(n.numero).replace(/^0+/, ''); (notasIdx.porNum[k] = notasIdx.porNum[k] || []).push(n); });
+    notasIdx.chave = (a) => { const p = nz(a.posto).split(' ').filter(w => w.length > 3 && !['posto', 'ltda', 'auto'].includes(w))[0]; return p ? p + '|' + a.nf.replace(/^0+/, '') : ''; };
+    notasIdx.temNotas = (a) => { const p = notasIdx.chave(a).split('|')[0]; return notasIdx.postoComNota.has(p); };
+    return notasIdx; }
+  // notas com aquele número do mesmo posto, emitidas perto do abastecimento (evita confundir com nota de mesmo número de outra série)
+  function notasDe(a) { const ix = notas(); if (!ix || !a.nf) return null; const ns = ix.porNum[ix.chave(a)] || [];
+    const t = new Date(a.dia + 'T12:00:00'); return ns.filter(n => { const dd = (new Date((n.data_documento || n.data_liquidacao) + 'T12:00:00') - t) / 864e5; return dd >= -5 && dd <= 20; }); }
+
+  // ---- pontos de atenção
+  function alertas() { const el = $('fr-alertas'); if (!F) return; el.replaceChildren(); el.className = 'fr-al'; const f = filtro(), xs = A.filter(a => passaA(a, f));
+    const grupos = [];
+    const caro = xs.filter(a => { const m = medPreco[a.comb + a.mes]; return m && (a.pre > m * 1.3 || a.pre < m * .7); }).sort((a, b) => b.val - a.val);
+    grupos.push({ t: 'Preço do litro fora do padrão do mês', itens: caro.map(a => ({ v: a.v, txt: `${br(a.dia)} · ${a.comb.toLowerCase()} a R$ ${P3.format(a.pre)} o litro (normal no mês: R$ ${P3.format(medPreco[a.comb + a.mes])}) · ${L1.format(a.lit)} L = ${R(a.val)}` + (a.ord ? ` · ordem ${a.ord}` : '') })) });
+    const inc = {}; xs.forEach(a => { if (a.inc) (inc[a.v.i] = inc[a.v.i] || []).push(a); });
+    grupos.push({ t: 'Hodômetro ou horímetro que voltou ou saltou', itens: Object.entries(inc).sort((a, b) => b[1].length - a[1].length).map(([i, l]) => { const v = V[i];
+      return { v, txt: `${l.length} ${l.length > 1 ? 'leituras' : 'leitura'} (${l.filter(a => a.inc === 'voltou').length} voltaram, ${l.filter(a => a.inc === 'saltou').length} saltaram mais de ${L0.format(LIM[v.medida])} ${v.medida === 'h' ? 'horas' : 'km'}) · última em ${br(l[l.length - 1].dia)}` }; }) });
+    // mesma nota fiscal em dois lançamentos do mesmo veículo: provável abastecimento lançado em duplicidade no Frotas
+    const dupl = {}; xs.forEach(a => { if (a.nf) (dupl[a.v.i + '|' + a.posto + '|' + a.nf] = dupl[a.v.i + '|' + a.posto + '|' + a.nf] || []).push(a); });
+    const dup = Object.values(dupl).filter(l => l.length > 1);
+    grupos.push({ t: 'Mesma nota fiscal lançada mais de uma vez no mesmo veículo', itens: dup.map(l => ({ v: l[0].v, txt: `NF ${l[0].nf} em ${l.length} lançamentos: ` +
+      l.map(a => `${br(a.dia)} ${a.d.slice(11)}, ${L1.format(a.lit)} L, ${R(a.val)}${a.ord ? ' (ordem ' + a.ord + ')' : ''}`).join('; ') })) });
+    const emDup = new Set(dup.flat());
+    const ix = notas();
+    if (ix) { const sem = [], dif = []; const porNf = {};
+      xs.forEach(a => { if (!a.nf || emDup.has(a) || !ix.temNotas(a)) return; const k = ix.chave(a); (porNf[k] = porNf[k] || []).push(a); });
+      Object.values(porNf).forEach(l => { const ns = notasDe(l[0]); const soma = l.reduce((s, a) => s + a.val, 0);
+        if (!ns || !ns.length) { sem.push({ v: l[0].v, txt: `NF ${l[0].nf} de ${br(l[0].dia)} (${R(soma)}) não encontrada nas notas liquidadas do portal` }); return; }
+        const tot = [...new Map(ns.map(n => [n.id, N(n.valor)])).values()].reduce((s, x) => s + x, 0);
+        if (Math.abs(tot - soma) > 1) dif.push({ v: l[0].v, txt: `NF ${l[0].nf} de ${br(l[0].dia)}: abastecido ${R(soma)}${l.length > 1 ? ` em ${l.length} abastecimentos` : ''}, nota no portal ${R(tot)} (empenho ${[...new Set(ns.map(n => n.empenho))].join(', ')})`, d: Math.abs(tot - soma) }); });
+      grupos.push({ t: 'Nota fiscal com valor diferente do abastecido', itens: dif.sort((a, b) => b.d - a.d) });
+      grupos.push({ t: 'Nota fiscal do abastecimento não achada no portal', itens: sem }); }
+    const fim = F.periodo[1], dd = (d) => Math.round((new Date(fim + 'T12:00:00') - new Date(d.slice(0, 10) + 'T12:00:00')) / 864e5);
+    const parados = V.filter(v => passaV(v, f) && porV[v.i].length).map(v => ({ v, u: porV[v.i][porV[v.i].length - 1].d })).filter(o => dd(o.u) > 45).sort((a, b) => a.u < b.u ? -1 : 1);
+    grupos.push({ t: 'Sem abastecer há mais de 45 dias (até o fim do relatório)', itens: parados.map(o => ({ v: o.v, txt: `último abastecimento em ${br(o.u.slice(0, 10))} (${dd(o.u)} dias)` })) });
+    if (F.cadastro && F.cadastro.lido) {
+      const nunca = V.filter(v => v.ativo && !porV[v.i].length && (!f.sec || v.sec === f.sec) && (!f.tipo || (f.tipo === 'km' ? v.medida === 'km' : v.medida !== 'km')));
+      grupos.push({ t: 'Ativos no cadastro do portal sem nenhum abastecimento no relatório', itens: nunca.map(v => ({ v, txt: [v.portal.ano && 'ano ' + v.portal.ano, v.portal.aquisicao && 'adquirido em ' + v.portal.aquisicao, v.portal.conservacao && v.portal.conservacao.toLowerCase(), v.portal.local].filter(Boolean).join(' · ') })) });
+      const baixAb = V.filter(v => !v.ativo && porV[v.i].some(a => passaA(a, { ...f, sit: 'todos' })));
+      grupos.push({ t: 'Baixados no cadastro do portal que aparecem abastecendo', itens: baixAb.map(v => ({ v, txt: `${porV[v.i].length} abastecimentos, último em ${br(porV[v.i][porV[v.i].length - 1].dia)}` })) }); }
+    grupos.forEach(g => { const h = document.createElement('h3'); const t = document.createElement('span'); t.textContent = g.t; const n = document.createElement('span');
+      n.className = 'pill ' + (g.itens.length ? 'late' : 'ok'); n.textContent = g.itens.length || 'nenhum'; h.append(t, n); el.appendChild(h);
+      if (!g.itens.length) return; const ul = document.createElement('ul'); el.appendChild(ul);
+      const por = (k) => { ul.replaceChildren(); g.itens.slice(0, k).forEach(it => { const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
+        b.textContent = nomeV(it.v); b.addEventListener('click', () => ficha(it.v.i, true)); li.append(b, document.createTextNode(': ' + it.txt)); ul.appendChild(li); }); };
+      por(5); if (g.itens.length > 5) { const m = document.createElement('button'); m.type = 'button'; m.className = 'mais'; m.textContent = `ver os ${g.itens.length}`; let aberto = false;
+        m.addEventListener('click', () => { aberto = !aberto; por(aberto ? g.itens.length : 5); m.textContent = aberto ? 'mostrar menos' : `ver os ${g.itens.length}`; }); el.appendChild(m); } }); }
+
+  // ---- tabela de veículos
+  function linhas() { const f = filtro(); return V.filter(v => passaV(v, f)).map(v => { const r = resumo(porV[v.i].filter(a => passaA(a, f)));
+    return { v, frota: Number(v.frota) || 0, placa: v.placa, modelo: v.modelo, sec: v.sec, n: r.n, lit: r.lit, val: r.val, rod: r.rod, cons: consumo(v, r), ult: r.ult }; }); }
+  function tabela() { const q = nz($('fr-busca').value.trim()), tb = document.querySelector('#t-fr tbody'); tb.replaceChildren();
+    let rs = linhas().filter(r => !q || nz([r.v.frota, r.v.placa, r.v.modelo, r.v.descricao, r.v.especie, r.v.marca, r.sec, r.v.patrimonio].join(' ')).includes(q));
+    rs.sort((a, b) => { const x = a[sortK], y = b[sortK]; if (x == null && y == null) return 0; if (x == null) return 1; if (y == null) return -1;
+      return (typeof x === 'string' ? x.localeCompare(y, 'pt-BR') : x - y) * sortDir; });
+    document.querySelectorAll('#t-fr th[data-k]').forEach(th => th.setAttribute('aria-sort', th.dataset.k === sortK ? (sortDir > 0 ? 'ascending' : 'descending') : 'none'));
+    if (!rs.length) emptyRow(tb, 10, 'Nenhum veículo com estes filtros.');
+    rs.forEach(r => { const tr = document.createElement('tr'); td(tr, r.v.frota || '—'); td(tr, r.v.placa || '—');
+      const p = r.v.portal || {}, cv = fornCell(tr, r.v.modelo, [r.v.especie, p.ano && 'ano ' + p.ano].filter(Boolean).join(' · '));
+      if (!r.v.ativo) { const s = document.createElement('span'); s.className = 'pill neu'; s.style.marginLeft = '6px'; s.textContent = 'baixado'; cv.firstChild.after(s); }
+      td(tr, r.sec, 'hide-sm'); td(tr, r.n ? L0.format(r.n) : '—', 'r'); td(tr, r.n ? L0.format(r.lit) : '—', 'r hide-sm'); td(tr, r.n ? R(r.val) : '—', 'r');
+      td(tr, r.rod ? L0.format(r.rod) + (r.v.medida === 'h' ? ' h' : ' km') : '—', 'r hide-sm'); td(tr, consTxt(r.v, r.cons), 'r'); td(tr, r.ult ? br(r.ult.slice(0, 10)) : '—', 'r hide-sm');
+      tr.addEventListener('click', () => ficha(r.v.i, true)); tb.appendChild(tr); });
+    const t = rs.reduce((o, r) => (o.n += r.n, o.l += r.lit, o.v += r.val, o), { n: 0, l: 0, v: 0 });
+    $('fr-tot-n').textContent = `Total: ${rs.length} veículos e máquinas`; $('fr-tot-q').textContent = L0.format(t.n); $('fr-tot-l').textContent = L0.format(t.l); $('fr-tot-v').textContent = R(t.v); }
+
+  // ---- ficha do veículo (respeita o filtro de combustível e de mês)
+  function ficha(i, rolar) { fichaV = i; const v = V[i], f = filtro(), xs = porV[i].filter(a => (!f.comb || a.comb === f.comb) && (!f.mes || a.mes === f.mes)), r = resumo(xs);
+    $('fr-ficha').hidden = false;
+    $('fr-f-tit').textContent = nomeV(v);
+    const p = v.portal || {};
+    $('fr-f-info').textContent = [p.descricao || v.descricao, v.especie, p.marca_modelo || v.marca, p.ano ? 'ano ' + p.ano : '', p.aquisicao ? 'adquirido em ' + p.aquisicao : '', v.patrimonio ? 'patrimônio ' + v.patrimonio : '',
+      secCurta(v.orgao), v.unidade, v.local ? 'local: ' + v.local : '', p.combustivel ? 'combustível: ' + p.combustivel.toLowerCase() : '',
+      v.medida === 'h' ? 'controle por horímetro (horas)' : v.medida === 'km' ? 'controle por hodômetro (km)' : 'sem hodômetro ou horímetro',
+      p.conservacao ? 'conservação: ' + p.conservacao.toLowerCase() : '', v.portal ? (v.ativo ? 'ativo no cadastro do portal' : 'BAIXADO no cadastro do portal') : 'não achado no cadastro do portal'].filter(Boolean).join(' · ');
+    const tl = $('fr-f-tiles'); tl.replaceChildren();
+    [['Gasto', RC(r.val), R(r.val)], ['Litros', L0.format(r.lit), r.n + ' abastecimentos'], [v.medida === 'h' ? 'Horas trabalhadas' : 'Km rodados', r.rod ? L0.format(r.rod) : '—', 'entre leituras válidas'], ['Consumo', consTxt(v, consumo(v, r)), v.medida === 'h' ? 'litros por hora' : 'km por litro']]
+      .forEach(([l, n, s]) => { const c = document.createElement('div'); c.className = 'card tile'; const a = document.createElement('div'); a.className = 'lbl'; a.textContent = l;
+        const b = document.createElement('div'); b.className = 'num'; b.textContent = n; const d = document.createElement('div'); d.className = 'sub'; d.textContent = s; c.append(a, b, d); tl.appendChild(c); });
+    colunas($('fr-f-chart'), [...new Set(A.map(a => a.mes))].sort().filter(m => !f.mes || m === f.mes), xs);
+    const tb = document.querySelector('#t-fr-f tbody'); tb.replaceChildren(); if (!xs.length) emptyRow(tb, 10, 'Nenhum abastecimento com estes filtros.');
+    const ix = notas();
+    // nomes de motorista só quando o arquivo de dados os traz (a versão publicada não traz nomes de pessoas)
+    const comMot = !!(F.motoristas && F.motoristas.length); $('fr-th-mot').hidden = !comMot;
+    xs.slice().reverse().forEach(a => { const tr = document.createElement('tr'); td(tr, br(a.dia) + ' ' + a.d.slice(11)); pillCell(tr, a.comb.toLowerCase(), 'neu').firstChild.style.background = 'color-mix(in srgb,' + cor(a.comb) + ' 18%,transparent)';
+      td(tr, L1.format(a.lit), 'r'); const cp = td(tr, P3.format(a.pre), 'r hide-sm'); const m = medPreco[a.comb + a.mes]; if (m && (a.pre > m * 1.3 || a.pre < m * .7)) { cp.className += ' late'; cp.title = 'normal no mês: R$ ' + P3.format(m); }
+      td(tr, R(a.val), 'r'); const ch = td(tr, a.hod == null ? '—' : L0.format(a.hod), 'r hide-sm'); if (a.inc) { ch.className += ' late'; ch.title = a.inc === 'voltou' ? 'a leitura voltou em relação ao abastecimento anterior' : 'a leitura saltou demais em relação ao abastecimento anterior'; }
+      td(tr, a.rod ? L0.format(a.rod) : '—', 'r hide-sm');
+      const cn = td(tr, '', 'fr-nf');
+      if (!a.nf) cn.textContent = a.dia < '2026-05-01' ? 'sem NF no Frotas' : 'sem NF';
+      else { const ns = ix ? notasDe(a) : null; cn.textContent = 'NF ' + a.nf;
+        if (ns && ns.length) { const e = ix.emp[ns[0].empenho]; const s = document.createElement('div'); s.className = 'sub2';
+          const b = document.createElement('a'); b.href = '#empenhos'; b.textContent = 'empenho ' + ns[0].empenho; b.addEventListener('click', ev => { ev.preventDefault(); const bu = document.getElementById('busca'); if (bu) { bu.value = ns[0].empenho; bu.dispatchEvent(new Event('input')); } irPara('empenhos'); });
+          s.append(b, document.createTextNode(e ? ' · ' + String(e.situacao || '').toLowerCase() : '')); cn.appendChild(s); }
+        else if (ix && ix.temNotas(a)) { const s = document.createElement('div'); s.className = 'sub2 late'; s.textContent = 'não achada no portal'; cn.appendChild(s); } }
+      td(tr, a.posto, 'hide-sm'); if (comMot) td(tr, a.mot || '—', 'hide-sm'); tb.appendChild(tr); });
+    if (rolar) $('fr-ficha').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+})();
+</script>
+<style>
+#dash-root .ac-olho{position:relative;display:block;margin-top:5px}
+#dash-root .ac-olho input{margin-top:0!important;padding-right:46px!important}
+#dash-root .ac-olho button{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:38px;height:34px;display:flex;align-items:center;justify-content:center;border:0;border-radius:6px;background:none;color:#4b5563;cursor:pointer;padding:0}
+#dash-root .ac-olho button:hover{background:#eef2f8;color:#1F4E8C}
+#dash-root .ac-olho button:focus-visible{outline:2px solid #2E6BB8;outline-offset:1px}
+#dash-root .ac-olho svg{width:20px;height:20px}
+#dash-root #ac-demo-zerar{display:block;margin:8px 0 0;font:inherit;font-weight:600;color:#1F4E8C;background:none;border:0;text-decoration:underline;cursor:pointer;padding:0;text-align:left}
+</style>
+<script>
+/* Olho nos campos de senha: mostra ou esconde o que foi digitado, para conferir antes de entrar. */
+(function () {
+  const ABERTO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const FECHADO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 5.1A10.4 10.4 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7a9.8 9.8 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>';
+  document.querySelectorAll('#dash-root input[type=password]').forEach(inp => {
+    const box = document.createElement('span'); box.className = 'ac-olho'; inp.parentNode.insertBefore(box, inp); box.appendChild(inp);
+    const b = document.createElement('button'); b.type = 'button'; box.appendChild(b);
+    const marcar = (ver) => { inp.type = ver ? 'text' : 'password'; b.innerHTML = ver ? FECHADO : ABERTO; b.setAttribute('aria-label', ver ? 'Esconder a senha' : 'Mostrar a senha'); b.title = b.getAttribute('aria-label'); b.setAttribute('aria-pressed', String(ver)); };
+    marcar(false);
+    b.addEventListener('click', () => { marcar(inp.type === 'password'); inp.focus(); });
+    // ao enviar o formulário, a senha volta a ficar escondida
+    if (inp.form) inp.form.addEventListener('submit', () => marcar(false));
+  });
+  // só na prévia (demonstração): apaga os acessos de teste guardados neste navegador e recomeça
+  const zerar = document.getElementById('ac-demo-zerar');
+  if (zerar) zerar.addEventListener('click', () => { if (!confirm('Apagar os acessos de teste desta prévia? Depois é só tocar em "Criar acesso" de novo.')) return;
+    ['ac-demo-usuarios', 'ac-sessao', 'ac-reg'].forEach(k => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch (e) {} });
+    location.reload(); });
 })();
 </script>
 </body>

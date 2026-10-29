@@ -65,6 +65,7 @@ jobs:
         env:
           PLANILHA_URL: ${{ secrets.PLANILHA_URL }}
           PENDENTES_PASTA: ${{ secrets.PENDENTES_PASTA }}
+          FROTAS_PASTA: ${{ secrets.FROTAS_PASTA }}
           GMAIL_USUARIO: ${{ secrets.GMAIL_USUARIO }}
           GMAIL_SENHA_APP: ${{ secrets.GMAIL_SENHA_APP }}
           RELATORIO_PARA: ${{ secrets.RELATORIO_PARA }}
