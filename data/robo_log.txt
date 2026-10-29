@@ -1,5 +1,3 @@
-29/10/2026 10:36:39  Coleta: 9 empenhos, 53 liquidações, 75 pagamentos, 274 saldos, 84 documentos fiscais, 0 erros
-29/10/2026 10:36:41  1 empenhos com itens que não batem com o valor: ficam fora dos relatórios de produto até a releitura acertar.
 29/10/2026 10:36:47  Pronto para publicar: 9128 empenhos, saldo a pagar R$ 1,451,658.03, 262 parados.
 29/10/2026 10:37:44  Sem lançamento novo no portal.
 29/10/2026 10:43:08  Sem lançamento novo no portal.
@@ -58,3 +56,5 @@
 29/10/2026 14:30:28  Dívida ativa: saldo a receber por ano de inscrição…
 29/10/2026 14:31:34  Receitas e indicadores: arrecadado 41,779,391.95; saúde 24.18%, educação 28.39%, pessoal 45.99%.
 29/10/2026 14:31:34  Pronto para publicar: 9130 empenhos, saldo a pagar R$ 1,469,858.54, 262 parados.
+29/10/2026 14:32:47  Sem lançamento novo no portal.
+29/10/2026 14:37:37  Sem lançamento novo no portal.
