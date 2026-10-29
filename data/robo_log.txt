@@ -1,7 +1,3 @@
-29/10/2026 13:33:04  Sem lançamento novo no portal.
-29/10/2026 13:37:58  Sem lançamento novo no portal.
-29/10/2026 13:43:02  Sem lançamento novo no portal.
-29/10/2026 13:48:00  Sem lançamento novo no portal.
 29/10/2026 13:52:58  Sem lançamento novo no portal.
 29/10/2026 13:57:58  Sem lançamento novo no portal.
 29/10/2026 14:03:01  Sem lançamento novo no portal.
@@ -58,3 +54,7 @@
 29/10/2026 15:14:23  Pronto para publicar: 9130 empenhos, saldo a pagar R$ 1,441,682.72, 262 parados.
 29/10/2026 15:15:04  Sem lançamento novo no portal.
 29/10/2026 15:20:00  Sem lançamento novo no portal.
+29/10/2026 15:24:58  Sem lançamento novo no portal.
+29/10/2026 15:29:59  Sem lançamento novo no portal.
+29/10/2026 15:34:58  Sem lançamento novo no portal.
+29/10/2026 15:40:04  Sem lançamento novo no portal.
