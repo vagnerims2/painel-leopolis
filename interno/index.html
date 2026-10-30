@@ -145,7 +145,6 @@ html,body{margin:0;background:#e4e7ec;color:var(--color-fg);font-family:var(--fo
 #dash-root .tabs button[data-go=geral]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 3h8v8H3zM13 3h8v5h-8zM13 10h8v11h-8zM3 13h8v8H3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=alertas]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2 1 21h22L12 2zm1 15h-2v2h2v-2zm0-7h-2v5h2v-5z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=dotacoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2a10 10 0 1 0 10 10h-10V2zm2 0v8h8a10 10 0 0 0-8-8z'/%3E%3C/svg%3E")}
-#dash-root .tabs button[data-go=liquidacoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill-rule='evenodd' d='M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=empenhos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M3 4h18v3H3zM3 10h18v3H3zM3 16h18v3H3z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=produtos]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M10 2a8 8 0 0 1 6.3 12.9l5.4 5.4-1.4 1.4-5.4-5.4A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z'/%3E%3C/svg%3E")}
 #dash-root .tabs button[data-go=requisicoes]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM9 12h8v2H9zm0 4h8v2H9z'/%3E%3C/svg%3E")}
@@ -894,7 +893,6 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     <button data-go="geral" aria-selected="true">Visão geral</button>
     <button data-go="dotacoes" aria-selected="false">Dotações</button>
     <button data-go="empenhos" aria-selected="false">Empenhos</button>
-    <button data-go="liquidacoes" aria-selected="false">Liquidações</button>
     <button data-go="requisicoes" aria-selected="false">Requisições</button>
     <button data-go="produtos" aria-selected="false">Produtos</button>
     <button data-go="compras" aria-selected="false">Licitações</button>
@@ -1067,7 +1065,6 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
   </section>
 
   <!-- ============ LIQUIDAÇÕES (mesma tabela da aba Empenhos, só com os já liquidados) ============ -->
-  <section class="tab" data-tab="liquidacoes" hidden></section>
 
   <!-- ============ REQUISIÇÕES ============ -->
   <section class="tab" data-tab="requisicoes" hidden>
@@ -1551,15 +1548,9 @@ dash.calc('por_mes', {
     m[k].empenhado += Number(r.empenhado_liquido || 0); m[k].liquidado += Number(r.liquidado || 0); m[k].pago += Number(r.pago || 0); }); return Object.values(m).sort((a, b) => a.mes < b.mes ? -1 : 1); }
 });
 dash.calc('emp', {
-  title: 'Empenhos com dias', description: 'Empenhos com campos numéricos convertidos, dias desde a emissão e data da última liquidação.', inputs: ['empenhos', 'liquidacoes', 'notas'],
-  fn: (empenhos, liquidacoes, notas) => {
-    // última liquidação: a mais recente entre as liquidações (últimas semanas) e as notas fiscais (o ano todo);
-    // se nenhuma das duas tiver o empenho, vale a data da primeira liquidação
-    const ult = {}, poe = (e, d) => { if (e && d && (!ult[e] || d > ult[e])) ult[e] = d; };
-    (liquidacoes || []).forEach(l => { if (Number(l.valor || 0) > 0) poe(l.empenho, l.data); });
-    (notas || []).forEach(n => poe(n.empenho, n.data_liquidacao));
-    return empenhos.map(r => ({ ...r, ultima_liq: Number(r.liquidado || 0) > 0 ? (ult[r.empenho] || r.primeira_liquidacao || '') : '', empenho_ord: parseInt(r.empenho) || 0, valor: Number(r.valor || 0) - Number(r.anulado || 0), falta_liquidar: Number(r.falta_liquidar || 0),
-    liquidado_nao_pago: Number(r.liquidado_nao_pago || 0), saldo_a_pagar: Number(r.saldo_a_pagar || 0), valor_estornado: Number(r.valor_estornado || 0), dias: Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5) })); }
+  title: 'Empenhos com dias', description: 'Empenhos com campos numéricos convertidos e dias desde a emissão.', inputs: ['empenhos'],
+  fn: (empenhos) => empenhos.map(r => ({ ...r, empenho_ord: parseInt(r.empenho) || 0, valor: Number(r.valor || 0) - Number(r.anulado || 0), falta_liquidar: Number(r.falta_liquidar || 0),
+    liquidado_nao_pago: Number(r.liquidado_nao_pago || 0), saldo_a_pagar: Number(r.saldo_a_pagar || 0), valor_estornado: Number(r.valor_estornado || 0), dias: Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5) }))
 });
 dash.calc('tempo_medio', {
   title: 'Tempo médio até liquidar', description: 'Média de dias do empenho à primeira liquidação e ao último pagamento, nos empenhos ordinários, por tipo de despesa, secretaria e fornecedor.', inputs: ['empenhos'],
@@ -1683,8 +1674,7 @@ const sitCls = (s) => s === 'Pago' ? 'ok' : s === 'Falta liquidar' ? 'late' : (s
 function pillCell(tr, txt, cls) { const c = document.createElement('td'); const sp = document.createElement('span'); sp.className = 'pill ' + (cls || 'neu'); sp.textContent = txt; c.appendChild(sp); tr.appendChild(c); return c; }
 
 // ---------- abas ----------
-function irPara(aba) { if (aba === 'liquidacoes' || aba === 'empenhos') trocaModoLiq(aba === 'liquidacoes');
-  document.querySelectorAll('#dash-root .tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.go === aba)));
+function irPara(aba) { document.querySelectorAll('#dash-root .tabs button').forEach(x => x.setAttribute('aria-selected', String(x.dataset.go === aba)));
   document.querySelectorAll('#dash-root .tab').forEach(s => { s.hidden = s.dataset.tab !== aba; }); dash.setLink(aba); }
 document.querySelectorAll('#dash-root .tabs button').forEach(b => b.addEventListener('click', () => irPara(b.dataset.go)));
 document.querySelectorAll('#dash-root [data-goto]').forEach(b => b.addEventListener('click', () => { irPara(b.dataset.goto); if (b.dataset.faixa) { const s = document.getElementById('a-faixa'); s.value = b.dataset.faixa; s.dispatchEvent(new Event('change')); } }));
@@ -1724,26 +1714,6 @@ function casaBusca(r, q) { r._motivo = '';
     if (nf) { r._motivo = `achado pela nota fiscal nº ${nf.numero}`; return true; }
     return false; }
   return nz(r.fornecedor).includes(q); }   // texto: só pelo nome do fornecedor
-// Aba Liquidações: a mesma tabela da aba Empenhos, só com os empenhos que já tiveram liquidação, da mais recente para a mais antiga.
-// Cada aba guarda os seus filtros e a sua ordem.
-const MODO_LIQ = { liq: false, salvo: { emp: null, liq: { saldo: false, sortK: 'ultima_liq', sortDir: -1 } } };
-function trocaModoLiq(liq) {
-  if (MODO_LIQ.liq === liq) return;
-  const card = document.getElementById('pendencias'), sel = document.querySelector('#dash-root section.tab[data-tab="empenhos"] .vis-sel');
-  const ss = document.getElementById('so-saldo');
-  let k = 'dias', dir = -1; try { k = sortK; dir = sortDir; } catch (e) {}   // na abertura da página a ordem ainda não existe
-  MODO_LIQ.salvo[MODO_LIQ.liq ? 'liq' : 'emp'] = { saldo: ss.checked, sortK: k, sortDir: dir };
-  MODO_LIQ.liq = liq; window.__modoLiq = liq;
-  const destino = document.querySelector(`#dash-root section.tab[data-tab="${liq ? 'liquidacoes' : 'empenhos'}"]`);
-  if (liq) destino.appendChild(card); else (sel ? sel.after(card) : destino.prepend(card));
-  if (!liq && document.getElementById('notas') && !document.getElementById('notas').hidden) card.hidden = true; else card.hidden = false;
-  card.querySelector('h2').textContent = liq ? 'Liquidações' : 'Empenhos';
-  const nota = card.querySelector('p.note'); if (!nota.dataset.emp) nota.dataset.emp = nota.innerHTML;
-  nota.innerHTML = liq ? 'Empenhos de 2026 que já tiveram liquidação, da liquidação mais recente para a mais antiga (coluna <b>Últ. liquidação</b>). Os filtros funcionam como na aba Empenhos; toque no empenho para ver os detalhes.' : nota.dataset.emp;
-  const thD = document.querySelector('#tbl th[data-field="data"] button'); thD.textContent = liq ? 'Últ. liquidação' : 'Data'; thD.dataset.k = liq ? 'ultima_liq' : 'data';
-  const v = MODO_LIQ.salvo[liq ? 'liq' : 'emp']; if (v) { ss.checked = v.saldo; setTimeout(() => { sortK = v.sortK; sortDir = v.sortDir; if (dash.data('emp').status === 'ok') drawTable(); }, 0); }
-  else setTimeout(() => { if (dash.data('emp').status === 'ok') drawTable(); }, 0);
-}
 function drawTable() {
   const d = dash.data('emp'), tb = document.querySelector('#tbl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return;
   fillSelect(fSec, uniq(d.data, 'secretaria')); fillSelect(fLic, uniq(d.data, 'modalidade')); fillSelect(fNat, uniq(d.data, 'natureza'), natLabel);
@@ -1755,8 +1725,7 @@ function drawTable() {
   const okF = (r) => !fq || (fcode ? String(r.fonte).split(' - ')[0] === fcode : nz(r.fonte).includes(fq));
   const q = nz(busca.value.trim()), f = faixa.value;
   const okI = (dd) => naFaixa(f, dd);
-  const LIQ = !!window.__modoLiq;
-  const rows = d.data.filter(r => (!LIQ || r.ultima_liq) && okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
+  const rows = d.data.filter(r => okI(r.dias) && okF(r) && (!soSaldo.checked || r.saldo_a_pagar > 0) && (!soEst.checked || r.estornos) && (!fSit.value || r.situacao === fSit.value) && (!fNat.value || r.natureza === fNat.value)
     && (!fTipo.value || r.tipo_despesa === fTipo.value) && (!fSec.value || r.secretaria === fSec.value) && (!fLic.value || r.modalidade === fLic.value)
     && (!q || casaBusca(r, q)))
     .sort((a, b) => { const x = a[sortK], y = b[sortK]; return sortDir * (typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'pt-BR')); })
@@ -1764,7 +1733,7 @@ function drawTable() {
   const s = (k) => rows.reduce((a, r) => a + (r[k] || 0), 0);
   document.getElementById('t-valor').textContent = brl.format(s('valor')); document.getElementById('t-falta').textContent = brl.format(s('falta_liquidar'));
   document.getElementById('t-lnp').textContent = brl.format(s('liquidado_nao_pago')); document.getElementById('t-saldo').textContent = brl.format(s('saldo_a_pagar'));
-  document.getElementById('t-qtd').textContent = `Total da seleção · ${intF.format(rows.length)} empenhos${LIQ ? ' liquidados' : ''}`;
+  document.getElementById('t-qtd').textContent = `Total da seleção · ${intF.format(rows.length)} empenhos`;
   let extra = ''; const sf = dash.data('saldo_fontes');
   if (fq && sf.status === 'ok') { const m = sf.data.filter(r => fcode ? String(r.codigo) === fcode : nz(r.fonte).includes(fq)); if (m.length) extra = ` · saldo oficial da fonte no portal: ${brl.format(m.reduce((a, r) => a + Number(r.saldo_a_pagar), 0))}`; }
   document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
@@ -1772,7 +1741,7 @@ function drawTable() {
   const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 100; }
   const lim = window.__empLim || 100;   // começa com 100 linhas: tabela grande deixava a troca de aba lenta
   rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
-    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); reqBadge(c0, r.empenho); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(LIQ ? r.ultima_liq : r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
+    { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); reqBadge(c0, r.empenho); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
     td(tr, r.saldo_a_pagar ? brl.format(r.saldo_a_pagar) : '—', 'r'); { const pc = pillCell(tr, r.situacao, sitCls(r.situacao)); if (r.estornos) { const x = document.createElement('div'); x.className = 'sub2 est'; x.textContent = r.estornos; pc.appendChild(x); } }
     const ab = r.saldo_a_pagar > 0; td(tr, String(r.dias), 'r' + (ab && r.dias > 90 ? ' late' : ab && r.dias > 30 ? ' mid' : '')); tr.classList.add('lin'); tr.tabIndex = 0;
@@ -1790,7 +1759,7 @@ busca.addEventListener('input', drawTable); fFonte.addEventListener('input', dra
 [soSaldo, soEst, fSit, fSec, fLic, faixa].forEach(e => e.addEventListener('change', drawTable));
 fNat.addEventListener('change', () => { const d = dash.data('emp'); if (d.status === 'ok' && fTipo.value) { const r = d.data.find(x => x.tipo_despesa === fTipo.value); if (r && r.natureza !== fNat.value) fTipo.value = ''; } drawTable(); });
 fTipo.addEventListener('change', () => { const d = dash.data('emp'); if (d.status === 'ok' && fTipo.value) { const r = d.data.find(x => x.tipo_despesa === fTipo.value && x.natureza); if (r) fNat.value = r.natureza; } drawTable(); });
-document.querySelectorAll('#tbl th button').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; if (sortK === k) sortDir *= -1; else { sortK = k; sortDir = ['dias', 'saldo_a_pagar', 'valor', 'data', 'ultima_liq', 'empenho_ord', 'falta_liquidar', 'liquidado_nao_pago'].includes(k) ? -1 : 1; } drawTable(); }));
+document.querySelectorAll('#tbl th button').forEach(b => b.addEventListener('click', () => { const k = b.dataset.k; if (sortK === k) sortDir *= -1; else { sortK = k; sortDir = ['dias', 'saldo_a_pagar', 'valor', 'data', 'empenho_ord', 'falta_liquidar', 'liquidado_nao_pago'].includes(k) ? -1 : 1; } drawTable(); }));
 function filtrarEmpenhos(o) { irPara('empenhos'); busca.value = o.busca || ''; fFonte.value = o.fonte || ''; fSit.value = ''; fNat.value = ''; fTipo.value = o.tipo || ''; fSec.value = ''; fLic.value = o.lic || ''; faixa.value = ''; soSaldo.checked = !!o.saldo; soEst.checked = false; drawTable(); }
 
 // ---------- Alertas ----------
