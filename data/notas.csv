@@ -1,4 +1,5 @@
 id,liquidacao,data_liquidacao,empenho,fornecedor,cpf_cnpj,tipo,numero,serie,data_documento,valor,chave,link,restos_a_pagar
+92797,8963,2026-10-29,9152,MARCIO DE LUCENA SILVA,59920483915,Diárias,953,Outras Séries,2026-10-21,350.0,,,
 92796,8962,2026-10-29,9151,JEAN CARLOS PANIZIO,00832799971,Diárias,950,Outras Séries,2026-10-21,75.0,,,
 92795,8961,2026-10-29,9150,HENRIQUE DE ARAUJO SILVA,09113238990,Diárias,956,Outras Séries,2026-10-29,150.0,,,
 92794,8960,2026-10-29,9149,JONAS CUSTODIO DA SILVA,06615146924,Diárias,957,Outras Séries,2026-10-22,75.0,,,
