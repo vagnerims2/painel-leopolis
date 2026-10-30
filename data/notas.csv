@@ -1,4 +1,5 @@
 id,liquidacao,data_liquidacao,empenho,fornecedor,cpf_cnpj,tipo,numero,serie,data_documento,valor,chave,link,restos_a_pagar
+92825,8990,2026-10-30,9177,SIRLEI REGINA DE OLIVEIRA SOARES,92535950944,Nota Fiscal do Consumidor Eletrônica (NFC-e) Mod. 65,88915,1,2026-10-20,210.0,,,
 92810,8989,2026-10-30,9176,BANCO DO BRASIL,00000000022403,Aviso de Débito,100214098,Outras Séries,2026-10-29,13.27,,,
 92811,8989,2026-10-30,9176,BANCO DO BRASIL,00000000022403,Aviso de Débito,100214099,Outras Séries,2026-10-29,13.27,,,
 92824,8988,2026-10-30,9175,PAULO SERGIO DOS SANTOS LIMA,08849898959,Diárias,024,Outras Séries,2026-10-30,150.0,,,
