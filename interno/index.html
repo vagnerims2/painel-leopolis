@@ -612,6 +612,10 @@ body.so-req #dash-root .tab[data-tab=requisicoes],body.so-req #req-det{display:b
   body.imprimir-saude #dash-root .sd-quebra{break-before:page}
   @page{size:A4 portrait;margin:12mm}
 }
+
+/* quadros fora da tela só são desenhados quando chegam perto (troca de aba mais rápida); na impressão, tudo */
+#dash-root section.tab > .card{content-visibility:auto;contain-intrinsic-size:auto 700px}
+@media print{#dash-root section.tab > .card{content-visibility:visible}}
 </style>
 </head>
 <body>
@@ -1754,8 +1758,8 @@ function drawTable() {
   if (fq && sf.status === 'ok') { const m = sf.data.filter(r => fcode ? String(r.codigo) === fcode : nz(r.fonte).includes(fq)); if (m.length) extra = ` · saldo oficial da fonte no portal: ${brl.format(m.reduce((a, r) => a + Number(r.saldo_a_pagar), 0))}`; }
   document.getElementById('filtro-total').textContent = `${intF.format(rows.length)} empenhos · valor ${brl.format(s('valor'))} · saldo a pagar ${brl.format(s('saldo_a_pagar'))}${extra}`;
   window.__empRows = rows;
-  const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 500; }
-  const lim = window.__empLim || 500;
+  const sig = rows.length + '|' + (rows[0] || {}).empenho + '|' + (rows[rows.length - 1] || {}).empenho; if (sig !== window.__empSig) { window.__empSig = sig; window.__empLim = 100; }
+  const lim = window.__empLim || 100;   // começa com 100 linhas: tabela grande deixava a troca de aba lenta
   rows.slice(0, lim).forEach(r => { const tr = document.createElement('tr'); tr.dataset.key = r.empenho;
     { const c0 = td(tr, r.empenho); c0.style.fontWeight = '600'; botaoNF(c0, notasPorEmp()[r.empenho], `Notas fiscais do empenho ${r.empenho}`); reqBadge(c0, r.empenho); if (r._motivo) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = r._motivo; c0.appendChild(m); } } td(tr, br(LIQ ? r.ultima_liq : r.data)); fornCell(tr, r.fornecedor, [r.produtos, [r.subelemento, r.tipo_despesa].filter(Boolean).join(' '), r.fonte].filter(Boolean).join(' · '));
     td(tr, brl.format(r.valor), 'r'); td(tr, r.falta_liquidar ? brl.format(r.falta_liquidar) : '—', 'r hide-sm'); td(tr, r.liquidado_nao_pago ? brl.format(r.liquidado_nao_pago) : '—', 'r hide-sm');
@@ -1764,7 +1768,7 @@ function drawTable() {
     tr.addEventListener('click', (ev) => { if (ev.target.closest('button,a')) return; detalheEmpenho(r, tr); }); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') { ev.preventDefault(); detalheEmpenho(r, tr); } }); tb.appendChild(tr); });
   if (rows.length > lim) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = 9; c.style.color = 'var(--color-fg-muted)';
     c.append(document.createTextNode(`Mostrando ${intF.format(lim)} de ${intF.format(rows.length)} empenhos (os totais consideram todos). `));
-    const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'btn2'; mais.textContent = 'Mostrar mais 500'; mais.style.marginRight = '8px'; mais.addEventListener('click', () => { window.__empLim = lim + 500; drawTable(); });
+    const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'btn2'; mais.textContent = 'Mostrar mais 200'; mais.style.marginRight = '8px'; mais.addEventListener('click', () => { window.__empLim = lim + 200; drawTable(); });
     const todos = document.createElement('button'); todos.type = 'button'; todos.className = 'btn2'; todos.textContent = `Mostrar todos (${intF.format(rows.length)})`; todos.addEventListener('click', () => { window.__empLim = rows.length; drawTable(); });
     c.append(mais, todos); tr.appendChild(c); tb.appendChild(tr); }
   if (!rows.length) emptyRow(tb, 9, 'Nenhum empenho com esse filtro.');
@@ -1927,22 +1931,29 @@ function drawLimite() { const d = dash.data('limite_dispensa'), tb = document.qu
   if (!rows.length) emptyRow(tb, 6, 'Nenhum objeto com esse filtro.'); }
 limBusca.addEventListener('input', drawLimite); lim80.addEventListener('change', drawLimite);
 const clBusca = document.getElementById('cl-busca'), clMod = document.getElementById('cl-mod');
+// tabelas grandes começam com 100 linhas e têm "Mostrar mais" embaixo (desenhar tudo de uma vez deixava a troca de aba lenta)
+const LIMS = {};
+function limDe(k, rows) { const sig = rows.length + '|' + JSON.stringify(rows[0] || '').slice(0, 80); const x = LIMS[k] = LIMS[k] || {}; if (x.sig !== sig) { x.sig = sig; x.n = 100; } return x.n; }
+function maisLinhas(tb, k, cols, lim, total, nome, redesenhar) { if (total <= lim) return; const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = cols; c.style.color = 'var(--color-fg-muted)';
+  c.append(document.createTextNode(`Mostrando ${intF.format(lim)} de ${intF.format(total)} ${nome}. `));
+  [['Mostrar mais 200', lim + 200], [`Mostrar todos (${intF.format(total)})`, total]].forEach(([t, n]) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn2'; b.textContent = t; b.style.marginRight = '8px'; b.addEventListener('click', () => { LIMS[k].n = n; redesenhar(); }); c.appendChild(b); });
+  tr.appendChild(c); tb.appendChild(tr); }
 function drawConsumo() { const d = dash.data('consumo_lic'), tb = document.querySelector('#t-cl tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; fillSelect(clMod, uniq(d.data, 'modalidade')); const q = nz(clBusca.value.trim());
   const rows = d.data.filter(r => (!clMod.value || r.modalidade === clMod.value) && (!q || nz([r.licitacao, r.fornecedores, r.secretarias].join(' ')).includes(q)));
-  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); const c = td(tr, r.licitacao); c.style.fontWeight = '600'; td(tr, brl2.format(r.valor), 'r'); td(tr, intF.format(r.qtd), 'r');
+  const limC = limDe('cl', rows); rows.slice(0, limC).forEach(r => { const tr = document.createElement('tr'); const c = td(tr, r.licitacao); c.style.fontWeight = '600'; td(tr, brl2.format(r.valor), 'r'); td(tr, intF.format(r.qtd), 'r');
     fornCell(tr, intF.format(r.n_sec), r.secretarias.split('; ').slice(0, 3).join('; ') + (r.n_sec > 3 ? '…' : '')).classList.add('hide-sm'); fornCell(tr, intF.format(r.n_forn), r.fornecedores.split('; ').slice(0, 3).join('; ') + (r.n_forn > 3 ? '…' : '')).classList.add('hide-sm'); td(tr, br(r.ultimo), 'r hide-sm');
     tr.style.cursor = 'pointer'; tr.addEventListener('click', () => filtrarEmpenhos({ busca: r.licitacao })); tb.appendChild(tr); });
   document.getElementById('cl-qtd').textContent = `Total · ${intF.format(rows.length)} licitações`; document.getElementById('cl-tot').textContent = brl2.format(rows.reduce((a, r) => a + r.valor, 0)); document.getElementById('cl-n').textContent = intF.format(rows.reduce((a, r) => a + r.qtd, 0));
-  if (!rows.length) emptyRow(tb, 6, 'Nenhuma licitação com esse filtro.'); }
+  maisLinhas(tb, 'cl', 6, limC, rows.length, 'licitações', drawConsumo); if (!rows.length) emptyRow(tb, 6, 'Nenhuma licitação com esse filtro.'); }
 clBusca.addEventListener('input', drawConsumo); clMod.addEventListener('change', drawConsumo);
 const paLim = document.getElementById('pa-lim'), paPer = document.getElementById('pa-per'), paBusca = document.getElementById('pa-busca');
 function drawPrecos() { const d = dash.data('precos_alto'), tb = document.querySelector('#t-pa tbody'); tb.replaceChildren(); if (d.status !== 'ok') return; const lim = Number(paLim.value) / 100, q = nz(paBusca.value.trim());
   const pp = paPer.value;
   const rows = d.data.filter(r => r.acima >= lim && naFaixa(pp, Math.floor((Date.now() - new Date(r.data + 'T12:00:00')) / 864e5)) && (!q || nz([r.produto, r.fornecedor, r.empenho, r.secretaria].join(' ')).includes(q)));
-  rows.slice(0, 300).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, [r.embalagem, r.unidade, r.secretaria, r.compras + ' compras no ano'].filter(Boolean).join(' · ')); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
+  const limP = limDe('pa', rows); rows.slice(0, limP).forEach(r => { const tr = document.createElement('tr'); fornCell(tr, r.produto, [r.embalagem, r.unidade, r.secretaria, r.compras + ' compras no ano'].filter(Boolean).join(' · ')); td(tr, br(r.data)); td(tr, r.empenho); td(tr, r.fornecedor, 'hide-sm'); td(tr, brl2.format(r.preco), 'r'); td(tr, brl2.format(r.mediana), 'r');
     const c = td(tr, '+' + d1.format(r.acima * 100) + '%', 'r ' + (r.acima >= 1 ? 'late' : 'mid')); tb.appendChild(tr); });
-  document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens` + (rows.length > 300 ? ' (mostrando 300)' : '');
-  if (!rows.length) emptyRow(tb, 7, 'Nenhum item acima do padrão nesse filtro.'); }
+  document.getElementById('pa-total').textContent = `${intF.format(rows.length)} itens`;
+  maisLinhas(tb, 'pa', 7, limP, rows.length, 'itens', drawPrecos); if (!rows.length) emptyRow(tb, 7, 'Nenhum item acima do padrão nesse filtro.'); }
 [paLim, paPer].forEach(e => e.addEventListener('change', drawPrecos)); paBusca.addEventListener('input', drawPrecos);
 
 // ---------- imprimir e exportar ----------
@@ -2016,12 +2027,12 @@ function drawNotas() { const d = dash.data('notas'), tb = document.querySelector
     && (!q || (ehNumero(q) ? (q.length >= 11 ? String(r.cpf_cnpj) === qd || String(r.chave) === qd : semZeros(String(r.numero).split('/')[0]) === semZeros(q.split('/')[0]))
       : nz(r.fornecedor).includes(q) || (qd.length >= 11 && (String(r.cpf_cnpj).includes(qd) || String(r.chave).includes(qd))))));
   tot.textContent = `${intF.format(rows.length)} documentos · ${brl2.format(rows.reduce((a, r) => a + N(r.valor), 0))}`;
-  rows.slice(0, 500).forEach(r => { const tr = document.createElement('tr');
+  const limN = limDe('nf', rows); rows.slice(0, limN).forEach(r => { const tr = document.createElement('tr');
     const c1 = td(tr, r.liquidacao); c1.style.fontWeight = '600'; const s1 = document.createElement('div'); s1.className = 'sub2'; s1.textContent = br(r.data_liquidacao); c1.appendChild(s1);
     td(tr, r.empenho || (r.restos_a_pagar ? 'restos a pagar' : '—')); fornCell(tr, r.fornecedor, r.cpf_cnpj);
     const c4 = td(tr, docTxt(r), 'hide-sm'); const s4 = document.createElement('div'); s4.className = 'sub2'; s4.textContent = 'emitida em ' + br(r.data_documento); c4.appendChild(s4);
     td(tr, brl2.format(N(r.valor)), 'r'); botaoNF(td(tr, ''), [r], `${docTxt(r)} — ${r.fornecedor}`); tb.appendChild(tr); });
-  if (rows.length > 500) emptyRow(tb, 6, `Mostrando 500 de ${intF.format(rows.length)}. Refine a busca.`); if (!rows.length) emptyRow(tb, 6, 'Nenhum documento fiscal com esse filtro.'); }
+  maisLinhas(tb, 'nf', 6, limN, rows.length, 'documentos', drawNotas); if (!rows.length) emptyRow(tb, 6, 'Nenhum documento fiscal com esse filtro.'); }
 nBusca.addEventListener('input', drawNotas); [nPer, nTipo, nDe, nAte].forEach(e => e.addEventListener('change', drawNotas));
 dash.onData(drawNotas);
 
@@ -2205,7 +2216,9 @@ function drawReq() {
     && (!q || (memo ? memosDe(l.m).includes(memo) : num ? (l._mot = motivo(l)) !== null : palavras.every(w => nz([l.f, l.emp && l.emp.fornecedor].filter(Boolean).join(' ')).includes(w)))))
     .sort((a, b) => -dir * (ordemReq === 'atraso' ? ((b.aberta ? b.atraso : -1) - (a.aberta ? a.atraso : -1)) || ((Number(b.r) || 0) - (Number(a.r) || 0)) : (Number(b.r) || 0) - (Number(a.r) || 0)));
   document.getElementById('req-total').textContent = `${intF.format(rows.length)} de ${intF.format(lista.length)} requisições · ${intF.format(lista.filter(l => l.emp).length)} já ligadas a empenho do portal`;
-  rows.slice(0, 600).forEach(l => {
+  const sigR = rows.length + '|' + (rows[0] || {}).r + '|' + (rows[rows.length - 1] || {}).r; if (sigR !== REQ.sig) { REQ.sig = sigR; REQ.lim = 100; }
+  const limR = REQ.lim || 100;   // começa com 100: a tabela inteira deixava a troca de aba lenta
+  rows.slice(0, limR).forEach(l => {
     const tr = document.createElement('tr'); tr.className = 'lin'; tr.tabIndex = 0; tr.setAttribute('aria-expanded', 'false');
     { const c = td(tr, l.r); c.style.fontWeight = '600'; const s = document.createElement('div'); s.className = 'sub2'; s.textContent = [l.d, l.m ? 'memo ' + l.m : ''].filter(Boolean).join(' · '); c.appendChild(s);
       if (num && l._mot) { const m = document.createElement('div'); m.className = 'motivo'; m.textContent = l._mot; c.appendChild(m); } }
@@ -2263,7 +2276,11 @@ function drawReq() {
       dl.appendChild(ac); c.appendChild(dl); tr.after(dt); };
     tr.addEventListener('click', abrir); tr.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); abrir(); } });
     tb.appendChild(tr); });
-  if (rows.length > 600) emptyRow(tb, 5, `Mostrando 600 de ${intF.format(rows.length)}. Use a busca ou os filtros para achar as demais.`);
+  if (rows.length > limR) { const tr = document.createElement('tr'); const c = document.createElement('td'); c.colSpan = 5; c.style.color = 'var(--color-fg-muted)';
+    c.append(document.createTextNode(`Mostrando ${intF.format(limR)} de ${intF.format(rows.length)} requisições. `));
+    const mais = document.createElement('button'); mais.type = 'button'; mais.className = 'btn2'; mais.textContent = 'Mostrar mais 200'; mais.style.marginRight = '8px'; mais.addEventListener('click', () => { REQ.lim = limR + 200; drawReq(); });
+    const todos = document.createElement('button'); todos.type = 'button'; todos.className = 'btn2'; todos.textContent = `Mostrar todas (${intF.format(rows.length)})`; todos.addEventListener('click', () => { REQ.lim = rows.length; drawReq(); });
+    c.append(mais, todos); tr.appendChild(c); tb.appendChild(tr); }
   if (!rows.length) emptyRow(tb, 5, 'Nenhuma requisição com esse filtro.');
 }
 // secretarias da planilha vêm escritas de vários jeitos ("SECRETARIA DE SAUDE", "28 SECRETARIA DE SAUDE - FUNDO MUNICIPAL..."): agrupa pelo nome
