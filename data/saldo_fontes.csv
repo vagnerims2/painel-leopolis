@@ -1,20 +1,19 @@
 fonte,codigo,saldo_a_pagar
-0 - Recursos Ordinários (Livres),0,417992.19
+0 - Recursos Ordinários (Livres),0,415017.09
 371 - Bloco de Investimento na Rede de Serviços Públicos de Saúde,371,341000.0
 1018 - Emendas Individuais Impositivas - transferência com finalidade definida - (Inciso II do Art. 166-A da E.C. 105/20...,1018,117563.49
 1040 - Transferências do FUNDEB - Complementação da União - VAAR,1040,113512.95
-104 - Demais Impostos Vinculados à Educação Básica,104,96962.91
+104 - Demais Impostos Vinculados à Educação Básica,104,97002.72
 501 - Receitas de Alienações de Ativos,501,84503.24
 103 - 5% sobre Transferências Constitucionais FUNDEB,103,45423.8
 "507 - COSIP - Contribuição de Iluminação Pública, Art. 149-A, CF",507,45262.98
 107 - Salário-Educação,107,37497.24
 370 - Bloco de Custeio das Ações e Serviços Públicos de Saúde,370,36799.54
-303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,35100.48
+303 - Saúde - Receitas Vinculadas (E.C. 29/00 - 15%),303,35113.75
 494 - Bloco de Custeio das Ações e Serviços Públicos de Saúde,494,28046.78
 826 - Bloco de Financiamento da Proteção Social Básica - SUAS ESTADO,826,16586.64
 1063 - Transferências da Política Nacional Aldir Blanc,1063,13760.0
 1041 - Transferências de Recursos do FNDE referentes ao Programa Dinheiro Direto na Escola (PDDE),1041,7032.05
-504 - Outros Royalties e Compensações Financeiras e Patrimoniais não Previdenciárias,504,6778.52
 743 - FAMILIA ESTADO - PISO PARANAENSE - PPAS,743,5272.0
 1080 - Transferências do FUNDEB - Complementação da União - ETI,1080,4839.28
 940 - Bloco de Financiamento da Gestão do Programa Bolsa família e Cadastro Único - Portaria 113/2015,940,3570.0
@@ -24,3 +23,5 @@ fonte,codigo,saldo_a_pagar
 1016 - Emendas Individuais Impositivas - transferência especial - (Inciso I do Art. 169-A da E.C. 105/2019),1016,738.0
 829 - Fundo do Esporte Investimento,829,640.01
 830 - Fundo do Esporte Material Esportivo,830,531.57
+504 - Outros Royalties e Compensações Financeiras e Patrimoniais não Previdenciárias,504,13.3
+511 - Taxas - Prestação de Serviços,511,13.27
