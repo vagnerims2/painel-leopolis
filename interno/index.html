@@ -1482,23 +1482,30 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
 <script>
 /* Substitui o ambiente do painel do Claude: carrega os CSVs desta pasta e calcula tudo no navegador. */
 (function () {
-  const FONTES = ['empenhos', 'itens', 'movimento', 'liquidacoes', 'saldo_fontes', 'dotacoes'];
+  // primeiro o essencial (a página já aparece); itens, notas e pagamentos chegam logo depois, enquanto a pessoa já usa
+  const FONTES = ['empenhos', 'movimento', 'liquidacoes', 'saldo_fontes', 'dotacoes'];
+  const DEPOIS = ['itens', 'notas', 'pagamentos'], faltam = new Set(DEPOIS);
   const css = getComputedStyle(document.documentElement);
   const cor = (n) => css.getPropertyValue(n).trim();
   const brutos = {}, calcs = {}, cache = {}, ouvintes = [];
   let estado = 'loading';
-  function parseCSV(t) { const rows = []; let f = '', r = [], q = false;
-    for (let i = 0; i < t.length; i++) { const c = t[i];
-      if (q) { if (c === '"') { if (t[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += c; }
-      else if (c === '"') q = true; else if (c === ',') { r.push(f); f = ''; } else if (c === '\n') { r.push(f); rows.push(r); r = []; f = ''; } else if (c !== '\r') f += c; }
-    if (f || r.length) { r.push(f); rows.push(r); }
-    const h = rows.shift() || []; return rows.filter(x => x.length > 1).map(x => Object.fromEntries(h.map((k, j) => [k, x[j] ?? '']))); }
+  function parseCSV(t) { const rows = [], n = t.length; let i = 0, r = [];
+      // campo sem aspas: corta direto até a próxima vírgula ou quebra de linha (bem mais rápido que ler letra por letra)
+      while (i < n) { let f = '', e;
+        if (t.charCodeAt(i) === 34) { let j = i + 1;
+          for (;;) { const k = t.indexOf('"', j); if (k < 0) { f += t.slice(j); j = n; break; } f += t.slice(j, k); if (t.charCodeAt(k + 1) === 34) { f += '"'; j = k + 2; } else { j = k + 1; break; } }
+          e = j; while (e < n && t.charCodeAt(e) !== 44 && t.charCodeAt(e) !== 10) e++; f += t.slice(j, e).replace(/\r/g, ''); }
+        else { const v = t.indexOf(',', i), l = t.indexOf('\n', i); e = v < 0 ? (l < 0 ? n : l) : l < 0 ? v : Math.min(v, l); f = t.slice(i, e); if (f.indexOf('\r') >= 0) f = f.replace(/\r/g, ''); }
+        r.push(f); if (e >= n || t.charCodeAt(e) === 10) { rows.push(r); r = []; } i = e + 1; }
+      if (r.length) { r.push(''); rows.push(r); }   // linha terminada em vírgula
+      const h = rows.shift() || [], m = h.length; return rows.filter(x => x.length > 1).map(x => { const o = {}; for (let j = 0; j < m; j++) o[h[j]] = x[j] ?? ''; return o; }); }
   window.dash = {
     colors: [cor('--serie0'), cor('--serie1'), cor('--serie2')],
     calc(id, o) { calcs[id] = o; },
     data(id) {
       if (estado !== 'ok') return { status: estado, data: [] };
       if (id in brutos) return { status: 'ok', data: brutos[id] };
+      if (faltam.has(id)) return { status: 'loading', data: [] };
       if (!(id in cache)) { const c = calcs[id]; if (!c) return { status: 'error', data: [] };
         try { cache[id] = c.fn(...c.inputs.map(i => window.dash.data(i).data)); } catch (e) { console.error(id, e); return { status: 'error', data: [] }; } }
       return { status: 'ok', data: cache[id] };
@@ -1511,11 +1518,15 @@ html.ac-trancado #dash-root .pg{visibility:hidden}
     // rodapé: hora da última leitura do robô (mesmo sem novidade); se ainda não houver, a da última mudança nos dados
     Promise.all([txt('ultima_leitura.txt'), txt('atualizado.txt')]).then(([lei, mud]) => { const el = document.getElementById('atualizado'); const q = lei || mud; if (!el || !q) return;
       el.textContent = 'Última atualização: ' + q + '.'; }); }
-  const OPCIONAIS = ['notas', 'pagamentos'];
-  Promise.all(FONTES.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => { if (!r.ok) throw new Error(n); return r.text(); }).then(t => { brutos[n] = parseCSV(t); }))
-    .concat(OPCIONAIS.map(n => fetch('../data/' + n + '.csv?v=' + v).then(r => r.ok ? r.text() : '').then(t => { if (t) brutos[n] = parseCSV(t); }).catch(() => {}))))
+  // cache: 'no-cache' = o navegador confere com o servidor e só baixa de novo se o arquivo mudou
+  const baixa = (n) => fetch('../data/' + n + '.csv', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(n); return r.text(); });
+  const avisar = () => ouvintes.forEach(f => setTimeout(f, 0));   // um quadro de cada vez: a página não congela enquanto desenha
+  Promise.all(FONTES.map(n => baixa(n).then(t => { brutos[n] = parseCSV(t); })))
     .then(() => { estado = 'ok'; }).catch(e => { console.error(e); estado = 'error'; })
-    .finally(() => ouvintes.forEach(f => f()));
+    .finally(() => { avisar();
+      // segunda leva: só começa depois da primeira, para não dividir a internet; quando chega, refaz as contas e os quadros
+      if (estado === 'ok') Promise.all(DEPOIS.map(n => baixa(n).then(t => { brutos[n] = parseCSV(t); }).catch(e => console.warn(n, e)).finally(() => faltam.delete(n))))
+        .then(() => { Object.keys(cache).forEach(k => delete cache[k]); avisar(); }); });
 })();
 </script>
 <script>
@@ -1818,7 +1829,7 @@ dBusca.addEventListener('input', drawDot); [dRec, dSup].forEach(e => e.addEventL
 // ---------- Produtos ----------
 // produtos das notas fiscais (XML salvo na pasta do Drive), ligados ao empenho pela chave de acesso
 const NFI = { notas: null };
-fetch('../data/notas_itens.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(NFI, d); NFI._rows = null;
+fetch('../data/notas_itens.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(NFI, d); NFI._rows = null;
   const el = document.getElementById('p-xml'); const n = Object.keys(d.notas || {}).length; if (el) el.textContent = `XMLs lidos: ${intF.format(n)} notas, última leitura em ${d.lido || '—'}.`; if (pBusca.value || pSec.value || pSit.value) drawProd(); }).catch(() => {});
 function itensNF() { if (!NFI.notas) return []; const nd = dash.data('notas'), ed = dash.data('empenhos'); if (nd.status !== 'ok' || ed.status !== 'ok') return [];
   if (NFI._rows && NFI._src === nd.data) return NFI._rows;
@@ -2142,7 +2153,7 @@ function prepararReq() {
 }
 // itens pendentes: relatório do Equiplano (só produtos com quantidade pendente), salvo no Drive e lido pelo robô
 const PEND = { reqs: null };
-fetch('../data/pendentes.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(PEND, d); if (REQ.linhas) drawReq(); }).catch(() => {});
+fetch('../data/pendentes.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(PEND, d); if (REQ.linhas) drawReq(); }).catch(() => {});
 const dataBR = (d) => { const m = String(d || '').match(/(\d\d)\/(\d\d)\/(\d{4})/); return m ? `${m[3]}-${m[2]}-${m[1]}` : ''; };
 // Itens pendentes, nesta ordem de prioridade:
 //  1) empenho pago no portal (ou totalmente liquidado) -> tudo recebido, mesmo que o PDF ainda mostre pendência;
@@ -2323,7 +2334,7 @@ function ligarReq() { const lig = prepararReq(); if (!lig) return; REQ.ligadas =
     if (x.t || x.em) { const ks = [x.c ? 'c:' + x.c : '', 'n:' + nz(x.f).slice(0, 25)].filter(Boolean); ks.forEach(k => { if (!REQ.contato[k]) REQ.contato[k] = x; }); } }); }
 // cadastro de fornecedores (contato da requisição mais recente de cada fornecedor na planilha, guardado pelo robô)
 const FORN = { fornecedores: null };
-fetch('../data/fornecedores.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (d) Object.assign(FORN, d); }).catch(() => {});
+fetch('../data/fornecedores.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(d => { if (d) Object.assign(FORN, d); }).catch(() => {});
 const nomeChave = (s) => String(s || '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/^C[OÓ]DIGO NOME\s+\S+\s+/, '').replace(/^[\d./-]+\s+/, '').replace(/[^A-Z0-9]+/g, ' ').trim().slice(0, 28);
 function contatoForn(cod, nome, emp) { const F = FORN.fornecedores; if (!F) return null;
   const k = (cod && F[cod]) ? cod : (emp && FORN.empenho_codigo && F[FORN.empenho_codigo[semZeros(emp)]]) ? FORN.empenho_codigo[semZeros(emp)] : (FORN.por_nome || {})[nomeChave(nome)];
@@ -2358,7 +2369,7 @@ function detalheEmpenho(r, tr) {
 }
 // base do ano (relatório completo do Equiplano: requisição de compra -> requisição de empenho -> empenho -> liquidação, estornos e itens)
 const RQ = { reqs: null };
-fetch('../data/requisicoes_ano.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(RQ, d); if (REQ._dados) mostrarReq(REQ._dados); }).catch(() => {});
+fetch('../data/requisicoes_ano.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(d => { if (!d) return; Object.assign(RQ, d); if (REQ._dados) mostrarReq(REQ._dados); }).catch(() => {});
 const REsDe = (q) => q ? q.m.filter(m => m[0] === 'RE').map(m => semZeros(m[1])) : [];
 function juntarAno(linhas) {
   if (!RQ.reqs) return linhas;
@@ -2471,7 +2482,7 @@ dash.onData(() => { if (REQ.linhas) { if (REQ._dados) REQ.linhas = juntarAno(REQ
       window.rlGrafico($('rr-graf'), $('rr-leg'), ano, porG.map(x => ({ nome: x.nome, cor: x.cor, vals: MESA.map((_, i) => { const v = val(x, chave(ano, i + 1)); return v ? tot(v) : 0; }) })), ini, fim, (v) => brlC.format(v)); }
     $('rr-fonte').textContent = D.fonte + ' O valor de cada mês é a diferença entre o acumulado até o mês e o acumulado até o mês anterior. Valores brutos, antes da dedução para o FUNDEB.' + ((D.faltam || []).length ? ` Ainda faltam ${D.faltam.length} meses, que o robô busca nas próximas atualizações.` : '');
   }
-  fetch('../data/receitas_mensal.json?v=' + Date.now()).then(r => r.ok ? r.json() : null).then(d => { if (!d) { $('rr-sub').textContent = 'A receita por mês ainda está sendo buscada no portal pelo robô.'; return; } D = d; desenhar(); }).catch(() => {});
+  fetch('../data/receitas_mensal.json', { cache: 'no-cache' }).then(r => r.ok ? r.json() : null).then(d => { if (!d) { $('rr-sub').textContent = 'A receita por mês ainda está sendo buscada no portal pelo robô.'; return; } D = d; desenhar(); }).catch(() => {});
   let t; $('rr-busca').addEventListener('input', () => { sugerir(); clearTimeout(t); t = setTimeout(desenhar, 250); });
   $('rr-busca').addEventListener('focus', sugerir); $('rr-busca').addEventListener('blur', () => setTimeout(() => { $('rr-sug').hidden = true; }, 150));
   ['rr-ini', 'rr-fim'].forEach(id => $(id).addEventListener('change', desenhar));
@@ -2498,7 +2509,7 @@ const REC_ARQ = '../data/receitas.json';
     td(tr, pctF.format(pct(sa, sp)) + '% do previsto'); const v = pct(sa - s25, s25); td(tr, (v >= 0 ? '+' : '') + pctF.format(v) + '%', 'r hide-sm rec-var ' + (v >= 0 ? 'up' : 'down'));
     tf.appendChild(tr); document.querySelector(`#${id} tfoot`)?.remove(); document.getElementById(id).appendChild(tf);
   }
-  fetch(REC_ARQ + '?v=' + Date.now()).then(r => r.json()).then(d => {
+  fetch(REC_ARQ, { cache: 'no-cache' }).then(r => r.json()).then(d => {
     const prev = d.grupos26.reduce((s, x) => s + x[2], 0), arr = d.grupos26.reduce((s, x) => s + x[3], 0);
     const n = d.meses26.length, ate9_26 = d.meses26.slice(0, 9).reduce((s, x) => s + x[1], 0), ate9_25 = d.meses25.slice(0, 9).reduce((s, x) => s + x[1], 0);
     const prop = d.cat26.filter(x => x.tipo === 'proprio').reduce((s, x) => s + x.arr, 0);
@@ -2555,7 +2566,7 @@ const REC_ARQ = '../data/receitas.json';
       r.append(el('div', null, nome), t, vv); if (extra) hoverable(r, ev => showTip(ev, nome, extra)); box.appendChild(r); });
   }
 
-  Promise.all([fetch(IND_ARQ + '?v=' + Date.now()).then(r => r.json()), fetch(REC_ARQ + '?v=' + Date.now()).then(r => r.json())]).then(([d, rec]) => {
+  Promise.all([fetch(IND_ARQ, { cache: 'no-cache' }).then(r => r.json()), fetch(REC_ARQ, { cache: 'no-cache' }).then(r => r.json())]).then(([d, rec]) => {
     const S = d.saude, E = d.educacao, P = d.pessoal, D = d.divida, DA = d.divida_ativa;
     // ---------- aba Indicadores ----------
     const tb = $('ind-tiles'); tb.replaceChildren();
@@ -3244,7 +3255,7 @@ const REC_ARQ = '../data/receitas.json';
   const LIM = { km: 3000, h: 150 };  // acima disso entre dois abastecimentos, a leitura do hodômetro/horímetro é tratada como erro de digitação
   let F = null, A = [], V = [], porV = [], medPreco = {}, sortK = 'val', sortDir = -1, fichaV = null;
 
-  fetch('../data/frotas.json?v=' + Date.now()).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => { F = d; preparar(); desenhar(); })
+  fetch('../data/frotas.json', { cache: 'no-cache' }).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }).then(d => { F = d; preparar(); desenhar(); })
     .catch(e => { console.error('frotas', e); $('fr-fonte').textContent = 'O relatório da frota ainda não foi lido. Salve o "Relatório de Abastecimento de Veículos" do sistema de Frotas na pasta Frotas do Drive.'; });
 
   function preparar() {
