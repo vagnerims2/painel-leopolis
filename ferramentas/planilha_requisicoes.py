@@ -58,16 +58,17 @@ def coluna(h):
 def ler(texto):
     linhas = list(csv.reader(io.StringIO(texto)))
     # o cabeçalho pode não estar na 1ª linha (título em cima): usa a primeira linha que tenha requisição e empresa
+    ini = 0   # linha do cabeçalho (0 = primeira linha da planilha)
     for i, ln in enumerate(linhas[:15]):
         ks = [coluna(h) for h in ln]
         if 'r' in ks and ('f' in ks or 't' in ks):
-            linhas = linhas[i:]; break
+            linhas = linhas[i:]; ini = i; break
     cab = []
     for h in linhas[0]:
         k = coluna(h); cab.append(k if k not in cab else '')   # coluna repetida: vale a primeira
     out = []
-    for ln in linhas[1:]:
-        r = {}
+    for j, ln in enumerate(linhas[1:]):
+        r = {'ln': ini + 2 + j}   # número da linha na planilha (para achar repetidas)
         for k, v in zip(cab, ln):
             v = re.sub(r'\s+', ' ', v).strip()
             if k and v and v.lower() != 'nan':
@@ -83,6 +84,13 @@ def ler(texto):
                 if k != 'r' and ',' in r[k]:   # mais de um número na célula ("7029, 7030"): guarda todos e usa o primeiro
                     r[k + 's'] = r[k]; r[k] = r[k].split(',')[0].strip()
         out.append(r)
+    # aviso no registro do robô: mesma requisição em mais de uma linha
+    vis = {}
+    for x in out:
+        vis.setdefault((x['r'].lstrip('0'), x.get('re', ''), norm(x.get('f', ''))), []).append(x['ln'])
+    rep = {k[0]: v for k, v in vis.items() if len(v) > 1}
+    if rep:
+        print(f'Planilha de requisições: {len(rep)} requisições repetidas (linhas da planilha): ' + '; '.join(f'{k}: {", ".join(map(str, v))}' for k, v in rep.items()))
     return out
 
 
