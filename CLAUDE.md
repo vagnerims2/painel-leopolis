@@ -49,6 +49,7 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 - Compras com convênio (obras, veículos) saem em 2 empenhos: valor do convênio + contrapartida.
 - Uma mesma nota fiscal pode ser liquidada em vários empenhos do mesmo fornecedor (dotações diferentes); várias notas numa mesma liquidação é normal.
 - Requisição anterior a 01/10/2026 que só está na planilha e sem requisição de empenho só aparece se o status for estornado ou cancelado (caso Lucas Mizael/Construcin).
+- Requisição repetida na planilha (mesma requisição, requisição de empenho e fornecedor em mais de uma linha) aparece uma vez só: o painel junta as linhas e fica com o valor mais completo (`semRepetidas`, aprovado em 30/10/2026). Em 30/10/2026 a tabela do colega tinha 41507–41560 duas vezes (linhas 712–751 escondidas por filtro; o IMPORTRANGE copia linhas escondidas). O robô grava `ln` (linha da planilha) e avisa repetidas no registro.
 - Telefone e e-mail funcionam como cadastro de fornecedores pelo código do fornecedor no Equiplano, atualizado pela planilha (não preso à requisição).
 - Saldo de dotação: usar o saldo real pelos últimos empenhos (já reflete decretos). O contador abre decreto de suplementação no fim de cada mês; alerta mensal das dotações recorrentes (diárias, consórcio, cota extra) que não cobrem o mês seguinte.
 - "Preços acima do padrão" só compara itens com mesmo código CATMAT (ou nome), mesma unidade e mesma embalagem.
