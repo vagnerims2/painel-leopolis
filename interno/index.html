@@ -2387,7 +2387,15 @@ function juntarAno(linhas) {
     out.push({ r: k, d: q.d, f: q.f, c: q.c, s: e ? e.secretaria : '', re: res[res.length - 1] || '', ...(res.length > 1 ? { res: res.join(', ') } : {}), env: 'antes', st: q.x ? 'CANCELADA (estorno da requisição de compra)' : '', _rq: 1, _soAno: 1 }); });
   return out;
 }
+// a mesma requisição colada duas vezes na planilha (aconteceu em 30/10/2026 com 41507 a 41560) vira uma linha só:
+// junta os campos; quando os dois têm valor diferente, fica o mais completo (ex.: "ENVIADO, CONFIRMOU RECEBIMENTO")
+function semRepetidas(linhas) { const vistos = new Map(), out = [];
+  linhas.forEach(l => { const k = [semZeros(l.r), semZeros(l.re || ''), nz(l.f || '')].join('|'), a = vistos.get(k);
+    if (!a) { const c = { ...l }; vistos.set(k, c); out.push(c); return; }
+    Object.entries(l).forEach(([c, v]) => { if (v && (!a[c] || (c !== 'env' && String(v).length > String(a[c]).length))) a[c] = v; }); });
+  return out; }
 function mostrarReq(dados) {
+  dados = { ...dados, linhas: semRepetidas(dados.linhas || []) };
   REQ._dados = dados; REQ.linhas = juntarAno(dados.linhas || []); REQ.atualizado = dados.atualizado || ''; REQ.porEmp = {};
   REQ.linhas.forEach(l => { if (l.e) { const k = semZeros(l.e); (REQ.porEmp[k] = REQ.porEmp[k] || []).push(l); } });
   document.getElementById('req-msg').hidden = true; document.getElementById('req-aberto').hidden = false; document.getElementById('req-atual').textContent = REQ.atualizado || '—';
