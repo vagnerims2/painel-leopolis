@@ -1,5 +1,5 @@
 chave,empenho,data,fornecedor,secretaria,licitacao,produto,marca,quantidade,valor_unitario,valor_total,situacao,unidade,codigo,embalagem,comparar,descricao
-9146-1,9146,2026-10-26,POSTO PASSAGNOLO LTDA,ASSISTENCIA SOCIAL - SEMAS,Inexigibilidade 7/2023,GASOLINA,,43.08,6.69,288.21,Falta liquidar,LT,,,GASOLINA|LT|,
+9146-1,9146,2026-10-26,POSTO PASSAGNOLO LTDA,ASSISTENCIA SOCIAL - SEMAS,Inexigibilidade 7/2023,GASOLINA,,43.08,6.69,288.21,"Liquidado, a pagar",LT,,,GASOLINA|LT|,
 9145-1,9145,2026-10-26,POSTO PASSAGNOLO LTDA,ASSISTENCIA SOCIAL - SEMAS,Inexigibilidade 7/2023,GASOLINA,,47.72,6.69,319.23,"Liquidado, a pagar",LT,,,GASOLINA|LT|,
 9144-1,9144,2026-10-26,POSTO PASSAGNOLO LTDA,SAUDE - SEMUS,Inexigibilidade 7/2023,DIESEL S10,,306.14,7.7,2357.28,"Liquidado, a pagar",LT,,,DIESEL S10|LT|,
 9143-1,9143,2026-10-26,POSTO PASSAGNOLO LTDA,SAUDE - SEMUS,Inexigibilidade 7/2023,GASOLINA,,337.69,6.69,2259.18,"Liquidado, a pagar",LT,,,GASOLINA|LT|,
