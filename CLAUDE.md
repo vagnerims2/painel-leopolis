@@ -66,6 +66,7 @@ Contexto para o Claude Code. Responda sempre em português, em linguagem simples
 - Animações: linhas que "andam" (Visão geral e Gasto com pessoal em Indicadores LRF) e barras que sobem (Arrecadação por mês em Receitas — o Vagner preferiu barras ali). Começam quando o gráfico aparece na tela e recomeçam ao abrir a aba ou recarregar (F5); na impressão saem completas. Função comum: `linhaAnimada` / `animarLinhas`.
 - Números (pedido do Vagner, 25/10/2026): porcentagens sempre com 2 casas, sem arredondar (28,73%); valores em reais nos gráficos e cartões ficam abreviados (R$ 37,46 mi, 4,2), e o valor completo aparece ao passar o mouse ou tocar no ponto/barra (no celular, a dica fica uns 3 segundos e o toque no ponto não troca de aba).
 - Topo da página: nome de quem entrou em balão laranja, Usuários/Trocar senha/Sair em branco apagado, Imprimir verde à direita, todos do mesmo tamanho na mesma linha (no celular: "Senha" e só o ícone da impressora).
+- Velocidade (aprovada em 30/10/2026): tabelas grandes (Empenhos/Liquidações, Requisições, Notas fiscais, Licitações e Preços acima do padrão) abrem com 100 linhas e botões "Mostrar mais 200" / "Mostrar todos"; totais e busca consideram tudo (`limDe`/`maisLinhas`). Quadros fora da tela com `content-visibility:auto` (na impressão, tudo). Não voltar a desenhar centenas de linhas de uma vez: deixava a troca de aba lenta.
 - Removidas do menu: Alertas e Dia e semana (o código continua na página, escondido). Relatório automático em PDF do painel: fora por enquanto.
 
 ## Ideias futuras
